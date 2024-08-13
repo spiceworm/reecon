@@ -1,0 +1,11 @@
+aiohttp==3.10.2
+apscheduler==3.10.4
+arq==0.26.0
+asyncpgsa==0.27.1
+beautifulsoup4==4.12.3
+fastapi==0.112.0
+hiredis==3.0.0
+openai==1.40.6
+psycopg2-binary==2.9.9
+requests==2.32.3
+SQLAlchemy==1.4.53
