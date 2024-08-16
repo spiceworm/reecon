@@ -59,7 +59,7 @@ async def _users(user_names: List[str]) -> dict:
         # Do not submit usernames for processing if they were processed recently.
         if user_name not in fresh_user_entries:
             log.debug("Enqueuing %s", user_name)
-            await redis.enqueue_job("process_username", user_name)
+            await redis.enqueue_job("process_username", user_name, _job_id=user_name)
         else:
             log.debug("Ignoring %s", user_name)
 
