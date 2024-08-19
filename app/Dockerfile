@@ -17,9 +17,11 @@ RUN pip install --upgrade pip \
         IPython \
         uvicorn[standard]
 
+# Install python dependencies and NLTK data files used for sentiment analysis in textblob package.
 COPY ./requirements.txt /tmp/
 RUN pip install -r /tmp/requirements.txt \
-    && rm /tmp/requirements.txt
+    && rm /tmp/requirements.txt \
+    && python -m textblob.download_corpora
 
 COPY . /app
 

@@ -1,6 +1,7 @@
 import contextlib
 import logging
 
+import arq
 from asyncpgsa import pg
 import fastapi
 from fastapi.middleware.cors import CORSMiddleware
@@ -35,6 +36,7 @@ async def lifespan(app_: fastapi.FastAPI):
         echo=settings.debug,
     )
     ModelBase.metadata.create_all(engine)
+    app_.redis = await arq.create_pool(settings.redis_connection_settings)
     yield
     log.debug("Stopping API")
 
