@@ -5,34 +5,23 @@ from sqlalchemy import (
     Numeric,
     String,
     Text,
-    types,
 )
-from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.orm import declarative_base
-from sqlalchemy.sql import expression
 
 
 ModelBase = declarative_base()
-
-
-class utcnow(expression.FunctionElement):
-    type = types.DateTime()
-    inherit_cache = True
-
-
-@compiles(utcnow, "postgresql")
-def pg_utcnow(element, compiler, **kw):
-    return "TIMEZONE('utc', CURRENT_TIMESTAMP)"
 
 
 class ThreadModel(ModelBase):
     __tablename__ = "thread"
 
     id = Column(Integer, primary_key=True)
+
+    # We cannot use `onupdate` to update this value for upserts.
+    # https://github.com/sqlalchemy/sqlalchemy/discussions/5903
     last_checked = Column(
         DateTime(timezone=True),
-        onupdate=utcnow,
-        default=utcnow,
+        nullable=False,
     )
     sentiment_polarity = Column(
         Numeric(),
@@ -51,14 +40,17 @@ class UserModel(ModelBase):
     id = Column(Integer, primary_key=True)
     age = Column(
         String(64),
+        nullable=False,
     )
     iq = Column(
         String(64),
+        nullable=False,
     )
+    # We cannot use `onupdate` to update this value for UPSERTs.
+    # https://github.com/sqlalchemy/sqlalchemy/discussions/5903
     last_checked = Column(
         DateTime(timezone=True),
-        onupdate=utcnow,
-        default=utcnow,
+        nullable=False,
     )
     name = Column(
         String(64),

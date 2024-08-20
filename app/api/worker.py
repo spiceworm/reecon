@@ -1,3 +1,7 @@
+from datetime import (
+    datetime,
+    timezone,
+)
 import logging
 import statistics
 from typing import List
@@ -79,13 +83,19 @@ async def process_thread(ctx, thread_url) -> None:
 
     if polarity_values:
         sentiment_polarity = statistics.mean(polarity_values)
-        params = [{"url": thread_url, "sentiment_polarity": sentiment_polarity}]
+        params = [
+            {
+                "last_checked": datetime.now(timezone.utc),
+                "sentiment_polarity": sentiment_polarity,
+                "url": thread_url,
+            }
+        ]
         insert_q = (
             insert(ThreadModel)
             .values(params)
             .on_conflict_do_update(
                 index_elements=["url"],
-                set_={"sentiment_polarity": sentiment_polarity},
+                set_=params[0],
             )
         )
         setattr(insert_q, "parameters", params)
@@ -113,13 +123,20 @@ async def process_username(ctx, username) -> None:
         if comment_strings:
             data = _determine_user_details(ctx["openai_client"], comment_strings)
             if all(data.values()):
-                params = [{"name": username, **data}]
+                params = [
+                    {
+                        "age": data["age"],
+                        "iq": data["iq"],
+                        "last_checked": datetime.now(timezone.utc),
+                        "name": username,
+                    }
+                ]
                 insert_q = (
                     insert(UserModel)
                     .values(params)
                     .on_conflict_do_update(
                         index_elements=["name"],
-                        set_=data,
+                        set_=params[0],
                     )
                 )
                 setattr(insert_q, "parameters", params)
