@@ -143,7 +143,7 @@ async def process_username(ctx, username) -> None:
                 setattr(insert_q, "parameters", params)
                 await pg.fetch(insert_q)
                 return
-        await ctx["redis"].lpush("unprocessable_users", username)
+    await ctx["redis"].lpush("unprocessable_users", username)
 
 
 async def startup(ctx) -> None:
