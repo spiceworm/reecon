@@ -2,6 +2,7 @@ from datetime import (
     datetime,
     timezone,
 )
+import json
 import logging
 import statistics
 from typing import List
@@ -37,12 +38,19 @@ log = logging.getLogger(__name__)
 log.setLevel(settings.log_level)
 
 
+USER_DETAILS_PROMPT = (
+    "The following pipe delimited messages are unrelated comments posted by a person. "
+    "Determine the age and IQ of that person based on their writing. "
+    "Your output should be formatted as json with the keys: age and iq. The mapped values should be integers."
+)
+
+
 def _determine_user_details(openai_client: openai.Client, comments: List[str]) -> dict:
     chat_completion = openai_client.chat.completions.create(
         messages=[
             {
                 "role": "system",
-                "content": "The provided pipe delimited messages are unrelated comments posted by a person. Determine the age and IQ of the author based on their writing. Your answer should only consist of a numeric age and IQ value.",
+                "content": USER_DETAILS_PROMPT,
             },
             {
                 "role": "user",
@@ -51,25 +59,18 @@ def _determine_user_details(openai_client: openai.Client, comments: List[str]) -
         ],
         model=settings.openai_settings["model"],
     )
-    age = None
-    iq = None
-    for line in chat_completion.choices[0].message.content.splitlines():
-        try:
-            # TODO: Extract values from response better using regex or something
-            k, v = line.split(":")
-        except ValueError:
-            log.info(f"Unprocessable OpenAI response: %s", line)
-        else:
-            v = v.strip()
-            if v.isdigit():
-                if k == "IQ":
-                    iq = v
-                    continue
-                elif k == "Age":
-                    age = v
-                    continue
-                log.info(f"Unprocessable OpenAI response: %s", line)
-    return {"age": age, "iq": iq}
+    content = chat_completion.choices[0].message.content
+    retval = {"age": None, "iq": None}
+
+    try:
+        json_str = content.replace("`", "").split("json", 1)[-1]
+        json_dct = json.loads(json_str)
+        retval["age"] = str(json_dct["age"])
+        retval["iq"] = str(json_dct["iq"])
+    except Exception:
+        log.info(f"Unprocessable OpenAI response: %s", content)
+
+    return retval
 
 
 async def process_thread(ctx, thread_url) -> None:
