@@ -13,6 +13,13 @@ log = logging.getLogger(__file__)
 
 class _Settings:
     @property
+    def comment_filter_settings(self) -> dict:
+        return {
+            "exclude_urls": decouple.config("COMMENT_FILTER_EXCLUDE_URLS", cast=bool, default=True),
+            "min_length": decouple.config("COMMENT_FILTER_MIN_LENGTH", cast=int, default=120),
+        }
+
+    @property
     def db_connection_string(self) -> str:
         db = decouple.config("POSTGRES_DB")
         host = decouple.config("POSTGRES_HOST")

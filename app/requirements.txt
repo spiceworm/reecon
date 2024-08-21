@@ -9,3 +9,4 @@ psycopg2-binary==2.9.9
 python-decouple==3.8
 SQLAlchemy==1.4.53
 textblob==0.18.0.post0
+validators==0.33.0
