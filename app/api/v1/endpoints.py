@@ -56,13 +56,15 @@ async def _status() -> dict:
 
 
 @router.put("/threads")
-async def put_threads(thread_urls: List[str]) -> dict:
+async def put_threads(args: ThreadEndpointParams) -> dict:
+    thread_urls = args.thread_urls
     select_q = ThreadModel.__table__.select().where(ThreadModel.url.like(sqlalchemy.any_(thread_urls)))
     return {row["url"]: row["sentiment_polarity"] for row in await pg.fetch(select_q, thread_urls)}
 
 
 @router.post("/threads")
-async def post_threads(thread_urls: List[str], request: Request) -> None:
+async def post_threads(args: ThreadEndpointParams, request: Request) -> None:
+    thread_urls = args.thread_urls
     now = datetime.now(timezone.utc)
     select_q = ThreadModel.__table__.select().where(ThreadModel.url.like(sqlalchemy.any_(thread_urls)))
     select_fresh_entries_q = select_q.filter(ThreadModel.last_checked + timedelta(hours=24) > now).with_only_columns(

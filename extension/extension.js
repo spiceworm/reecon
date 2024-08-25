@@ -45,11 +45,11 @@ function updateDOM_threads(response, settings) {
         jujuSpan.innerText = " 🔮";
 
         if (sentimentPolarity < settings.minThreadSentiment) {
-            if (settings.showBadJujuThreads) {
+            if (settings.hideBadJujuThreads) {
+                threadRow.style.display = "none";
+            } else {
                 threadRow.style.display = "block";
                 jujuSpan.innerText = " 🚨";
-            } else {
-                threadRow.style.display = "none";
             }
         }
     }
@@ -95,9 +95,6 @@ function updateDOM_usernames(response, username_linkElements, settings) {
                     if (parseInt(stats["age"]) < settings.minUserAge || parseInt(stats["iq"]) < settings.minUserIQ) {
                         commentDiv.classList.remove("noncollapsed");
                         commentDiv.classList.add("collapsed");
-                    } else {
-                        commentDiv.classList.remove("collapsed");
-                        commentDiv.classList.add("noncollapsed");
                     }
                 }
             }
@@ -126,45 +123,42 @@ function run(settings) {
     // The username link may appear multiple times on the same page.
     let username_linkElements = {};
     for (let el of document.getElementsByClassName('author')) {
-        if (!(el.innerText in username_linkElements)) {
-            username_linkElements[el.innerText] = [];
+        const username = el.innerText;
+        if (!(username in username_linkElements)) {
+            username_linkElements[username] = [];
         }
-        username_linkElements[el.innerText].push(el);
+        username_linkElements[username].push(el);
+    }
+
+    if (settings.enableThreadProcessing) {
+        apiRequest('/api/v1/threads', 'POST', {'thread_urls': threadURLs})
     }
 
     // Send request to fetch processed threads and update the DOM with that info
     // Response contains a list of [{"<URL>": {"sentiment_polarity": "-0.01"}} ...] entries.
-    apiRequest('/api/v1/threads', 'PUT', threadURLs)
+    apiRequest('/api/v1/threads', 'PUT', {'thread_urls': threadURLs})
         .then(res => res.json())
         .then(res => updateDOM_threads(res, settings));
 
-    if (settings.enableThreadProcessing) {
-        // Submit thread URLs for processing
-        apiRequest('/api/v1/threads', 'POST', threadURLs)
-    }
-
     const usernames = Object.keys(username_linkElements)
+
+    if (settings.enableUserProcessing) {
+        apiRequest('/api/v1/users', 'POST', {'usernames': usernames})
+    }
 
     // Send request to fetch processed users and update the DOM with that info
     // Response contains a list of [{"<username>": {"age": "22", "iq": "120"}} ...] entries.
-    apiRequest('/api/v1/users', 'PUT', {usernames: usernames})
+    apiRequest('/api/v1/users', 'PUT', {'usernames': usernames})
         .then(res => res.json())
         .then(res => updateDOM_usernames(res, username_linkElements, settings));
-
-    if (settings.enableUserProcessing) {
-        // POST all usernames detected on the current page for processing.
-        apiRequest('/api/v1/users', 'POST', {usernames: usernames})
-    }
 }
 
-// Execute `run` every time thread rows are loaded on the page.
-// Thread rows are identified by 'span.rank' selector.
-let visibleThreads = 0;
-const resizeObserver = new ResizeObserver(entries => {
-    const detectedThreads = document.querySelectorAll('span.rank').length;
-    if (detectedThreads > visibleThreads) {
-        visibleThreads = detectedThreads;
-        loadSettings().then(settings => {run(settings)})
+
+window.setInterval(function () {
+    // Only run on the current active tab
+    if (document.visibilityState === "visible") {
+        loadSettings().then(settings => {
+            run(settings)
+        })
     }
-})
-resizeObserver.observe(document.querySelector('div.content'))
+}, 5_000)

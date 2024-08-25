@@ -4,7 +4,7 @@ function saveSettings(e) {
     browser.storage.sync.set({
         enableThreadProcessing: document.getElementById("enableThreadProcessing").checked,
         enableUserProcessing: document.getElementById("enableUserProcessing").checked,
-        showBadJujuThreads: document.getElementById("showBadJujuThreads").checked,
+        hideBadJujuThreads: document.getElementById("hideBadJujuThreads").checked,
         minThreadSentiment: parseFloat(document.getElementById("minThreadSentiment").value),
         minUserAge: parseInt(document.getElementById("minUserAge").value),
         minUserIQ: parseInt(document.getElementById("minUserIQ").value)
@@ -19,7 +19,7 @@ function loadSettings() {
         // Popular form fields in the settings popup window to previously defined settings.
         document.getElementById("enableThreadProcessing").checked = settings.enableThreadProcessing;
         document.getElementById("enableUserProcessing").checked = settings.enableUserProcessing;
-        document.getElementById("showBadJujuThreads").checked = settings.showBadJujuThreads;
+        document.getElementById("hideBadJujuThreads").checked = settings.hideBadJujuThreads;
         document.getElementById("minThreadSentiment").value = settings.minThreadSentiment;
         document.getElementById("minUserAge").value = settings.minUserAge;
         document.getElementById("minUserIQ").value = settings.minUserIQ;

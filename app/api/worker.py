@@ -83,8 +83,8 @@ def _determine_user_details(openai_client: openai.Client, comments: List[str]) -
     try:
         json_str = content.replace("`", "").split("json", 1)[-1]
         json_dct = json.loads(json_str)
-        retval["age"] = str(json_dct["age"])
-        retval["iq"] = str(json_dct["iq"])
+        retval["age"] = int(json_dct["age"])
+        retval["iq"] = int(json_dct["iq"])
     except Exception:
         log.info(f"Unprocessable OpenAI response: %s", content)
 
