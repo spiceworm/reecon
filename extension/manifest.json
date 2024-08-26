@@ -1,6 +1,6 @@
 {
   "manifest_version": 2,
-  "name": "reddit-recon",
+  "name": "recon",
   "version": "1.0",
   "description": "Predict and label the age and intelligence of reddit users.",
   "icons": {
@@ -23,7 +23,7 @@
   ],
   "browser_action": {
     "default_icon": "icons/border-48.png",
-    "default_title": "Reddit-Recon",
+    "default_title": "recon",
     "default_popup": "popup/settings.html"
   },
   "browser_specific_settings": {

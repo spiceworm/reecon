@@ -25,12 +25,12 @@ docker compose up --build
 
 View Logs
 ```bash
-docker exec -it reddit-recon-app-1 tail -f /var/log/app/api.log
+docker exec -it recon-app-1 tail -f /var/log/app/api.log
 ```
 
 Debugging
 ```bash
-docker exec -it reddit-recon-app-1 bash -c 'supervisorctl stop app; uvicorn --app-dir=/app --host=127.0.0.1 --port=8000 api.main:app'
+docker exec -it recon-app-1 bash -c 'supervisorctl stop app; uvicorn --app-dir=/app --host=127.0.0.1 --port=8000 api.main:app'
 ```
 
 TODO
