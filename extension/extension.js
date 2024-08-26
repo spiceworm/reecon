@@ -131,24 +131,24 @@ function run(settings) {
     }
 
     if (settings.enableThreadProcessing) {
-        apiRequest('/api/v1/threads', 'POST', {'thread_urls': threadURLs})
+        apiRequest('/api/v1/reddit/threads', 'POST', {'thread_urls': threadURLs})
     }
 
     // Send request to fetch processed threads and update the DOM with that info
     // Response contains a list of [{"<URL>": {"sentiment_polarity": "-0.01"}} ...] entries.
-    apiRequest('/api/v1/threads', 'PUT', {'thread_urls': threadURLs})
+    apiRequest('/api/v1/reddit/threads', 'PUT', {'thread_urls': threadURLs})
         .then(res => res.json())
         .then(res => updateDOM_threads(res, settings));
 
     const usernames = Object.keys(username_linkElements)
 
     if (settings.enableUserProcessing) {
-        apiRequest('/api/v1/users', 'POST', {'usernames': usernames})
+        apiRequest('/api/v1/reddit/users', 'POST', {'usernames': usernames})
     }
 
     // Send request to fetch processed users and update the DOM with that info
     // Response contains a list of [{"<username>": {"age": "22", "iq": "120"}} ...] entries.
-    apiRequest('/api/v1/users', 'PUT', {'usernames': usernames})
+    apiRequest('/api/v1/reddit/users', 'PUT', {'usernames': usernames})
         .then(res => res.json())
         .then(res => updateDOM_usernames(res, username_linkElements, settings));
 }

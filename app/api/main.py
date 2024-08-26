@@ -9,7 +9,7 @@ import sqlalchemy
 
 from .config import settings
 from .models import ModelBase
-from .v1 import router as v1_router
+from .v1 import base_router as v1_router
 
 
 logging.basicConfig(

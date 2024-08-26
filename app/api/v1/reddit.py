@@ -11,7 +11,7 @@ from fastapi import Request
 import pydantic
 import sqlalchemy
 
-from . import router
+from . import reddit_router
 from ..config import settings
 from ..models import (
     ThreadModel,
@@ -20,11 +20,10 @@ from ..models import (
 
 
 __all__ = (
-    "_status",
-    "put_threads",
-    "post_threads",
-    "put_users",
-    "post_users",
+    "put_reddit_threads",
+    "post_reddit_threads",
+    "put_reddit_users",
+    "post_reddit_users",
 )
 
 
@@ -47,23 +46,15 @@ class UserEndpointParams(pydantic.BaseModel):
     usernames: List[str]
 
 
-@router.get("/status")
-async def _status() -> dict:
-    """
-    Returns a response code of 200.
-    """
-    return {}
-
-
-@router.put("/threads")
-async def put_threads(args: ThreadEndpointParams) -> dict:
+@reddit_router.put("/threads", summary="Lookup processed thread URLs")
+async def put_reddit_threads(args: ThreadEndpointParams) -> dict:
     thread_urls = args.thread_urls
     select_q = ThreadModel.__table__.select().where(ThreadModel.url.like(sqlalchemy.any_(thread_urls)))
     return {row["url"]: row["sentiment_polarity"] for row in await pg.fetch(select_q, thread_urls)}
 
 
-@router.post("/threads")
-async def post_threads(args: ThreadEndpointParams, request: Request) -> None:
+@reddit_router.post("/threads", summary="Submit thread URLs for processing")
+async def post_reddit_threads(args: ThreadEndpointParams, request: Request) -> None:
     thread_urls = args.thread_urls
     now = datetime.now(timezone.utc)
     select_q = ThreadModel.__table__.select().where(ThreadModel.url.like(sqlalchemy.any_(thread_urls)))
@@ -81,8 +72,8 @@ async def post_threads(args: ThreadEndpointParams, request: Request) -> None:
         await request.app.redis.enqueue_job("process_thread", thread_url, _job_id=thread_url)
 
 
-@router.put("/users")
-async def put_users(args: UserEndpointParams, request: Request) -> dict:
+@reddit_router.put("/users", summary="Lookup processed usernames")
+async def put_reddit_users(args: UserEndpointParams, request: Request) -> dict:
     usernames = args.usernames
     select_q = UserModel.__table__.select().where(UserModel.name.like(sqlalchemy.any_(usernames)))
     unprocessable_usernames = {s.decode() for s in await request.app.redis.lrange("unprocessable_users", 0, -1)}
@@ -98,8 +89,8 @@ async def put_users(args: UserEndpointParams, request: Request) -> dict:
     return retval
 
 
-@router.post("/users")
-async def post_users(args: UserEndpointParams, request: Request) -> None:
+@reddit_router.post("/users", summary="Submit usernames for processing")
+async def post_reddit_users(args: UserEndpointParams, request: Request) -> None:
     """
     - Enqueues jobs to process each username if it is not in the database or was last checked < 1 day ago.
     - Processing entails retrieving a portion of the user's comment history and, using OpenAI, determines
