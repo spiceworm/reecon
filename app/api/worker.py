@@ -83,8 +83,8 @@ def _determine_user_details(openai_client: openai.Client, comments: List[str]) -
     try:
         json_str = content.replace("`", "").split("json", 1)[-1]
         json_dct = json.loads(json_str)
-        retval["age"] = int(json_dct["age"])
-        retval["iq"] = int(json_dct["iq"])
+        retval["age"] = str(int(json_dct["age"]))
+        retval["iq"] = str(int(json_dct["iq"]))
     except Exception:
         log.info(f"Unprocessable OpenAI response: %s", content)
 
@@ -126,12 +126,7 @@ async def process_thread(ctx, thread_url) -> None:
 
 async def process_username(ctx, username) -> None:
     try:
-        # Set `fetch=True` so the `NotFound` exception is thrown here if the user no longer
-        # exists instead of later when comments are fetched.
         user: Redditor = await ctx["reddit_client"].redditor(name=username, fetch=True)
-    except (asyncprawcore.exceptions.Forbidden, asyncprawcore.exceptions.NotFound):
-        pass
-    else:
         comment_strings = []
         async for comment in user.comments.top():
             if _comment_should_be_processed(comment.body):
@@ -162,8 +157,8 @@ async def process_username(ctx, username) -> None:
                 )
                 setattr(insert_q, "parameters", params)
                 await pg.fetch(insert_q)
-                return
-    await ctx["redis"].lpush("unprocessable_users", username)
+    except (asyncprawcore.exceptions.Forbidden, asyncprawcore.exceptions.NotFound):
+        await ctx["redis"].lpush("unprocessable_users", username)
 
 
 async def startup(ctx) -> None:
