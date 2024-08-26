@@ -12,30 +12,8 @@ from sqlalchemy.orm import declarative_base
 ModelBase = declarative_base()
 
 
-class ThreadModel(ModelBase):
-    __tablename__ = "thread"
-
-    id = Column(Integer, primary_key=True)
-
-    # We cannot use `onupdate` to update this value for upserts.
-    # https://github.com/sqlalchemy/sqlalchemy/discussions/5903
-    last_checked = Column(
-        DateTime(timezone=True),
-        nullable=False,
-    )
-    sentiment_polarity = Column(
-        Numeric(),
-        nullable=False,
-    )
-    url = Column(
-        Text(),
-        unique=True,
-        nullable=False,
-    )
-
-
-class UserModel(ModelBase):
-    __tablename__ = "user"
+class RedditorModel(ModelBase):
+    __tablename__ = "redditor"
 
     id = Column(Integer, primary_key=True)
     age = Column(
@@ -54,6 +32,28 @@ class UserModel(ModelBase):
     )
     name = Column(
         String(64),
+        unique=True,
+        nullable=False,
+    )
+
+
+class ThreadModel(ModelBase):
+    __tablename__ = "thread"
+
+    id = Column(Integer, primary_key=True)
+
+    # We cannot use `onupdate` to update this value for upserts.
+    # https://github.com/sqlalchemy/sqlalchemy/discussions/5903
+    last_checked = Column(
+        DateTime(timezone=True),
+        nullable=False,
+    )
+    sentiment_polarity = Column(
+        Numeric(),
+        nullable=False,
+    )
+    url = Column(
+        Text(),
         unique=True,
         nullable=False,
     )

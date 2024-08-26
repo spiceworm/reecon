@@ -24,8 +24,8 @@ import validators
 
 from .config import settings
 from .models import (
+    RedditorModel,
     ThreadModel,
-    UserModel,
 )
 
 
@@ -148,7 +148,7 @@ async def process_username(ctx, username) -> None:
                     }
                 ]
                 insert_q = (
-                    insert(UserModel)
+                    insert(RedditorModel)
                     .values(params)
                     .on_conflict_do_update(
                         index_elements=["name"],

@@ -14,8 +14,8 @@ import sqlalchemy
 from . import reddit_router
 from ..config import settings
 from ..models import (
+    RedditorModel,
     ThreadModel,
-    UserModel,
 )
 
 
@@ -75,7 +75,7 @@ async def post_reddit_threads(args: ThreadEndpointParams, request: Request) -> N
 @reddit_router.put("/users", summary="Lookup processed usernames")
 async def put_reddit_users(args: UserEndpointParams, request: Request) -> dict:
     usernames = args.usernames
-    select_q = UserModel.__table__.select().where(UserModel.name.like(sqlalchemy.any_(usernames)))
+    select_q = RedditorModel.__table__.select().where(RedditorModel.name.like(sqlalchemy.any_(usernames)))
     unprocessable_usernames = {s.decode() for s in await request.app.redis.lrange("unprocessable_users", 0, -1)}
 
     retval = {}
@@ -99,9 +99,9 @@ async def post_reddit_users(args: UserEndpointParams, request: Request) -> None:
     usernames = args.usernames
 
     now = datetime.now(timezone.utc)
-    select_q = UserModel.__table__.select().where(UserModel.name.like(sqlalchemy.any_(usernames)))
-    select_fresh_entries_q = select_q.filter(UserModel.last_checked + timedelta(hours=24) > now).with_only_columns(
-        UserModel.__table__.c.name
+    select_q = RedditorModel.__table__.select().where(RedditorModel.name.like(sqlalchemy.any_(usernames)))
+    select_fresh_entries_q = select_q.filter(RedditorModel.last_checked + timedelta(hours=24) > now).with_only_columns(
+        RedditorModel.__table__.c.name
     )
     fresh_usernames = {row["name"] for row in await pg.fetch(select_fresh_entries_q, usernames)}
     unprocessable_usernames = {s.decode() for s in await request.app.redis.lrange("unprocessable_users", 0, -1)}
