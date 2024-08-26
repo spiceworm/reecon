@@ -1,3 +1,11 @@
+TODO:
+- More elegantly share settings between popup and main extension script without code duplication
+- Allow arq jobs to expire if they are enqueued and not processed
+- Expire keys in unprocessable users and thread redis group
+- Option to only run extension on specified subreddits
+- Hide comments from unprocessable users (they have only created threads or their comments are all less than 120 characters)
+- Hide thread posts for users with no comments (bots posting articles?)
+
 Firefox extension that:
 - Scans all usernames on the current page of old.reddit.com (does not work on new layout)
 - Posts them to a local server to analyze all submissions made by that user
