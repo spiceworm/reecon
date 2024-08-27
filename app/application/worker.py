@@ -1,3 +1,4 @@
+import asyncio
 from datetime import (
     datetime,
     timezone,
@@ -7,7 +8,6 @@ import logging
 import statistics
 from typing import List
 
-from asyncpgsa import pg
 import asyncpraw
 from asyncpraw.models import (
     MoreComments,
@@ -18,7 +18,12 @@ import asyncprawcore
 from httpx import AsyncClient
 import nltk.data
 import openai
-from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.dialects import postgresql
+from sqlalchemy.ext.asyncio import (
+    async_scoped_session,
+    async_sessionmaker,
+    create_async_engine,
+)
 import textblob
 import validators
 
@@ -39,7 +44,7 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 log.setLevel(settings.log_level)
 
-TOKENIZER = nltk.data.load('tokenizers/punkt/english.pickle')
+TOKENIZER = nltk.data.load("tokenizers/punkt/english.pickle")
 
 USER_DETAILS_PROMPT = (
     "The following pipe delimited messages are unrelated comments posted by a person. "
@@ -83,8 +88,8 @@ def _determine_user_details(openai_client: openai.Client, comments: List[str]) -
     try:
         json_str = content.replace("`", "").split("json", 1)[-1]
         json_dct = json.loads(json_str)
-        retval["age"] = str(int(json_dct["age"]))
-        retval["iq"] = str(int(json_dct["iq"]))
+        retval["age"] = int(json_dct["age"])
+        retval["iq"] = int(json_dct["iq"])
     except Exception:
         log.info(f"Unprocessable OpenAI response: %s", content)
 
@@ -103,23 +108,24 @@ async def process_thread(ctx, thread_url) -> None:
 
     if polarity_values:
         sentiment_polarity = statistics.mean(polarity_values)
-        params = [
+        values = [
             {
                 "last_checked": datetime.now(timezone.utc),
                 "sentiment_polarity": sentiment_polarity,
                 "url": thread_url,
             }
         ]
-        insert_q = (
-            insert(ThreadModel)
-            .values(params)
-            .on_conflict_do_update(
-                index_elements=["url"],
-                set_=params[0],
+        async with ctx["db_session"]() as session:
+            q = (
+                postgresql.insert(ThreadModel)
+                .values(values)
+                .on_conflict_do_update(
+                    index_elements=["url"],
+                    set_=values[0],
+                )
             )
-        )
-        setattr(insert_q, "parameters", params)
-        await pg.fetch(insert_q)
+            await session.execute(q, values)
+            await session.commit()
         return
     await ctx["redis"].lpush("unprocessable_threads", thread_url)
 
@@ -139,7 +145,7 @@ async def process_username(ctx, username) -> None:
         if comment_strings:
             data = _determine_user_details(ctx["openai_client"], comment_strings)
             if all(data.values()):
-                params = [
+                values = [
                     {
                         "age": data["age"],
                         "iq": data["iq"],
@@ -147,16 +153,17 @@ async def process_username(ctx, username) -> None:
                         "name": username,
                     }
                 ]
-                insert_q = (
-                    insert(RedditorModel)
-                    .values(params)
-                    .on_conflict_do_update(
-                        index_elements=["name"],
-                        set_=params[0],
+                async with ctx["db_session"]() as session:
+                    q = (
+                        postgresql.insert(RedditorModel)
+                        .values(values)
+                        .on_conflict_do_update(
+                            index_elements=["name"],
+                            set_=values[0],
+                        )
                     )
-                )
-                setattr(insert_q, "parameters", params)
-                await pg.fetch(insert_q)
+                    await session.execute(q, values)
+                    await session.commit()
     except (asyncprawcore.exceptions.Forbidden, asyncprawcore.exceptions.NotFound):
         await ctx["redis"].lpush("unprocessable_users", username)
 
@@ -166,16 +173,16 @@ async def startup(ctx) -> None:
     ctx["async_client"] = AsyncClient()
     ctx["openai_client"] = openai.OpenAI(api_key=settings.openai_settings["api_key"])
     ctx["reddit_client"] = asyncpraw.Reddit(**settings.reddit_api_settings)
-    await pg.init(
-        dsn=settings.db_connection_string,
-        min_size=5,
-        max_size=10,
+    ctx["db_engine"] = create_async_engine(settings.db_connection_string, echo=True)
+    ctx["db_session"] = async_scoped_session(
+        async_sessionmaker(ctx["db_engine"], expire_on_commit=False),
+        scopefunc=asyncio.current_task,
     )
 
 
 async def shutdown(ctx) -> None:
     await ctx["async_client"].aclose()
-    await pg.pool.close()
+    await ctx["db_engine"].dispose()
 
 
 class WorkerSettings:

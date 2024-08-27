@@ -26,7 +26,7 @@ class _Settings:
         password = decouple.config("POSTGRES_PASSWORD")
         port = decouple.config("POSTGRES_PORT")
         user = decouple.config("POSTGRES_USER")
-        return f"postgresql://{user}:{password}@{host}:{port}/{db}"
+        return f"postgresql+asyncpg://{user}:{password}@{host}:{port}/{db}"
 
     @property
     def debug(self) -> bool:
@@ -65,6 +65,10 @@ class _Settings:
     @property
     def redis_connection_settings(self) -> RedisSettings:
         return RedisSettings(host=decouple.config("REDIS_HOST"))
+
+    @property
+    def secret_key(self) -> str:
+        return decouple.config("SECRET_KEY")
 
 
 settings = _Settings()
