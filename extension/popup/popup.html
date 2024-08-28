@@ -6,7 +6,7 @@
     </head>
 
     <body>
-        <form>
+        <form id="settingsForm">
             <input type="checkbox" id="enableThreadProcessing" name="enableThreadProcessing">
             <label for="enableThreadProcessing">Enable processing of threads</label><br>
 
@@ -16,18 +16,18 @@
             <input type="checkbox" id="hideBadJujuThreads" name="hideBadJujuThreads">
             <label for="hideBadJujuThreads">Hide threads with bad juju</label><br>
 
-            <input type="number" id="minUserAge" name="minUserAge" value="0">
+            <input type="number" id="minUserAge" name="minUserAge">
             <label for="minUserAge">Minimum user age</label><br>
 
-            <input type="number" id="minUserIQ" name="minUserIQ" value="0">
+            <input type="number" id="minUserIQ" name="minUserIQ">
             <label for="minUserIQ">Minimum user IQ</label><br>
 
-            <input type="number" id="minThreadSentiment" name="minThreadSentiment" step="0.001" value="0">
+            <input type="number" id="minThreadSentiment" name="minThreadSentiment" step="0.001">
             <label for="minThreadSentiment">Minimum thread sentiment</label><br>
 
             <button type="submit">Save</button>
         </form>
 
-        <script src="settings.js"></script>
+        <script src="popup.js"></script>
     </body>
 </html>

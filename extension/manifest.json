@@ -24,7 +24,7 @@
   "browser_action": {
     "default_icon": "icons/border-48.png",
     "default_title": "recon",
-    "default_popup": "popup/settings.html"
+    "default_popup": "popup/popup.html"
   },
   "browser_specific_settings": {
     "gecko": {

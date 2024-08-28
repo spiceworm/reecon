@@ -1,5 +1,6 @@
 browser.runtime.onInstalled.addListener(() => {
     browser.storage.sync.set({
+        accessToken: null,
         enableThreadProcessing: false,
         enableUserProcessing: false,
         hideBadJujuThreads: false,
