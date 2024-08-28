@@ -73,7 +73,7 @@ class ThreadModel(Base):
         nullable=False,
     )
     url: Mapped[str] = mapped_column(
-        sa.Text(),  # URLType
+        URLType(),
         nullable=False,
         unique=True,
     )
