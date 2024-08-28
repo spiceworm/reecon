@@ -11,11 +11,10 @@ from fastapi.security import OAuth2PasswordRequestForm
 import pydantic
 
 from . import auth_router
-from ..models import UserModel
+from ..dependencies import AuthUser
 from ..util.auth import (
     authenticate_user,
     create_access_token,
-    get_current_active_user,
 )
 
 
@@ -40,10 +39,10 @@ async def auth_token_create(form_data: Annotated[OAuth2PasswordRequestForm, Depe
 
 
 @auth_router.get("/token")
-async def auth_token_lookup(current_user: Annotated[UserModel, Depends(get_current_active_user)]):
+async def auth_token_lookup(user: AuthUser):
     return {
-        "create_date": current_user.create_date,
-        "email": current_user.email,
-        "enabled": current_user.enabled,
-        "username": current_user.username,
+        "create_date": user.create_date,
+        "email": user.email,
+        "enabled": user.enabled,
+        "username": user.username,
     }
