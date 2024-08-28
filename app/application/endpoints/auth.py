@@ -20,7 +20,7 @@ from jwt.exceptions import InvalidTokenError
 import pydantic
 import sqlalchemy as sa
 
-from . import endpoint_router
+from . import auth_router
 from ..config import settings
 from ..models import UserModel
 
@@ -50,6 +50,7 @@ async def authenticate_user(db_session, username: str, password: str) -> UserMod
             q = sa.select(UserModel).filter_by(
                 password=password,
                 username=username,
+                enabled=True,
             )
             results = await session.execute(q)
             return results.scalars().one_or_none()
@@ -89,8 +90,8 @@ async def get_current_active_user(current_user: Annotated[UserModel, Depends(get
     return current_user
 
 
-@endpoint_router.post("/auth/token")
-async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], request: Request) -> Token:
+@auth_router.post("/token")
+async def auth_token_create(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], request: Request) -> Token:
     user = await authenticate_user(request.app.db_session, form_data.username, form_data.password)
     if user is None:
         raise HTTPException(
@@ -98,12 +99,14 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token = create_access_token(data={"sub": user.username}, expires_delta=timedelta(minutes=1))
+    # Make tokens valid for 30 days. After 30 days they will have to reauthenticate with their
+    # username and password in the browser extension to get a new token.
+    access_token = create_access_token(data={"sub": user.username}, expires_delta=timedelta(days=30))
     return Token(access_token=access_token, token_type="bearer")
 
 
-@endpoint_router.get("/users/me")
-async def read_users_me(current_user: Annotated[UserModel, Depends(get_current_active_user)]):
+@auth_router.get("/token")
+async def auth_token_lookup(current_user: Annotated[UserModel, Depends(get_current_active_user)]):
     return {
         "create_date": current_user.create_date,
         "email": current_user.email,

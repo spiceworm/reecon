@@ -15,9 +15,31 @@ function saveSettings(e) {
 }
 
 
+async function testAccessToken(accessToken) {
+    return fetch('http://127.0.0.1:8888/auth/token', {
+        method: 'get',
+        headers: new Headers({
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/x-www-form-urlencoded'
+        })
+    }).then((response) => {
+        return response.ok;
+    })
+}
+
+
 function loadPopup() {
-    function _loadPopup(settings) {
-        if (settings.accessToken === null) {
+    async function _loadPopup(settings) {
+        let accessToken = settings.accessToken;
+
+        if (accessToken !== null) {
+            if (!(await testAccessToken(settings.accessToken))) {
+                accessToken = null;
+                browser.storage.sync.set({accessToken: accessToken});
+            }
+        }
+
+        if (accessToken === null) {
             // Hide settings form which is shown by default.
             let settingsForm = document.getElementById('settingsForm');
             settingsForm.style.display = 'none';
@@ -97,7 +119,7 @@ function loadPopup() {
         document.getElementById("minUserIQ").value = settings.minUserIQ;
     }
 
-    function onError(error) {
+    async function onError(error) {
         console.log(`Error: ${error}`);
     }
 
