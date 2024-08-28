@@ -4,9 +4,15 @@ from datetime import (
     timezone,
 )
 import logging
-from typing import List
+from typing import (
+    Annotated,
+    List,
+)
 
-from fastapi import Request
+from fastapi import (
+    Depends,
+    Request,
+)
 import pydantic
 import sqlalchemy as sa
 
@@ -15,7 +21,9 @@ from ...config import settings
 from ...models import (
     RedditorModel,
     ThreadModel,
+    UserModel,
 )
+from ...util.auth import get_current_active_user
 
 
 __all__ = (
@@ -52,7 +60,9 @@ class UserEndpointParams(pydantic.BaseModel):
 
 
 @reddit_router.put("/threads", summary="Lookup processed thread URLs")
-async def put_reddit_threads(args: ThreadEndpointParams, request: Request) -> dict:
+async def put_reddit_threads(
+    args: ThreadEndpointParams, request: Request, current_user: Annotated[UserModel, Depends(get_current_active_user)]
+) -> dict:
     async with request.app.db_session() as session:
         q = sa.select(ThreadModel).where(ThreadModel.url.like(sa.any_(args.thread_urls)))
         results = await session.execute(q)
@@ -60,7 +70,9 @@ async def put_reddit_threads(args: ThreadEndpointParams, request: Request) -> di
 
 
 @reddit_router.post("/threads", summary="Submit thread URLs for processing")
-async def post_reddit_threads(args: ThreadEndpointParams, request: Request) -> None:
+async def post_reddit_threads(
+    args: ThreadEndpointParams, request: Request, current_user: Annotated[UserModel, Depends(get_current_active_user)]
+) -> None:
     async with request.app.db_session() as session:
         q = (
             sa.select(ThreadModel)
@@ -81,7 +93,9 @@ async def post_reddit_threads(args: ThreadEndpointParams, request: Request) -> N
 
 
 @reddit_router.put("/users", summary="Lookup processed usernames")
-async def put_reddit_users(args: UserEndpointParams, request: Request) -> dict:
+async def put_reddit_users(
+    args: UserEndpointParams, request: Request, current_user: Annotated[UserModel, Depends(get_current_active_user)]
+) -> dict:
     retval = {}
 
     async with request.app.db_session() as session:
@@ -99,7 +113,9 @@ async def put_reddit_users(args: UserEndpointParams, request: Request) -> dict:
 
 
 @reddit_router.post("/users", summary="Submit usernames for processing")
-async def post_reddit_users(args: UserEndpointParams, request: Request) -> None:
+async def post_reddit_users(
+    args: UserEndpointParams, request: Request, current_user: Annotated[UserModel, Depends(get_current_active_user)]
+) -> None:
     """
     - Enqueues jobs to process each username if it is not in the database or was last checked < 1 day ago.
     - Processing entails retrieving a portion of the user's comment history and, using OpenAI, determines
