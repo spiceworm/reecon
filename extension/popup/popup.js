@@ -2,6 +2,7 @@ function saveSettings(e) {
     e.preventDefault();
 
     browser.storage.sync.set({
+        baseUrl: document.getElementById("baseUrl").value,
         enableThreadProcessing: document.getElementById("enableThreadProcessing").checked,
         enableUserProcessing: document.getElementById("enableUserProcessing").checked,
         hideBadJujuThreads: document.getElementById("hideBadJujuThreads").checked,
@@ -15,8 +16,8 @@ function saveSettings(e) {
 }
 
 
-async function testAccessToken(accessToken) {
-    return fetch('http://127.0.0.1:8888/auth/token', {
+async function testAccessToken(baseUrl, accessToken) {
+    return fetch(`${baseUrl}/auth/token`, {
         method: 'get',
         headers: new Headers({
             'Authorization': `Bearer ${accessToken}`,
@@ -33,7 +34,7 @@ function loadPopup() {
         let accessToken = settings.accessToken;
 
         if (accessToken !== null) {
-            if (!(await testAccessToken(settings.accessToken))) {
+            if (!(await testAccessToken(settings.baseUrl, settings.accessToken))) {
                 accessToken = null;
                 browser.storage.sync.set({accessToken: accessToken});
             }
@@ -81,7 +82,7 @@ function loadPopup() {
                 form.append('grant_type', 'password');
 
                 // Manually submit the login form so we can grab the token from the response.
-                fetch("http://127.0.0.1:8888/auth/token", {
+                fetch(`${settings.baseUrl}/auth/token`, {
                     method: "post",
                     body: form,
                 })
@@ -111,6 +112,7 @@ function loadPopup() {
         }
 
         // Populate settings fields in the popup window to previously defined settings.
+        document.getElementById("baseUrl").value = settings.baseUrl;
         document.getElementById("enableThreadProcessing").checked = settings.enableThreadProcessing;
         document.getElementById("enableUserProcessing").checked = settings.enableUserProcessing;
         document.getElementById("hideBadJujuThreads").checked = settings.hideBadJujuThreads;

@@ -1,6 +1,7 @@
 browser.runtime.onInstalled.addListener(() => {
     browser.storage.sync.set({
         accessToken: null,
+        baseUrl: 'http://127.0.0.1:8888',
         enableThreadProcessing: false,
         enableUserProcessing: false,
         hideBadJujuThreads: false,

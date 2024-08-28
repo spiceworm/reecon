@@ -12,9 +12,8 @@ function loadSettings() {
 }
 
 
-function apiRequest(endpoint, type, accessToken, body) {
-    return fetch(
-        `http://127.0.0.1:8888${endpoint}`, {
+function apiRequest(url, type, accessToken, body) {
+    return fetch(url, {
             method: type,
             headers: {
                 'Accept': 'application/json, text/plain, */*',
@@ -132,24 +131,24 @@ function run(settings) {
     }
 
     if (settings.enableThreadProcessing) {
-        apiRequest('/api/v1/reddit/threads', 'POST', settings.accessToken,{'thread_urls': threadURLs})
+        apiRequest(`${settings.baseUrl}/api/v1/reddit/threads`, 'POST', settings.accessToken,{'thread_urls': threadURLs})
     }
 
     // Send request to fetch processed threads and update the DOM with that info
     // Response contains a list of [{"<URL>": {"sentiment_polarity": "-0.01"}} ...] entries.
-    apiRequest('/api/v1/reddit/threads', 'PUT', settings.accessToken, {'thread_urls': threadURLs})
+    apiRequest(`${settings.baseUrl}/api/v1/reddit/threads`, 'PUT', settings.accessToken, {'thread_urls': threadURLs})
         .then(res => res.json())
         .then(res => updateDOM_threads(res, settings));
 
     const usernames = Object.keys(username_linkElements)
 
     if (settings.enableUserProcessing) {
-        apiRequest('/api/v1/reddit/users', 'POST', settings.accessToken, {'usernames': usernames})
+        apiRequest(`${settings.baseUrl}/api/v1/reddit/users`, 'POST', settings.accessToken, {'usernames': usernames})
     }
 
     // Send request to fetch processed users and update the DOM with that info
     // Response contains a list of [{"<username>": {"age": "22", "iq": "120"}} ...] entries.
-    apiRequest('/api/v1/reddit/users', 'PUT', settings.accessToken, {'usernames': usernames})
+    apiRequest(`${settings.baseUrl}/api/v1/reddit/users`, 'PUT', settings.accessToken, {'usernames': usernames})
         .then(res => res.json())
         .then(res => updateDOM_usernames(res, username_linkElements, settings));
 }
