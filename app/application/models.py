@@ -1,14 +1,7 @@
-import asyncio
-import contextlib
 from datetime import datetime
 
 import sqlalchemy as sa
-from sqlalchemy.ext.asyncio import (
-    AsyncAttrs,
-    async_scoped_session,
-    async_sessionmaker,
-    create_async_engine,
-)
+from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
@@ -20,6 +13,14 @@ from sqlalchemy_utils import (
 )
 
 from .config import settings
+
+
+__all__ = (
+    "Base",
+    "RedditorModel",
+    "ThreadModel",
+    "UserModel",
+)
 
 
 class Base(AsyncAttrs, DeclarativeBase):
@@ -114,13 +115,3 @@ class UserModel(Base):
         nullable=False,
         unique=True,
     )
-
-
-@contextlib.asynccontextmanager
-async def db_session():
-    engine = create_async_engine(settings.db_connection_string, echo=True)
-    yield async_scoped_session(
-        async_sessionmaker(engine, expire_on_commit=False),
-        scopefunc=asyncio.current_task,
-    )
-    await engine.dispose()

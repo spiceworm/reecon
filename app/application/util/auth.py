@@ -20,6 +20,13 @@ from ..config import settings
 from ..models import UserModel
 
 
+__all__ = (
+    "authenticate_user",
+    "create_access_token",
+    "get_current_active_user",
+)
+
+
 HASHING_ALGORITHM = "HS256"
 
 
@@ -46,7 +53,7 @@ def create_access_token(data: dict, expires_delta: timedelta):
     return encoded_jwt
 
 
-async def get_user(db_session, username: str) -> UserModel | None:
+async def _get_user(db_session, username: str) -> UserModel | None:
     async with db_session() as session:
         async with session.begin():
             q = sa.select(UserModel).filter_by(username=username)
@@ -54,7 +61,7 @@ async def get_user(db_session, username: str) -> UserModel | None:
             return results.scalars().one_or_none()
 
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], request: Request):
+async def _get_current_user(token: Annotated[str, Depends(oauth2_scheme)], request: Request):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -68,13 +75,13 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], reques
     except InvalidTokenError:
         raise credentials_exception
     else:
-        user = await get_user(request.app.db_session, username)
+        user = await _get_user(request.app.db_session, username)
         if user is None:
             raise credentials_exception
         return user
 
 
-async def get_current_active_user(current_user: Annotated[UserModel, Depends(get_current_user)]):
+async def get_current_active_user(current_user: Annotated[UserModel, Depends(_get_current_user)]):
     if not current_user.enabled:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
