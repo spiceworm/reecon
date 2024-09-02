@@ -29,86 +29,172 @@ async function testAccessToken(baseUrl, accessToken) {
 }
 
 
+function changeElementVisibility(element_id, visible) {
+    let element = document.getElementById(element_id);
+    if (visible) {
+        element.style.display = 'block';
+    } else {
+        element.style.display = 'none';
+    }
+}
+
+
+function createLoginForm(settings) {
+    let loginForm = document.createElement('form');
+    loginForm.setAttribute('id', 'loginForm');
+
+    let usernameInput = document.createElement('input');
+    usernameInput.setAttribute("placeholder", "Username");
+    usernameInput.setAttribute('required', "");
+
+    let passwordInput = document.createElement('input');
+    passwordInput.setAttribute("placeholder", "Password");
+    passwordInput.setAttribute("type", "password");
+    passwordInput.setAttribute('required', "");
+
+    let submitButton = document.createElement("button");
+    submitButton.setAttribute("type", "submit");
+    submitButton.innerText = "Login";
+
+    loginForm.append(
+        usernameInput,
+        document.createElement("br"),
+        passwordInput,
+        document.createElement("br"),
+        submitButton,
+        document.createElement("hr"),
+    )
+
+    loginForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        let form = new FormData();
+        form.append('username', usernameInput.value);
+        form.append('password', passwordInput.value);
+        form.append('grant_type', 'password');
+
+        // Manually submit the login form so we can grab the token from the response.
+        fetch(`${settings.baseUrl}/auth/token`, {
+            method: "post",
+            body: form,
+        })
+            .then((response) => {
+                if (response.ok) {
+                    return response.json();
+                } else if (response.status === 401) {
+                    throw new Error("Invalid login credentials");
+                } else {
+                    throw new Error(`${response.status} status code`);
+                }
+            })
+            .then((responseJson) => {
+                // Save the token from the response.
+                browser.storage.sync.set({accessToken: responseJson.access_token});
+
+                changeElementVisibility('loginForm', false);
+                changeElementVisibility('signupForm', false);
+                changeElementVisibility('settingsForm', true);
+            })
+            .catch(error => {
+                let errorElement = document.createElement("p")
+                errorElement.innerText = error;
+                loginForm.prepend(errorElement);
+            });
+    })
+
+    return loginForm;
+}
+
+
+function createSignupForm(settings) {
+    let signupForm = document.createElement('form');
+    signupForm.setAttribute('id', 'signupForm');
+
+    let usernameInput = document.createElement('input');
+    usernameInput.setAttribute("placeholder", "Username");
+
+    let emailInput = document.createElement('input');
+    emailInput.setAttribute("placeholder", "Email");
+    emailInput.setAttribute("type", "email");
+
+    let passwordInput = document.createElement('input');
+    passwordInput.setAttribute("placeholder", "Password");
+    passwordInput.setAttribute("type", "password");
+
+    let signupButton = document.createElement("button");
+    signupButton.setAttribute("type", "submit");
+    signupButton.innerText = "Create Account";
+
+    signupForm.append(
+        usernameInput,
+        document.createElement("br"),
+        emailInput,
+        document.createElement("br"),
+        passwordInput,
+        document.createElement("br"),
+        signupButton,
+    )
+
+    signupForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        // Manually submit the login form so we can grab the token from the response.
+        fetch(`${settings.baseUrl}/auth/signup`, {
+            method: "post",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username: usernameInput.value,
+                email: emailInput.value,
+                password: passwordInput.value,
+            }),
+        })
+            .then((response) => {
+                if (response.ok) {
+                    return response.json();
+                } else if (response.status === 401) {
+                    throw new Error("Invalid login credentials");
+                } else {
+                    throw new Error(`${response.status} status code`);
+                }
+            })
+            .then((responseJson) => {
+                // Save the token from the response.
+                browser.storage.sync.set({accessToken: responseJson.access_token});
+
+                changeElementVisibility('loginForm', false);
+                changeElementVisibility('signupForm', false);
+                changeElementVisibility('settingsForm', true);
+            })
+            .catch(error => {
+                let errorElement = document.createElement("p")
+                errorElement.innerText = error;
+                signupForm.prepend(errorElement);
+            });
+    })
+
+    return signupForm;
+}
+
+
 function loadPopup() {
     async function _loadPopup(settings) {
         let accessToken = settings.accessToken;
 
         if (accessToken !== null) {
-            if (!(await testAccessToken(settings.baseUrl, settings.accessToken))) {
+            if (!(await testAccessToken(settings.baseUrl, accessToken))) {
                 accessToken = null;
                 browser.storage.sync.set({accessToken: accessToken});
             }
         }
 
         if (accessToken === null) {
-            // Hide settings form which is shown by default.
-            let settingsForm = document.getElementById('settingsForm');
-            settingsForm.style.display = 'none';
-
-            // Create login form.
-            let loginForm = document.createElement('form');
-
-            let usernameInput = document.createElement('input');
-            usernameInput.setAttribute("placeholder", "Username");
-
-            let passwordInput = document.createElement('input');
-            passwordInput.setAttribute("placeholder", "Password");
-
-            let submitButton = document.createElement("button");
-            submitButton.setAttribute("type", "submit");
-            submitButton.innerText = "Submit";
-
-            loginForm.append(
-                usernameInput,
-                document.createElement("br"),
-                passwordInput,
-                document.createElement("br"),
-                submitButton,
-            )
-
-            // Inject login form into the popup.
-            document.body.appendChild(loginForm);
-
-            // Make it so you can start typing username as soon as popup appears without having
-            // to click inside the input field.
-            usernameInput.focus();
-
-            loginForm.addEventListener("submit", (e) => {
-                e.preventDefault();
-
-                let form = new FormData();
-                form.append('username', usernameInput.value);
-                form.append('password', passwordInput.value);
-                form.append('grant_type', 'password');
-
-                // Manually submit the login form so we can grab the token from the response.
-                fetch(`${settings.baseUrl}/auth/token`, {
-                    method: "post",
-                    body: form,
-                })
-                    .then((response) => {
-                        if (response.ok) {
-                            return response.json();
-                        } else if (response.status === 401) {
-                            throw new Error("Invalid login credentials");
-                        } else {
-                            throw new Error(`${response.status} status code`);
-                        }
-                    })
-                    .then((responseJson) => {
-                        // Save the token from the response.
-                        browser.storage.sync.set({accessToken: responseJson.access_token});
-
-                        // Hide the login form since it is no longer needed.
-                        loginForm.style.display = 'none';
-
-                        // Make the settings form visible again.
-                        settingsForm.style.display = 'block';
-                    })
-                    .catch(error => {
-                        loginForm.innerText = error;
-                    });
-            })
+            changeElementVisibility('settingsForm', false);
+            const loginForm = createLoginForm(settings);
+            const signupForm = createSignupForm(settings);
+            document.body.append(loginForm, signupForm);
         }
 
         // Populate settings fields in the popup window to previously defined settings.

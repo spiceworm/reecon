@@ -7,6 +7,7 @@ TODO:
 - Add sign-up page
 - Cache data locally (with expiration time) and only fetch data for things not in local cache
 - Track auth token expiration date locally so we know when a user must reauthenticate.
+- subreddit specific settings
 
 Firefox extension that:
 - Scans all usernames on the current page of old.reddit.com (does not work on new layout)

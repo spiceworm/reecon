@@ -9,18 +9,38 @@ from fastapi import (
 )
 from fastapi.security import OAuth2PasswordRequestForm
 import pydantic
+import sqlalchemy as sa
 
 from . import auth_router
 from ..dependencies import AuthUser
+from ..models import UserModel
 from ..util.auth import (
     authenticate_user,
     create_access_token,
 )
 
 
+class SignupArgs(pydantic.BaseModel):
+    username: str
+    email: str
+    password: str
+
+
 class Token(pydantic.BaseModel):
     access_token: str
     token_type: str
+
+
+@auth_router.post("/signup")
+async def create_user(args: SignupArgs, request: Request) -> Token:
+    # TODO: send verification email with link that activates user instead of returning token immediately
+    values = [{"username": args.username, "email": args.email, "password": args.password}]
+    q = sa.insert(UserModel)
+    async with request.app.db_session() as session:
+        await session.execute(q, values)
+        await session.commit()
+    access_token = create_access_token(data={"sub": args.username}, expires_delta=timedelta(days=30))
+    return Token(access_token=access_token, token_type="bearer")
 
 
 @auth_router.post("/token")
