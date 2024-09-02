@@ -24,8 +24,12 @@ class Token(pydantic.BaseModel):
 
 
 @auth_router.post("/token")
-async def auth_token_create(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], request: Request) -> Token:
-    user = await authenticate_user(request.app.db_session, form_data.username, form_data.password)
+async def create_token(form: Annotated[OAuth2PasswordRequestForm, Depends()], request: Request) -> Token:
+    """
+    Validate username and password form data and retrieve the corresponding user. Create and return a
+    JWT access token that can be used to authenticate as that user.
+    """
+    user = await authenticate_user(request.app.db_session, form.username, form.password)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -39,7 +43,11 @@ async def auth_token_create(form_data: Annotated[OAuth2PasswordRequestForm, Depe
 
 
 @auth_router.get("/token")
-async def auth_token_lookup(user: AuthUser):
+async def authenticate_token(user: AuthUser):
+    """
+    Retrieve the user corresponding to the provided token. An HTTPException is raised if the token is expired,
+    it is an invalid token, or the user corresponding to the token is disabled.
+    """
     return {
         "create_date": user.create_date,
         "email": user.email,
