@@ -26,7 +26,8 @@ class _Settings:
         password = decouple.config("POSTGRES_PASSWORD")
         port = decouple.config("POSTGRES_PORT")
         user = decouple.config("POSTGRES_USER")
-        return f"postgresql+asyncpg://{user}:{password}@{host}:{port}/{db}"
+        ssl_mode = decouple.config("POSTGRES_SSL")
+        return f"postgresql+asyncpg://{user}:{password}@{host}:{port}/{db}?sslmode={ssl_mode}"
 
     @property
     def debug(self) -> bool:
