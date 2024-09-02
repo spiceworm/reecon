@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   app:
-    image: "spiceworm/${APP_NAME}/app:0.1.0"
+    image: "${REGISTRY_URL}/${CONTAINER_REPO}/${APP_NAME}/app:0.1.0"
     build:
       context: "./app"
     environment:

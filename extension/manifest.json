@@ -1,6 +1,6 @@
 {
   "manifest_version": 2,
-  "name": "recon",
+  "name": "reecon",
   "version": "1.0",
   "description": "Predict and label the age and intelligence of reddit users.",
   "icons": {
@@ -24,12 +24,12 @@
   ],
   "browser_action": {
     "default_icon": "icons/crystal-ball-64.png",
-    "default_title": "recon",
+    "default_title": "reecon",
     "default_popup": "popup/popup.html"
   },
   "browser_specific_settings": {
     "gecko": {
-      "id": "me@spiceworm.com",
+      "id": "me@reecon.xyz",
       "strict_min_version": "1.0"
     }
   }

@@ -1,0 +1,3 @@
+black
+GitPython
+python-dotenv
