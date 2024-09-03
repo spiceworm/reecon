@@ -20,14 +20,17 @@ class _Settings:
         }
 
     @property
+    def db_connection_args(self) -> dict:
+        return {"ssl": decouple.config("POSTGRES_SSL")}
+
+    @property
     def db_connection_string(self) -> str:
         db = decouple.config("POSTGRES_DB")
         host = decouple.config("POSTGRES_HOST")
         password = decouple.config("POSTGRES_PASSWORD")
         port = decouple.config("POSTGRES_PORT")
         user = decouple.config("POSTGRES_USER")
-        ssl_mode = decouple.config("POSTGRES_SSL")
-        return f"postgresql+asyncpg://{user}:{password}@{host}:{port}/{db}?sslmode={ssl_mode}"
+        return f"postgresql+asyncpg://{user}:{password}@{host}:{port}/{db}"
 
     @property
     def debug(self) -> bool:
@@ -35,7 +38,7 @@ class _Settings:
 
     @property
     def log_dir(self) -> Path:
-        return Path(decouple.config("LOG_DIR", default="/var/log/app"))
+        return Path(decouple.config("LOG_DIR", default="/var/log/supervisor/app"))
 
     @property
     def log_level(self) -> int:
@@ -65,7 +68,14 @@ class _Settings:
 
     @property
     def redis_connection_settings(self) -> RedisSettings:
-        return RedisSettings(host=decouple.config("REDIS_HOST"))
+        return RedisSettings(
+            host=decouple.config("REDIS_HOST"),
+            password=decouple.config("REDIS_PASSWORD", default=None),
+            port=decouple.config("REDIS_PORT", cast=int, default=6379),
+            ssl=decouple.config("REDIS_SSL", cast=bool, default=False),
+            username=decouple.config("REDIS_USERNAME", default=None),
+            ssl_cert_reqs="none",
+        )
 
     @property
     def secret_key(self) -> str:

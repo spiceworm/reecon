@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import asyncio
 
+import arq
 import click
 import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import (
@@ -39,6 +40,18 @@ def add_user(username, email, password):
             await db_engine.dispose()
 
     asyncio.run(_add_user())
+
+
+@cli.command()
+def test_redis_connection():
+    async def run():
+        redis = await arq.create_pool(settings.redis_connection_settings)
+        if await redis.ping():
+            click.echo("Connected")
+        else:
+            click.echo("Not connected")
+
+    asyncio.run(run())
 
 
 if __name__ == "__main__":

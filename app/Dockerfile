@@ -1,14 +1,20 @@
-FROM python:3.12.4-bookworm
+FROM python:3.12.5-bookworm
 
 EXPOSE 80
 
 HEALTHCHECK CMD curl --fail http://localhost:80/api/v1/status || exit 1
 
+WORKDIR /app
+
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         gettext-base \
         nginx \
+        postgresql-client-15 \
+        postgresql-client-common \
+        redis \
         supervisor \
+        vim \
     && apt-get clean \
     && rm -Rf /var/lib/apt/lists/*
 
@@ -31,6 +37,6 @@ COPY . /app
 # IP address.
 RUN rm /etc/nginx/sites-enabled/default \
     && ln -s /app/nginx.conf /etc/nginx/conf.d/api.conf \
-    && ln -s /app/supervisor.conf /etc/supervisor/conf.d/
+    && ln -s /app/supervisord.conf /etc/supervisor/conf.d/
 
-ENTRYPOINT ["/app/entrypoint.sh"]
+ENTRYPOINT [ "/app/entrypoint.sh" ]

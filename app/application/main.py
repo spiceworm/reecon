@@ -32,7 +32,11 @@ log.setLevel(settings.log_level)
 async def lifespan(app_: fastapi.FastAPI):
     log.debug("Starting API")
 
-    engine = create_async_engine(settings.db_connection_string, echo=settings.debug)
+    engine = create_async_engine(
+        settings.db_connection_string,
+        connect_args=settings.db_connection_args,
+        echo=settings.debug,
+    )
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
