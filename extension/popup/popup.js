@@ -1,8 +1,7 @@
 function saveSettings(e) {
     e.preventDefault();
 
-    browser.storage.sync.set({
-        baseUrl: document.getElementById("baseUrl").value,
+    browser.storage.local.set({
         enableThreadProcessing: document.getElementById("enableThreadProcessing").checked,
         enableUserProcessing: document.getElementById("enableUserProcessing").checked,
         hideBadJujuThreads: document.getElementById("hideBadJujuThreads").checked,
@@ -89,7 +88,7 @@ function createLoginForm(settings) {
             })
             .then((responseJson) => {
                 // Save the token from the response.
-                browser.storage.sync.set({accessToken: responseJson.access_token});
+                browser.storage.local.set({accessToken: responseJson.access_token});
 
                 changeElementVisibility('loginForm', false);
                 changeElementVisibility('signupForm', false);
@@ -162,7 +161,7 @@ function createSignupForm(settings) {
             })
             .then((responseJson) => {
                 // Save the token from the response.
-                browser.storage.sync.set({accessToken: responseJson.access_token});
+                browser.storage.local.set({accessToken: responseJson.access_token});
 
                 changeElementVisibility('loginForm', false);
                 changeElementVisibility('signupForm', false);
@@ -186,7 +185,7 @@ function loadPopup() {
         if (accessToken !== null) {
             if (!(await testAccessToken(settings.baseUrl, accessToken))) {
                 accessToken = null;
-                browser.storage.sync.set({accessToken: accessToken});
+                browser.storage.local.set({accessToken: accessToken});
             }
         }
 
@@ -198,7 +197,6 @@ function loadPopup() {
         }
 
         // Populate settings fields in the popup window to previously defined settings.
-        document.getElementById("baseUrl").value = settings.baseUrl;
         document.getElementById("enableThreadProcessing").checked = settings.enableThreadProcessing;
         document.getElementById("enableUserProcessing").checked = settings.enableUserProcessing;
         document.getElementById("hideBadJujuThreads").checked = settings.hideBadJujuThreads;
@@ -211,7 +209,7 @@ function loadPopup() {
         console.log(`Error: ${error}`);
     }
 
-    let getting = browser.storage.sync.get();
+    let getting = browser.storage.local.get();
     getting.then(_loadPopup, onError);
 }
 

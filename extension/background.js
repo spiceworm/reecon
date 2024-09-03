@@ -1,7 +1,7 @@
 browser.runtime.onInstalled.addListener(() => {
-    browser.storage.sync.set({
+    browser.storage.local.set({
         accessToken: null,
-        baseUrl: 'http://127.0.0.1:8888',
+        baseUrl: 'https://reecon.xyz',
         enableThreadProcessing: false,
         enableUserProcessing: false,
         hideBadJujuThreads: false,

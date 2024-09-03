@@ -7,7 +7,7 @@ function loadSettings() {
         console.log(`Error: ${error}`);
     }
 
-    let getSettings = browser.storage.sync.get();
+    let getSettings = browser.storage.local.get();
     return getSettings.then(_loadSettings, onError);
 }
 

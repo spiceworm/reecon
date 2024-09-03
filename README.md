@@ -20,6 +20,7 @@ Installation / Setup
 - In firefox, go to about:debugging#/runtime/this-firefox
 - Click "Load Temporary Add-..." button
 - Select app/extension/manifest.json
+- Change extension/background.js `baseUrl` default to 'http://127.0.0.1:8888'
 - Open terminal and run
 ```bash
 cd app

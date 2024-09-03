@@ -14,7 +14,8 @@
   },
   "permissions": [
     "storage",
-    "*://127.0.0.1/*"
+    "*://127.0.0.1/*",
+    "*://reecon.xyz/*"
   ],
   "content_scripts": [
     {
