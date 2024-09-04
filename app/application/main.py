@@ -54,8 +54,14 @@ def create_app():
     _app = fastapi.FastAPI(lifespan=lifespan)
     _app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_credentials=True,
+        allow_headers=["*"],
         allow_methods=["*"],
+        allow_origins=[
+            "https://reddit.com",
+            "https://old.reddit.com",
+            "https://www.reddit.com",
+        ],
     )
     _app.include_router(api_v1_router, prefix="/api/v1")
     _app.include_router(endpoint_router)
