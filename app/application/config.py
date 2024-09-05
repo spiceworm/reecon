@@ -57,6 +57,10 @@ class _Settings:
         }
 
     @property
+    def production(self) -> bool:
+        return decouple.config("PRODUCTION", cast=bool, default=False)
+
+    @property
     def reddit_api_settings(self) -> dict:
         return {
             "client_id": decouple.config("REDDIT_API_CLIENT_ID"),

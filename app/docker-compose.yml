@@ -1,9 +1,11 @@
+name: "reecon"
+
 version: "3.8"
 services:
   app:
     image: "${REGISTRY_URL}/${CONTAINER_REPO}/${APP_NAME}/app:0.1.0"
     build:
-      context: "./app"
+      context: "."
     environment:
       LOG_LEVEL: "${LOG_LEVEL}"
       OPENAI_API_KEY: "${OPENAI_API_KEY}"
@@ -25,7 +27,7 @@ services:
     ports:
       - "8888:80"
     volumes:
-      - "./app:/app"
+      - ".:/app"
 
   db:
     image: "postgres:16.3-bookworm"

@@ -14,9 +14,6 @@
   "host_permissions": [
     "*://reecon.xyz/*"
   ],
-  "optional_host_permissions": [
-    "*://127.0.0.1/*"
-  ],
   "permissions": [
     "storage",
     "tabs",

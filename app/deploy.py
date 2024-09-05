@@ -10,7 +10,7 @@ config = dotenv_values(".env")
 
 
 def get_latest_tag():
-    repo = git.Repo(".")
+    repo = git.Repo("..")
     return sorted(repo.tags, key=lambda tag: tag.name)[-1]
 
 

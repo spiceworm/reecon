@@ -3,13 +3,13 @@ browser.runtime.onInstalled.addListener((reasonObj) => {
         // Set default settings. Do not reset settings back to defaults for extension updates or browser updates.
         browser.storage.local.set({
             accessToken: null,
-            baseUrl: 'https://reecon.xyz',
+            baseUrl: 'https://reecon.xyz', // 'http://127.0.0.1:8888' for local server
             enableThreadProcessing: false,
             enableUserProcessing: false,
             hideBadJujuThreads: false,
             minThreadSentiment: 0.05,
             minUserAge: 0,
-            minUserIQ: 10
+            minUserIQ: 0
         });
     }
 });

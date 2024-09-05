@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-set -e
+# Do not use `set -e` here because this script will stop running if `pg_isready` fails.
+# However, we want `pg_isready` to keep trying until it succeeds.
 
 mkdir -p /var/log/supervisor/{app,nginx}
 
