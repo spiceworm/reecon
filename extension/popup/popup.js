@@ -1,6 +1,4 @@
-function saveSettings(e) {
-    e.preventDefault();
-
+function saveSettings() {
     browser.storage.local.set({
         enableThreadProcessing: document.getElementById("enableThreadProcessing").checked,
         enableUserProcessing: document.getElementById("enableUserProcessing").checked,
@@ -9,6 +7,7 @@ function saveSettings(e) {
         minUserAge: parseInt(document.getElementById("minUserAge").value),
         minUserIQ: parseInt(document.getElementById("minUserIQ").value)
     });
+}
 
 // TODO: Replace this with jwt-decode package
 //
@@ -38,38 +37,36 @@ function changeElementVisibility(element_id, visible) {
 }
 
 
-function createLoginForm(settings) {
-    let loginForm = document.createElement('form');
-    loginForm.setAttribute('id', 'loginForm');
+function makeAlert(message) {
+    // Delete existing alerts
+    for (let el of document.getElementsByClassName("alert")) {
+        el.remove();
+    }
 
-    let usernameInput = document.createElement('input');
-    usernameInput.setAttribute("placeholder", "Username");
-    usernameInput.setAttribute('required', "");
+    let alertDiv = document.createElement("div");
+    alertDiv.classList.add("alert", "alert-danger");
+    alertDiv.setAttribute("role", "alert");
+    alertDiv.innerText = message;
+    return alertDiv;
+}
 
-    let passwordInput = document.createElement('input');
-    passwordInput.setAttribute("placeholder", "Password");
-    passwordInput.setAttribute("type", "password");
-    passwordInput.setAttribute('required', "");
 
-    let submitButton = document.createElement("button");
-    submitButton.setAttribute("type", "submit");
-    submitButton.innerText = "Login";
+function showLoginForm(settings) {
+    changeElementVisibility("signupForm", false);
+    changeElementVisibility("settingsForm", false);
+    changeElementVisibility("loginForm", true);
 
-    loginForm.append(
-        usernameInput,
-        document.createElement("br"),
-        passwordInput,
-        document.createElement("br"),
-        submitButton,
-        document.createElement("hr"),
-    )
+    let loginForm = document.getElementById("loginForm");
+    const loginUsername = document.getElementById("loginUsername");
+    const loginPassword = document.getElementById("loginPassword");
+    const signupNavButton = document.getElementById("signupNavButton");
 
     loginForm.addEventListener("submit", (e) => {
         e.preventDefault();
 
         let form = new FormData();
-        form.append('username', usernameInput.value);
-        form.append('password', passwordInput.value);
+        form.append('username', loginUsername.value);
+        form.append('password', loginPassword.value);
         form.append('grant_type', 'password');
 
         // Manually submit the login form so we can grab the token from the response.
@@ -89,50 +86,29 @@ function createLoginForm(settings) {
             .then((responseJson) => {
                 // Save the token from the response.
                 browser.storage.local.set({accessToken: responseJson.access_token});
-
-                changeElementVisibility('loginForm', false);
-                changeElementVisibility('signupForm', false);
-                changeElementVisibility('settingsForm', true);
+                showSettingsForm(settings);
             })
             .catch(error => {
-                let errorElement = document.createElement("p")
-                errorElement.innerText = error;
-                loginForm.prepend(errorElement);
+                loginForm.prepend(makeAlert(error));
             });
     })
 
-    return loginForm;
+    signupNavButton.addEventListener("click", (e) => {
+        showSignupForm(settings);
+    })
 }
 
 
-function createSignupForm(settings) {
-    let signupForm = document.createElement('form');
-    signupForm.setAttribute('id', 'signupForm');
+function showSignupForm(settings) {
+    changeElementVisibility("loginForm", false);
+    changeElementVisibility("settingsForm", false);
+    changeElementVisibility("signupForm", true);
+    const loginNavButton = document.getElementById("loginNavButton");
 
-    let usernameInput = document.createElement('input');
-    usernameInput.setAttribute("placeholder", "Username");
-
-    let emailInput = document.createElement('input');
-    emailInput.setAttribute("placeholder", "Email");
-    emailInput.setAttribute("type", "email");
-
-    let passwordInput = document.createElement('input');
-    passwordInput.setAttribute("placeholder", "Password");
-    passwordInput.setAttribute("type", "password");
-
-    let signupButton = document.createElement("button");
-    signupButton.setAttribute("type", "submit");
-    signupButton.innerText = "Create Account";
-
-    signupForm.append(
-        usernameInput,
-        document.createElement("br"),
-        emailInput,
-        document.createElement("br"),
-        passwordInput,
-        document.createElement("br"),
-        signupButton,
-    )
+    let signupForm = document.getElementById("signupForm");
+    const signupUsername = document.getElementById("signupUsername");
+    const signupEmail = document.getElementById("signupEmail");
+    const signupPassword = document.getElementById("signupPassword");
 
     signupForm.addEventListener("submit", (e) => {
         e.preventDefault();
@@ -145,9 +121,9 @@ function createSignupForm(settings) {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                username: usernameInput.value,
-                email: emailInput.value,
-                password: passwordInput.value,
+                username: signupUsername.value,
+                email: signupEmail.value,
+                password: signupPassword.value,
             }),
         })
             .then((response) => {
@@ -162,19 +138,29 @@ function createSignupForm(settings) {
             .then((responseJson) => {
                 // Save the token from the response.
                 browser.storage.local.set({accessToken: responseJson.access_token});
-
-                changeElementVisibility('loginForm', false);
-                changeElementVisibility('signupForm', false);
-                changeElementVisibility('settingsForm', true);
+                showSettingsForm(settings);
             })
             .catch(error => {
-                let errorElement = document.createElement("p")
-                errorElement.innerText = error;
-                signupForm.prepend(errorElement);
+                signupForm.prepend(makeAlert(error));
             });
     })
 
-    return signupForm;
+    loginNavButton.addEventListener("click", (e) => {
+        showLoginForm(settings);
+    })
+}
+
+function showSettingsForm(settings) {
+    changeElementVisibility("loginForm", false);
+    changeElementVisibility("signupForm", false);
+    changeElementVisibility("settingsForm", true);
+
+    document.getElementById("enableThreadProcessing").checked = settings.enableThreadProcessing;
+    document.getElementById("enableUserProcessing").checked = settings.enableUserProcessing;
+    document.getElementById("hideBadJujuThreads").checked = settings.hideBadJujuThreads;
+    document.getElementById("minThreadSentiment").value = settings.minThreadSentiment;
+    document.getElementById("minUserAge").value = settings.minUserAge;
+    document.getElementById("minUserIQ").value = settings.minUserIQ;
 }
 
 
@@ -190,19 +176,10 @@ function loadPopup() {
         }
 
         if (accessToken === null) {
-            changeElementVisibility('settingsForm', false);
-            const loginForm = createLoginForm(settings);
-            const signupForm = createSignupForm(settings);
-            document.body.append(loginForm, signupForm);
+            showLoginForm(settings);
+        } else {
+            showSettingsForm(settings);
         }
-
-        // Populate settings fields in the popup window to previously defined settings.
-        document.getElementById("enableThreadProcessing").checked = settings.enableThreadProcessing;
-        document.getElementById("enableUserProcessing").checked = settings.enableUserProcessing;
-        document.getElementById("hideBadJujuThreads").checked = settings.hideBadJujuThreads;
-        document.getElementById("minThreadSentiment").value = settings.minThreadSentiment;
-        document.getElementById("minUserAge").value = settings.minUserAge;
-        document.getElementById("minUserIQ").value = settings.minUserIQ;
     }
 
     async function onError(error) {
@@ -213,6 +190,9 @@ function loadPopup() {
     getting.then(_loadPopup, onError);
 }
 
+// Automatically save settings when the popup is closed
+window.addEventListener("unload", function(){
+    saveSettings()
+});
 
 document.addEventListener("DOMContentLoaded", loadPopup);
-document.getElementById("settingsForm").addEventListener("submit", saveSettings);

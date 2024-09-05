@@ -4,7 +4,6 @@ TODO:
 - Option to only run extension on specified subreddits
 - Add option to hide comments for unprocessable redditors (they have only created threads or their comments are all less than 120 characters)
 - Add option to hide thread posts for users with no comments (bots posting articles?)
-- Add sign-up page
 - Cache data locally (with expiration time) and only fetch data for things not in local cache
 - subreddit specific settings
 
