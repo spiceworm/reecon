@@ -154,7 +154,7 @@ function run(settings) {
 }
 
 
-window.setInterval(function () {
+function main() {
     // Only run on the current active tab
     if (document.visibilityState === "visible") {
         loadSettings().then(settings => {
@@ -163,4 +163,18 @@ window.setInterval(function () {
             }
         })
     }
-}, 5_000)
+}
+
+
+// background.js will send an 'executeExtension' message which we are listening for here.
+browser.runtime.onMessage.addListener(data => {
+    if (data.trigger === 'executeExtension') {
+        main();
+    }
+});
+
+
+// Execute function when storage changes.
+browser.storage.onChanged.addListener(() => {
+    main()
+})
