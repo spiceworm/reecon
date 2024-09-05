@@ -1,3 +1,8 @@
+import '../scss/styles.scss';
+import * as bootstrap from 'bootstrap';
+import { jwtDecode } from "jwt-decode";
+
+
 function saveSettings() {
     browser.storage.local.set({
         enableThreadProcessing: document.getElementById("enableThreadProcessing").checked,
@@ -9,20 +14,9 @@ function saveSettings() {
     });
 }
 
-// TODO: Replace this with jwt-decode package
-//
-function parseJwt (token) {
-    let base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
-    return JSON.parse(jsonPayload);
-}
-
 
 function accessTokenIsValid(accessToken) {
-    const jwt = parseJwt(accessToken);
+    const jwt = jwtDecode(accessToken);
     return Date.now() < jwt.exp * 1000;
 }
 
