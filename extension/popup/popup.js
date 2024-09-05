@@ -10,21 +10,21 @@ function saveSettings(e) {
         minUserIQ: parseInt(document.getElementById("minUserIQ").value)
     });
 
-    // Close the settings popup window
-    window.close();
+// TODO: Replace this with jwt-decode package
+//
+function parseJwt (token) {
+    let base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    return JSON.parse(jsonPayload);
 }
 
 
-async function testAccessToken(baseUrl, accessToken) {
-    return fetch(`${baseUrl}/auth/token`, {
-        method: 'get',
-        headers: new Headers({
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/x-www-form-urlencoded'
-        })
-    }).then((response) => {
-        return response.ok;
-    })
+function accessTokenIsValid(accessToken) {
+    const jwt = parseJwt(accessToken);
+    return Date.now() < jwt.exp * 1000;
 }
 
 
@@ -183,7 +183,7 @@ function loadPopup() {
         let accessToken = settings.accessToken;
 
         if (accessToken !== null) {
-            if (!(await testAccessToken(settings.baseUrl, accessToken))) {
+            if (!(accessTokenIsValid(accessToken))) {
                 accessToken = null;
                 browser.storage.local.set({accessToken: accessToken});
             }

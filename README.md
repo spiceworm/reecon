@@ -6,7 +6,6 @@ TODO:
 - Add option to hide thread posts for users with no comments (bots posting articles?)
 - Add sign-up page
 - Cache data locally (with expiration time) and only fetch data for things not in local cache
-- Track auth token expiration date locally so we know when a user must reauthenticate.
 - subreddit specific settings
 
 Firefox extension that:
