@@ -3,7 +3,8 @@
 <html lang="en" data-bs-theme="dark">
     <head>
         <meta charset="utf-8">
-        <link rel="stylesheet" href="./main.css">
+        <link rel="stylesheet" href="./popup.css">
+        <script type="application/javascript" src="./popup.bundle.js"></script>
     </head>
 
     <body>
@@ -48,6 +49,12 @@
 
             <form id="settingsForm" style="display: none">
                 <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="" id="disableExtension">
+                  <label class="form-check-label" for="disableExtension">
+                    Disable reecon
+                  </label>
+                </div>
+                <div class="form-check">
                   <input class="form-check-input" type="checkbox" value="" id="enableThreadProcessing">
                   <label class="form-check-label" for="enableThreadProcessing">
                     Enable processing of threads
@@ -79,7 +86,5 @@
                 </div>
             </form>
         </div>
-
-        <script src="./bundle.js"></script>
     </body>
 </html>

@@ -1,14 +1,16 @@
 {
   "manifest_version": 3,
   "name": "reecon",
-  "version": "1.0",
-  "description": "Predict and label the age and intelligence of reddit users.",
+  "version": "0.2.0",
+  "description": "Analyze reddit content.",
   "icons": {
     "32": "icons/crystal-ball-32.png",
     "64": "icons/crystal-ball-64.png"
   },
   "background": {
-    "scripts": ["background.js"],
+    "scripts": [
+      "src/js/background.js"
+    ],
     "type": "module"
   },
   "host_permissions": [
@@ -22,7 +24,9 @@
   "content_scripts": [
     {
       "matches": ["*://*.reddit.com/*"],
-      "js": ["extension.js"]
+      "js": [
+        "dist/extension.bundle.js"
+      ]
     }
   ],
   "action": {
@@ -30,12 +34,12 @@
       "64": "icons/crystal-ball-64.png"
     },
     "default_title": "reecon",
-    "default_popup": "popup/dist/index.html"
+    "default_popup": "dist/index.html"
   },
   "browser_specific_settings": {
     "gecko": {
       "id": "me@reecon.xyz",
-      "strict_min_version": "1.0"
+      "strict_min_version": "0.2.0"
     }
   }
 }

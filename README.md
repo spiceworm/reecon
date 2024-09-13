@@ -1,11 +1,23 @@
 TODO:
-- Allow arq jobs to expire if they are enqueued and not processed
-- Expire keys in unprocessable users and thread redis group
-- Option to only run extension on specified subreddits
 - Add option to hide comments for unprocessable redditors (they have only created threads or their comments are all less than 120 characters)
 - Add option to hide thread posts for users with no comments (bots posting articles?)
-- Cache data locally (with expiration time) and only fetch data for things not in local cache
 - subreddit specific settings
+- Verify email when creating user account
+- Allow/require user to enter their own openai api key for user processing
+- Have some way to inspect list of hidden threads
+- Make enable processing of users and threads an admin switch server side
+- Add option to disable extension and hide all existing DOM modifications
+- Add toggle to auto collapse AutoModerator comments
+- Allow users to define more conditions (e.g. User Age Filter >,<,= number)
+- Instead of defining all sorts of environment variables, allow admins to toggle / define those options from the admin pages
+- Look into reddit api rate limits.
+- Extension does not display error messages.
+- Trigger that causes the extension to execute is still bad. (cache a last run time and check if before running again)
+- Extension does not run when viewing a specific thread
+- Only process threads that have a positive upvote count ( > 2 ?) because you wouldnt read downvoted comments anyways.
+- If you filter by e.g. age and then undo that filter by setting it back to 0, all previously collapsed comments remain collapsed.
+- All button to expand all comments.
+- Add extension hot keys to quickly change settings?
 
 Firefox extension that:
 - Scans all usernames on the current page of old.reddit.com (does not work on new layout)
@@ -15,9 +27,9 @@ Firefox extension that:
 - The stats currently include age and IQ
 
 # Development
-- In extension/background.js, change baseUrl to 'http://127.0.0.1:8888'
+- In extension/webpack.config.js, change BASE_URL to 'http://127.0.0.1:8888'
 ```bash
-cd reecon/extension/popup
+cd reecon/extension
 npm install
 npm run build
 ```
@@ -25,14 +37,14 @@ npm run build
 - Click "Load Temporary Add-..." button
 - Open terminal and run
 ```bash
-cd reecon/app
+cd reecon/backend
 docker compose up --build
 ```
 - The browser extension will now send requests to the local dev server.
 
 ### View Logs
 ```bash
-docker exec -it reecon-app-1 tail -f /var/log/supervisor/app/api.log
+docker exec -it reecon-server-1 tail -f /var/log/supervisor/app/api.log
 ```
 
 ### Debugging
@@ -40,7 +52,7 @@ docker exec -it reecon-app-1 tail -f /var/log/supervisor/app/api.log
 # DigitalOcean currently has a bug - https://www.digitalocean.com/community/questions/app-platform-supervisor-error
 # For a local dev instance, uncomment unix_http_server lines at top of reecon/app/supervisord.conf
 # in order to use `supervisorctl`.
-docker exec -it reecon-app-1 bash -c 'supervisorctl stop app; uvicorn --app-dir=/app --host=127.0.0.1 --port=8000 application.main:app'
+docker exec -it reecon-server-1 ./debug.sh
 ```
 
 # Environment Variables
@@ -48,6 +60,7 @@ docker exec -it reecon-app-1 bash -c 'supervisorctl stop app; uvicorn --app-dir=
 ```
 APP_NAME=reecon
 CONTAINER_REPO=<container-repo-name-in-container-registry>
+DESCRIPTION=<description>
 OPENAI_API_KEY=<api-key>
 OPENAI_MODEL=<whichever-model-you-want>
 OPENAI_MODEL_MAX_TOKENS=<max-tokens-for-chosen-model>
@@ -64,6 +77,7 @@ REDDIT_API_USERNAME=<api-username>
 REDDIT_API_USER_AGENT=${APP_NAME} <version> by /u/${REDDIT_API_USERNAME} <github-repo-url>
 REGISTRY_URL=<container-registry-url>
 SECRET_KEY=<secret-key>
+VERSION=<semantic-version>
 ```
 
 ### Set these for dev instance
@@ -80,9 +94,9 @@ REDIS_HOST=redis
 
 ### Set these for prod instance
 ```
-PRODUCTION=1
+PRODUCTION=True
 REDIS_HOST=<host>
 REDIS_PASSWORD=<password>
 REDIS_PORT=<port>
-REDIS_SSL=0 / 1
+REDIS_SSL=True / False
 ```
