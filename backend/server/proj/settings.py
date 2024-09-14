@@ -35,21 +35,8 @@ LOG_LEVEL = config(
     cast=Choices(["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]),
 )
 
-ALLOWED_HOSTS = [".reddit.com"] if PRODUCTION else ["*"]
-CSRF_TRUSTED_ORIGINS = (
-    [
-        "https://reddit.com",
-        "https://*.reddit.com",
-    ]
-    if PRODUCTION
-    else ["http://127.0.0.1:8888"]
-)
-CORS_ALLOWED_ORIGINS = [
-    "https://reddit.com",
-    "https://old.reddit.com",
-    "https://www.reddit.com",
-    "http://localhost:8888",
-]
+ALLOWED_HOSTS = [".reecon.xyz"] if PRODUCTION else ["*"]
+CSRF_TRUSTED_ORIGINS = ["https://reecon.xyz"] if PRODUCTION else ["http://127.0.0.1:8888"]
 CORS_ALLOW_ALL_ORIGINS = True
 
 INSTALLED_APPS = [
@@ -175,10 +162,9 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": REFRESH_TOKEN_LIFETIME_TIMEDELTA,
 }
 
-
 SPECTACULAR_SETTINGS = {
     "TITLE": config("APP_NAME"),
-    "DESCRIPTION": "Your project description",
+    "DESCRIPTION": config("DESCRIPTION"),
     "VERSION": config("VERSION"),
     "SERVE_INCLUDE_SCHEMA": False,
     "SWAGGER_UI_DIST": "SIDECAR",
