@@ -1,4 +1,4 @@
-FROM python:3.12.5-bookworm
+FROM python:3.12.6-bookworm
 
 EXPOSE 80
 
@@ -33,14 +33,11 @@ RUN pip install -r /tmp/requirements.txt \
 
 COPY ./server /server
 
-# Remove the default nginx config so ours can use the `default_server` setting in the `listen`
-# directive and also set `server_name _;` so nginx will respond if we query by domain name or
-# IP address.
+# Remove the default nginx config so ours can use the `default_server` setting in the `listen` directive
+# and also set `server_name _;` so nginx will respond if we query by domain name or IP address.
 RUN rm /etc/nginx/sites-enabled/default \
     && ln -s /server/nginx.conf /etc/nginx/conf.d/server.conf \
     && ln -s /server/gunicorn.py /etc/ \
     && ln -s /server/supervisord.conf /etc/supervisor/conf.d/
-
-RUN ls -la /server
 
 ENTRYPOINT [ "/server/entrypoint.sh" ]
