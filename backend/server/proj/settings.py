@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "drf_spectacular_sidecar",
     "django_rq",
+    "constance",
     "app",
 ]
 
@@ -114,14 +115,12 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 REDIS_HOST = config("REDIS_HOST")
 REDIS_PASSWORD = config("REDIS_PASSWORD", default="")
 REDIS_PORT = config("REDIS_PORT", cast=int, default=6379)
 REDIS_SSL = config("REDIS_SSL", cast=bool, default=False)
 REDIS_USERNAME = config("REDIS_USERNAME", default="")
 REDIS_URL = f"redis{'s' if REDIS_SSL else ''}://{REDIS_USERNAME}:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/0"
-
 
 CACHES = {
     "default": {
@@ -135,13 +134,11 @@ CACHES = {
     }
 }
 
-
 RQ_QUEUES = {
     "default": {
         "USE_REDIS_CACHE": "default",
     },
 }
-
 
 DATABASES = {
     "default": {
@@ -165,7 +162,6 @@ REST_FRAMEWORK = {
     "EXCEPTION_HANDLER": "rest_framework.views.exception_handler",
 }
 
-
 ACCESS_TOKEN_LIFETIME_UNIT = config("ACCESS_TOKEN_LIFETIME_UNIT", default="minutes")
 ACCESS_TOKEN_LIFETIME_VALUE = config("ACCESS_TOKEN_LIFETIME_VALUE", cast=int, default=15)
 ACCESS_TOKEN_LIFETIME_TIMEDELTA = timedelta(**{ACCESS_TOKEN_LIFETIME_UNIT: ACCESS_TOKEN_LIFETIME_VALUE})
@@ -188,7 +184,6 @@ SPECTACULAR_SETTINGS = {
     "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
     "REDOC_DIST": "SIDECAR",
 }
-
 
 LOGGING = {
     "version": 1,
@@ -255,7 +250,6 @@ LOGGING = {
     },
 }
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
@@ -266,7 +260,6 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
@@ -279,14 +272,64 @@ STATIC_ROOT = "/static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Runtime environment variables
-
-CONTENT_FILTER_MIN_LENGTH = config("CONTENT_FILTER_MIN_LENGTH", cast=int, default=120)
+CONSTANCE_BACKEND = "constance.backends.redisd.RedisBackend"
+CONSTANCE_REDIS_CONNECTION = REDIS_URL
+CONSTANCE_CONFIG = {
+    "CONTENT_FILTER_MIN_LENGTH": (
+        config("CONTENT_FILTER_MIN_LENGTH", cast=int, default=120),
+        "Minimum length required for a comment/thread to be processed. This is the length of the text after sentences "
+        "containing URLs has been removed.",
+    ),
+    "OPENAI_MODEL": (
+        config("OPENAI_MODEL"),
+        "OpenAPI training model to use for prompts. https://platform.openai.com/docs/models/",
+    ),
+    "OPENAI_MODEL_MAX_TOKENS": (
+        config("OPENAI_MODEL_MAX_TOKENS", cast=int),
+        "The maximum number of tokens allowed to be submit to OPENAI_MODEL as defined by the OpenAI documentation. "
+        "https://platform.openai.com/docs/models/",
+    ),
+    "REDDITOR_FRESHNESS_TD": (
+        timedelta(days=30),
+        "Defines how long `Redditor` database entries are considered fresh. Entries older than this timedelta they "
+        "will be reprocessed if their username is submitted in an API request.",
+        timedelta,
+    ),
+    "REDDITOR_MIN_SUBMISSIONS": (
+        config("REDDITOR_MIN_SUBMISSIONS", cast=int, default=1),
+        "The minimum number of submissions (comments + threads) that must be available for a redditor to be processed. "
+        "Submissions that fail filtering requirements are considered unavailable for processing (e.g. submission "
+        "content length < CONTENT_FILTER_MIN_LENGTH).",
+    ),
+    "THREAD_FRESHNESS_TD": (
+        timedelta(minutes=15),
+        "Defines how long `Thread` database entries are considered fresh. Entries older than this timedelta they will "
+        "be reprocessed if their URL path is submitted in an API request.",
+        timedelta,
+    ),
+    "THREAD_MAX_COMMENTS_PROCESSED": (
+        config("THREAD_MAX_COMMENTS_PROCESSED", cast=int, default=sys.maxsize),
+        "The maximum number of comments in a thread that will be considered for processing.",
+    ),
+    "THREAD_MIN_COMMENTS_PROCESSED": (
+        config("THREAD_MIN_COMMENTS_PROCESSED", cast=int, default=1),
+        "The minimum number of comments that must be present in a thread, after filtering, for processing to occur.",
+    ),
+    "UNPROCESSABLE_REDDITOR_EXP_TD": (
+        timedelta(days=1),
+        "Defines how long `UnprocessableRedditor` entries will remain in the database before being deleted. After "
+        "deletion, previously unprocessable usernames will be reattempted if included in an API request.",
+        timedelta,
+    ),
+    "UNPROCESSABLE_THREAD_EXP_TD": (
+        timedelta(minutes=15),
+        "Defines how long `UnprocessableThread` entries will remain in the database before being deleted. After "
+        "deletion, previously unprocessable paths will be reattempted if included in an API request.",
+        timedelta,
+    ),
+}
 
 OPENAI_API_KEY = config("OPENAI_API_KEY")
-OPENAI_MODEL = config("OPENAI_MODEL")
-OPENAI_MODEL_MAX_TOKENS = config("OPENAI_MODEL_MAX_TOKENS", cast=int)
-
 REDDIT_API_SETTINGS = {
     "client_id": config("REDDIT_API_CLIENT_ID"),
     "client_secret": config("REDDIT_API_CLIENT_SECRET"),
@@ -295,32 +338,3 @@ REDDIT_API_SETTINGS = {
     "username": config("REDDIT_API_USERNAME"),
 }
 
-
-REDDITOR_FRESHNESS_TD = timedelta(
-    **{config("REDDITOR_FRESHNESS_UNIT", default="days"): config("REDDITOR_FRESHNESS_VALUE", cast=int, default=1)}
-)
-
-REDDITOR_MIN_SUBMISSIONS = config("REDDITOR_MIN_SUBMISSIONS", cast=int, default=1)
-
-THREAD_FRESHNESS_TD = timedelta(
-    **{config("THREAD_FRESHNESS_UNIT", default="minutes"): config("THREAD_FRESHNESS_VALUE", cast=int, default=15)}
-)
-
-THREAD_MAX_COMMENTS_PROCESSED = config("THREAD_MAX_COMMENTS_PROCESSED", cast=int, default=sys.maxsize)
-THREAD_MIN_COMMENTS_PROCESSED = config("THREAD_MIN_COMMENTS_PROCESSED", cast=int, default=1)
-
-UNPROCESSABLE_REDDITOR_EXP_TD = timedelta(
-    **{
-        config("UNPROCESSABLE_REDDITOR_EXPIRATION_UNIT", default="days"): config(
-            "UNPROCESSABLE_REDDITOR_EXPIRATION_VALUE", cast=int, default=1
-        )
-    }
-)
-
-UNPROCESSABLE_THREAD_EXP_TD = timedelta(
-    **{
-        config("UNPROCESSABLE_THREAD_EXPIRATION_UNIT", default="minutes"): config(
-            "UNPROCESSABLE_THREAD_EXPIRATION_VALUE", cast=int, default=15
-        )
-    }
-)

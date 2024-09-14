@@ -9,7 +9,6 @@ TODO:
 - Add option to disable extension and hide all existing DOM modifications
 - Add toggle to auto collapse AutoModerator comments
 - Allow users to define more conditions (e.g. User Age Filter >,<,= number)
-- Instead of defining all sorts of environment variables, allow admins to toggle / define those options from the admin pages
 - Look into reddit api rate limits.
 - Extension does not display error messages.
 - Trigger that causes the extension to execute is still bad. (cache a last run time and check if before running again)

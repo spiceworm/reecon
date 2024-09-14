@@ -2,6 +2,7 @@ import json
 import logging
 import statistics
 
+from constance import config
 from django.conf import settings
 from django.utils import timezone
 import nltk.data
@@ -31,8 +32,9 @@ REDDITOR_DETAILS_PROMPT = (
 )
 
 
-def _determine_redditor_details(redditor_content):
+def determine_redditor_details(redditor_content):
     client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
+    redditor_details = {"age": None, "iq": None}
 
     try:
         chat_completion = client.chat.completions.create(
@@ -46,21 +48,19 @@ def _determine_redditor_details(redditor_content):
                     "content": redditor_content,
                 },
             ],
-            model=settings.OPENAI_MODEL,
+            model=config.OPENAI_MODEL,
         )
         content = chat_completion.choices[0].message.content
     except openai.OpenAIError:
         log.exception(f"Error thrown processing chat: %s", redditor_content)
-
-    redditor_details = {"age": None, "iq": None}
-
-    try:
-        json_str = content.replace("`", "").split("json", 1)[-1]
-        json_dct = json.loads(json_str)
-        redditor_details["age"] = int(json_dct["age"])
-        redditor_details["iq"] = int(json_dct["iq"])
-    except Exception:
-        log.exception("Unhandled parsing error while parsing OpenAI response: %s", content)
+    else:
+        try:
+            json_str = content.replace("`", "").split("json", 1)[-1]
+            json_dct = json.loads(json_str)
+            redditor_details["age"] = int(json_dct["age"])
+            redditor_details["iq"] = int(json_dct["iq"])
+        except Exception:
+            log.exception("Unhandled parsing error while parsing OpenAI response: %s", content)
 
     return redditor_details
 
@@ -85,7 +85,7 @@ def _filter_content(content: str) -> str:
     retval = " ".join(sentences)
 
     # Do not process short comments.
-    if len(retval) < settings.CONTENT_FILTER_MIN_LENGTH:
+    if len(retval) < config.CONTENT_FILTER_MIN_LENGTH:
         retval = ""
 
     return retval
@@ -101,7 +101,7 @@ def process_redditor(username):
     for thread in redditor.submissions.new():
         if text := _filter_content(thread.selftext):
             comment_tokens = "|".join(submissions + [text])
-            if len(comment_tokens) < settings.OPENAI_MODEL_MAX_TOKENS:
+            if len(comment_tokens) < config.OPENAI_MODEL_MAX_TOKENS:
                 # We do not want to fetch more comments than the openai model can handle.
                 submissions.append(text)
             else:
@@ -111,7 +111,7 @@ def process_redditor(username):
     for comment in redditor.comments.new():
         if text := _filter_content(comment.body):
             comment_tokens = "|".join(submissions + [text])
-            if len(comment_tokens) < settings.OPENAI_MODEL_MAX_TOKENS:
+            if len(comment_tokens) < config.OPENAI_MODEL_MAX_TOKENS:
                 # We do not want to fetch more comments than the openai model can handle.
                 submissions.append(text)
             else:
@@ -119,9 +119,9 @@ def process_redditor(username):
 
     unprocessable_reason = ""
     if submissions:
-        if len(submissions) >= settings.REDDITOR_MIN_SUBMISSIONS:
+        if len(submissions) >= config.REDDITOR_MIN_SUBMISSIONS:
             content = "|".join(submissions)
-            details = _determine_redditor_details(content)
+            details = determine_redditor_details(content)
             if all(details.values()):
                 Redditor.objects.update_or_create(
                     username=username,
@@ -140,9 +140,7 @@ def process_redditor(username):
             else:
                 unprocessable_reason = f"Details missing from openai response: {details}"
         else:
-            unprocessable_reason = (
-                f"Less than {settings.REDDITOR_MIN_SUBMISSIONS} submissions  available for processing"
-            )
+            unprocessable_reason = f"Less than {config.REDDITOR_MIN_SUBMISSIONS} submissions  available for processing"
     else:
         unprocessable_reason = "No submissions available for processing"
 
@@ -171,10 +169,10 @@ def process_thread(url):
                 blob = textblob.TextBlob(body)
                 polarity_values.append(blob.sentiment.polarity)
 
-                if len(polarity_values) == settings.THREAD_MAX_COMMENTS_PROCESSED:
+                if len(polarity_values) == config.THREAD_MAX_COMMENTS_PROCESSED:
                     break
 
-    if polarity_values and len(polarity_values) >= settings.THREAD_MIN_COMMENTS_PROCESSED:
+    if polarity_values and len(polarity_values) >= config.THREAD_MIN_COMMENTS_PROCESSED:
         sentiment_polarity = statistics.mean(polarity_values)
         Thread.objects.update_or_create(
             url=url,
@@ -189,7 +187,7 @@ def process_thread(url):
             },
         )
     else:
-        reason = f"Less than {settings.THREAD_MIN_COMMENTS_PROCESSED} comments available for processing"
+        reason = f"Less than {config.THREAD_MIN_COMMENTS_PROCESSED} comments available for processing"
         UnprocessableThread.objects.update_or_create(
             url=url,
             defaults={
