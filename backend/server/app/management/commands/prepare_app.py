@@ -1,3 +1,9 @@
+"""
+Custom management command to collect static, generate api schema, and apply db migrations.
+This is in a custom management command so that it can be run from entrypoint.sh and debug.sh
+without having to list duplicate commands as everything is defined in one place.
+"""
+
 import time
 
 from django.core import management
