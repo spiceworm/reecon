@@ -295,6 +295,13 @@ CONSTANCE_CONFIG = {
         "will be reprocessed if their username is submitted in an API request.",
         timedelta,
     ),
+    "REDDITOR_LLM_STATS_PROMPT": (
+        "The following pipe delimited messages are unrelated submissions posted by a person. "
+        "Determine the age and IQ of that person based on their writing. Provide a confidence "
+        "value that represents how accurate you believe your response to be as a value between "
+        "0 and 100 where 0 represents no confidence and 100 represents absolute certainty.",
+        "Prompt sent to the OpenAI API to infer stats about redditors based on their submissions.",
+    ),
     "REDDITOR_MIN_SUBMISSIONS": (
         config("REDDITOR_MIN_SUBMISSIONS", cast=int, default=1),
         "The minimum number of submissions (comments + threads) that must be available for a redditor to be processed. "

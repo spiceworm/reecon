@@ -2,7 +2,6 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import status
-from rest_framework.exceptions import APIException
 from rest_framework.generics import CreateAPIView
 from rest_framework.response import Response
 

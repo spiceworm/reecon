@@ -33,7 +33,7 @@ __all__ = (
 )
 
 
-log = logging.getLogger("app")
+log = logging.getLogger("app.views.api.v1.reddit")
 
 
 def response_schema(**kwargs):
@@ -79,10 +79,19 @@ class RedditorsView(CreateAPIView):
         ignored_usernames = {redditor.username for redditor in IgnoredRedditor.objects.only("username")}
 
         queue = django_rq.get_queue("default")
-        for username in (
+        for redditor_username in (
             set(usernames) - known_usernames - fresh_usernames - unprocessable_usernames - ignored_usernames
         ):
-            queue.enqueue("app.worker.jobs.reddit.process_redditor", username, job_id=username, result_ttl=0)
+            # TODO, get name from jwt to pass as purchaser_username
+            print(request.user.get_username())
+            purchaser_username = ""
+            queue.enqueue(
+                "app.worker.jobs.reddit.process_redditor",
+                redditor_username,
+                purchaser_username,
+                job_id=redditor_username,
+                result_ttl=0,
+            )
 
         response_serializer = RedditorSerializer(instance=known_redditors, many=True)
         headers = self.get_success_headers(response_serializer.data)
