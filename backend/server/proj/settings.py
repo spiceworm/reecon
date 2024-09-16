@@ -163,9 +163,9 @@ SIMPLE_JWT = {
 }
 
 SPECTACULAR_SETTINGS = {
-    "TITLE": config("APP_NAME"),
-    "DESCRIPTION": config("DESCRIPTION"),
-    "VERSION": config("VERSION"),
+    "TITLE": decouple.config("APP_NAME"),
+    "DESCRIPTION": decouple.config("DESCRIPTION", default=decouple.config("APP_NAME")),
+    "VERSION": decouple.config("VERSION"),
     "SERVE_INCLUDE_SCHEMA": False,
     "SWAGGER_UI_DIST": "SIDECAR",
     "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
@@ -259,8 +259,25 @@ STATIC_ROOT = "/static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+
+def get_llm_choices():
+    # Importing a model cannot happen at the top of the file.
+    from app.models import LLM
+
+    return ((name, name) for name in LLM.objects.values_list("name", flat=True))
+
+
 CONSTANCE_BACKEND = "constance.backends.redisd.RedisBackend"
 CONSTANCE_REDIS_CONNECTION = REDIS_URL
+CONSTANCE_ADDITIONAL_FIELDS = {
+    "llm_model_select": [
+        "django.forms.fields.ChoiceField",
+        {
+            "widget": "django.forms.Select",
+            "choices": get_llm_choices,
+        },
+    ],
+}
 CONSTANCE_CONFIG = {
     "CONTENT_FILTER_MIN_LENGTH": (
         config("CONTENT_FILTER_MIN_LENGTH", cast=int, default=120),
@@ -268,13 +285,9 @@ CONSTANCE_CONFIG = {
         "containing URLs has been removed.",
     ),
     "OPENAI_MODEL": (
-        config("OPENAI_MODEL"),
+        "chatgpt-4o-latest",
         "OpenAPI training model to use for prompts. https://platform.openai.com/docs/models/",
-    ),
-    "OPENAI_MODEL_MAX_TOKENS": (
-        config("OPENAI_MODEL_MAX_TOKENS", cast=int),
-        "The maximum number of tokens allowed to be submit to OPENAI_MODEL as defined by the OpenAI documentation. "
-        "https://platform.openai.com/docs/models/",
+        "llm_model_select",
     ),
     "REDDITOR_FRESHNESS_TD": (
         timedelta(days=30),
