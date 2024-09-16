@@ -2,11 +2,11 @@
 
 # Helper script to connection to redis
 
-CMD="redis-cli -h ${REDIS_HOST} -p ${REDIS_PORT:-6379}"
-
 if [ "${PRODUCTION}" = "True" ]; then
-  export REDISCLI_AUTH="${REDIS_PASSWORD}"
-  CMD="${CMD} --user ${REDIS_USERNAME} --tls --insecure"
+  echo "Connecting with production options"
+  CMD="redis-cli -h ${REDIS_HOST} -p ${REDIS_PORT} --user ${REDIS_USERNAME} --pass ${REDIS_PASSWORD} --tls --insecure"
+else
+  CMD="redis-cli -h ${REDIS_HOST} -p ${REDIS_PORT:-6379} --user ${REDIS_USERNAME} --pass ${REDIS_PASSWORD}"
 fi
 
 

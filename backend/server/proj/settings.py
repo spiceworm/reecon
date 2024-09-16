@@ -14,25 +14,22 @@ from datetime import timedelta
 from pathlib import Path
 import sys
 
-from decouple import (
-    config,
-    Choices,
-)
+import decouple
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = config("SECRET_KEY")
+SECRET_KEY = decouple.config("SECRET_KEY")
 
-DEBUG = config("DEBUG", cast=bool, default=False)
-PRODUCTION = config("PRODUCTION", cast=bool, default=False)
+DEBUG = decouple.config("DEBUG", cast=bool, default=False)
+PRODUCTION = decouple.config("PRODUCTION", cast=bool, default=False)
 
 ROOT_URLCONF = "proj.urls"
 WSGI_APPLICATION = "proj.wsgi.application"
 
-LOG_LEVEL = config(
+LOG_LEVEL = decouple.config(
     "LOG_LEVEL",
     default="DEBUG" if DEBUG else "INFO",
-    cast=Choices(["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]),
+    cast=decouple.Choices(["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]),
 )
 
 ALLOWED_HOSTS = [".reecon.xyz"] if PRODUCTION else ["*"]
@@ -103,11 +100,11 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-REDIS_HOST = config("REDIS_HOST")
-REDIS_PASSWORD = config("REDIS_PASSWORD", default="")
-REDIS_PORT = config("REDIS_PORT", cast=int, default=6379)
-REDIS_SSL = config("REDIS_SSL", cast=bool, default=False)
-REDIS_USERNAME = config("REDIS_USERNAME", default="")
+REDIS_HOST = decouple.config("REDIS_HOST")
+REDIS_PASSWORD = decouple.config("REDIS_PASSWORD", default="")
+REDIS_PORT = decouple.config("REDIS_PORT", cast=int, default=6379)
+REDIS_SSL = decouple.config("REDIS_SSL", cast=bool, default=False)
+REDIS_USERNAME = decouple.config("REDIS_USERNAME", default="")
 REDIS_URL = f"redis{'s' if REDIS_SSL else ''}://{REDIS_USERNAME}:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/0"
 
 CACHES = {
@@ -133,13 +130,13 @@ DATABASES = {
         "ENGINE": "django.db.backends.postgresql",
         "ATOMIC_REQUESTS": True,
         "CONN_MAX_AGE": 30,
-        "HOST": config("POSTGRES_HOST"),
-        "NAME": config("POSTGRES_DB"),
-        "PASSWORD": config("POSTGRES_PASSWORD"),
-        "PORT": config("POSTGRES_PORT"),
-        "USER": config("POSTGRES_USER"),
+        "HOST": decouple.config("POSTGRES_HOST"),
+        "NAME": decouple.config("POSTGRES_DB"),
+        "PASSWORD": decouple.config("POSTGRES_PASSWORD"),
+        "PORT": decouple.config("POSTGRES_PORT"),
+        "USER": decouple.config("POSTGRES_USER"),
         "OPTIONS": {
-            "sslmode": config("POSTGRES_SSL"),
+            "sslmode": decouple.config("POSTGRES_SSL"),
         },
     }
 }
@@ -150,11 +147,11 @@ REST_FRAMEWORK = {
     "EXCEPTION_HANDLER": "rest_framework.views.exception_handler",
 }
 
-ACCESS_TOKEN_LIFETIME_UNIT = config("ACCESS_TOKEN_LIFETIME_UNIT", default="minutes")
-ACCESS_TOKEN_LIFETIME_VALUE = config("ACCESS_TOKEN_LIFETIME_VALUE", cast=int, default=15)
+ACCESS_TOKEN_LIFETIME_UNIT = decouple.config("ACCESS_TOKEN_LIFETIME_UNIT", default="minutes")
+ACCESS_TOKEN_LIFETIME_VALUE = decouple.config("ACCESS_TOKEN_LIFETIME_VALUE", cast=int, default=15)
 ACCESS_TOKEN_LIFETIME_TIMEDELTA = timedelta(**{ACCESS_TOKEN_LIFETIME_UNIT: ACCESS_TOKEN_LIFETIME_VALUE})
-REFRESH_TOKEN_LIFETIME_UNIT = config("REFRESH_TOKEN_LIFETIME_UNIT", default="days")
-REFRESH_TOKEN_LIFETIME_VALUE = config("REFRESH_TOKEN_LIFETIME_VALUE", cast=int, default=30)
+REFRESH_TOKEN_LIFETIME_UNIT = decouple.config("REFRESH_TOKEN_LIFETIME_UNIT", default="days")
+REFRESH_TOKEN_LIFETIME_VALUE = decouple.config("REFRESH_TOKEN_LIFETIME_VALUE", cast=int, default=30)
 REFRESH_TOKEN_LIFETIME_TIMEDELTA = timedelta(**{REFRESH_TOKEN_LIFETIME_UNIT: REFRESH_TOKEN_LIFETIME_VALUE})
 
 SIMPLE_JWT = {
@@ -280,7 +277,7 @@ CONSTANCE_ADDITIONAL_FIELDS = {
 }
 CONSTANCE_CONFIG = {
     "CONTENT_FILTER_MIN_LENGTH": (
-        config("CONTENT_FILTER_MIN_LENGTH", cast=int, default=120),
+        decouple.config("CONTENT_FILTER_MIN_LENGTH", cast=int, default=120),
         "Minimum length required for a comment/thread to be processed. This is the length of the text after sentences "
         "containing URLs has been removed.",
     ),
@@ -303,7 +300,7 @@ CONSTANCE_CONFIG = {
         "Prompt sent to the OpenAI API to infer stats about redditors based on their submissions.",
     ),
     "REDDITOR_MIN_SUBMISSIONS": (
-        config("REDDITOR_MIN_SUBMISSIONS", cast=int, default=1),
+        decouple.config("REDDITOR_MIN_SUBMISSIONS", cast=int, default=1),
         "The minimum number of submissions (comments + threads) that must be available for a redditor to be processed. "
         "Submissions that fail filtering requirements are considered unavailable for processing (e.g. submission "
         "content length < CONTENT_FILTER_MIN_LENGTH).",
@@ -315,11 +312,11 @@ CONSTANCE_CONFIG = {
         timedelta,
     ),
     "THREAD_MAX_COMMENTS_PROCESSED": (
-        config("THREAD_MAX_COMMENTS_PROCESSED", cast=int, default=sys.maxsize),
+        decouple.config("THREAD_MAX_COMMENTS_PROCESSED", cast=int, default=sys.maxsize),
         "The maximum number of comments in a thread that will be considered for processing.",
     ),
     "THREAD_MIN_COMMENTS_PROCESSED": (
-        config("THREAD_MIN_COMMENTS_PROCESSED", cast=int, default=1),
+        decouple.config("THREAD_MIN_COMMENTS_PROCESSED", cast=int, default=1),
         "The minimum number of comments that must be present in a thread, after filtering, for processing to occur.",
     ),
     "UNPROCESSABLE_REDDITOR_EXP_TD": (
@@ -336,12 +333,11 @@ CONSTANCE_CONFIG = {
     ),
 }
 
-OPENAI_API_KEY = config("OPENAI_API_KEY")
+OPENAI_API_KEY = decouple.config("OPENAI_API_KEY")
 REDDIT_API_SETTINGS = {
-    "client_id": config("REDDIT_API_CLIENT_ID"),
-    "client_secret": config("REDDIT_API_CLIENT_SECRET"),
-    "password": config("REDDIT_API_PASSWORD"),
-    "user_agent": config("REDDIT_API_USER_AGENT"),
-    "username": config("REDDIT_API_USERNAME"),
+    "client_id": decouple.config("REDDIT_API_CLIENT_ID"),
+    "client_secret": decouple.config("REDDIT_API_CLIENT_SECRET"),
+    "password": decouple.config("REDDIT_API_PASSWORD"),
+    "user_agent": decouple.config("REDDIT_API_USER_AGENT"),
+    "username": decouple.config("REDDIT_API_USERNAME"),
 }
-

@@ -82,9 +82,7 @@ class RedditorsView(CreateAPIView):
         for redditor_username in (
             set(usernames) - known_usernames - fresh_usernames - unprocessable_usernames - ignored_usernames
         ):
-            # TODO, get name from jwt to pass as purchaser_username
-            print(request.user.get_username())
-            purchaser_username = ""
+            purchaser_username = request.user.get_username()
             queue.enqueue(
                 "app.worker.jobs.reddit.process_redditor",
                 redditor_username,
