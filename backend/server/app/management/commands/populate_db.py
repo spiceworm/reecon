@@ -17,8 +17,8 @@ class Command(management.base.BaseCommand):
         if not User.objects.filter(username="admin").exists():
             User.objects.create_user(
                 username="admin",
-                email=decouple.config('ADMIN_EMAIL'),
-                password=decouple.config('ADMIN_PASSWORD'),
+                email=decouple.config("ADMIN_EMAIL"),
+                password=decouple.config("ADMIN_PASSWORD"),
                 is_superuser=True,
                 is_staff=True,
             )

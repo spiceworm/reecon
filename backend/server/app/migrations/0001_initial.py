@@ -15,86 +15,185 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Creator',
+            name="Creator",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(help_text='The name of the company/person/entity that creates AI models.', max_length=255)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "name",
+                    models.CharField(
+                        help_text="The name of the company/person/entity that creates AI models.", max_length=255
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='IgnoredRedditor',
+            name="IgnoredRedditor",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created', models.DateTimeField(auto_now=True, help_text='Date and time of creation of the ignored redditor')),
-                ('reason', models.TextField(help_text='The reason the redditor is being ignored from processing.')),
-                ('username', models.CharField(help_text='The username of the redditor.', max_length=32, unique=True)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "created",
+                    models.DateTimeField(auto_now=True, help_text="Date and time of creation of the ignored redditor"),
+                ),
+                ("reason", models.TextField(help_text="The reason the redditor is being ignored from processing.")),
+                ("username", models.CharField(help_text="The username of the redditor.", max_length=32, unique=True)),
             ],
         ),
         migrations.CreateModel(
-            name='Redditor',
+            name="Redditor",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created', models.DateTimeField(auto_now=True, help_text='Date and time of the creation of the redditor.')),
-                ('last_processed', models.DateTimeField(auto_now=True, help_text="Date and time of the last processing of the redditor's submissions.")),
-                ('username', models.CharField(help_text='The username of the redditor.', max_length=32, unique=True)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "created",
+                    models.DateTimeField(auto_now=True, help_text="Date and time of the creation of the redditor."),
+                ),
+                (
+                    "last_processed",
+                    models.DateTimeField(
+                        auto_now=True, help_text="Date and time of the last processing of the redditor's submissions."
+                    ),
+                ),
+                ("username", models.CharField(help_text="The username of the redditor.", max_length=32, unique=True)),
             ],
         ),
         migrations.CreateModel(
-            name='Thread',
+            name="Thread",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created', models.DateTimeField(auto_now=True, help_text='Date and time of the creation of the thread.')),
-                ('last_processed', models.DateTimeField(auto_now=True, help_text='Date and time of the last processing of the submissions in this redditor thread.')),
-                ('url', models.URLField(help_text='The URL of the reddit thread.', unique=True)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "created",
+                    models.DateTimeField(auto_now=True, help_text="Date and time of the creation of the thread."),
+                ),
+                (
+                    "last_processed",
+                    models.DateTimeField(
+                        auto_now=True,
+                        help_text="Date and time of the last processing of the submissions in this redditor thread.",
+                    ),
+                ),
+                ("url", models.URLField(help_text="The URL of the reddit thread.", unique=True)),
             ],
         ),
         migrations.CreateModel(
-            name='UnprocessableRedditor',
+            name="UnprocessableRedditor",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created', models.DateTimeField(auto_now=True, help_text='Date and time of the creation of the unprocessable redditor.')),
-                ('reason', models.TextField(help_text='The reason the redditor cannot be processed.')),
-                ('username', models.CharField(help_text='The username of the redditor who cannot be processed.', max_length=32, unique=True)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "created",
+                    models.DateTimeField(
+                        auto_now=True, help_text="Date and time of the creation of the unprocessable redditor."
+                    ),
+                ),
+                ("reason", models.TextField(help_text="The reason the redditor cannot be processed.")),
+                (
+                    "username",
+                    models.CharField(
+                        help_text="The username of the redditor who cannot be processed.", max_length=32, unique=True
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='UnprocessableThread',
+            name="UnprocessableThread",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created', models.DateTimeField(auto_now=True, help_text='Date and time of the creation of the unprocessable thread.')),
-                ('reason', models.TextField(help_text='The reason the reddit thread cannot be processed.')),
-                ('url', models.URLField(help_text='The URL of the reddit thread.', unique=True)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "created",
+                    models.DateTimeField(
+                        auto_now=True, help_text="Date and time of the creation of the unprocessable thread."
+                    ),
+                ),
+                ("reason", models.TextField(help_text="The reason the reddit thread cannot be processed.")),
+                ("url", models.URLField(help_text="The URL of the reddit thread.", unique=True)),
             ],
         ),
         migrations.CreateModel(
-            name='LLM',
+            name="LLM",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('context_window', models.IntegerField(help_text='The maximum number of input tokens that LLM can take.')),
-                ('name', models.CharField(help_text='The name of the LLM.', max_length=255)),
-                ('creator', models.ForeignKey(help_text='The creator of the current LLM.', on_delete=django.db.models.deletion.CASCADE, related_name='llms', to='app.creator')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "context_window",
+                    models.IntegerField(help_text="The maximum number of input tokens that LLM can take."),
+                ),
+                ("name", models.CharField(help_text="The name of the LLM.", max_length=255)),
+                (
+                    "creator",
+                    models.ForeignKey(
+                        help_text="The creator of the current LLM.",
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="llms",
+                        to="app.creator",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='RedditorStats',
+            name="RedditorStats",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('age', models.IntegerField(help_text='The predicted age of the redditor based on their submissions.')),
-                ('confidence', models.IntegerField(help_text='The confidence LLM has in the quality of the predicted values.')),
-                ('created', models.DateTimeField(auto_now=True, help_text='Date and time of the creation of the redditor stats.')),
-                ('iq', models.IntegerField(help_text='The predicted IQ of the redditor based on their submissions.')),
-                ('llm', models.ForeignKey(help_text='The LLM used to generate the stats in this entry.', on_delete=django.db.models.deletion.PROTECT, related_name='redditor_stats', to='app.llm')),
-                ('purchaser', models.ForeignKey(help_text='The user whose API credits were used for processing.', on_delete=django.db.models.deletion.PROTECT, related_name='redditor_stats_purchases', to=settings.AUTH_USER_MODEL)),
-                ('redditor', models.ForeignKey(help_text='The redditor whose submissions were used to generate the stats in this entry.', on_delete=django.db.models.deletion.PROTECT, related_name='stats', to='app.redditor')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("age", models.IntegerField(help_text="The predicted age of the redditor based on their submissions.")),
+                (
+                    "confidence",
+                    models.IntegerField(help_text="The confidence LLM has in the quality of the predicted values."),
+                ),
+                (
+                    "created",
+                    models.DateTimeField(
+                        auto_now=True, help_text="Date and time of the creation of the redditor stats."
+                    ),
+                ),
+                ("iq", models.IntegerField(help_text="The predicted IQ of the redditor based on their submissions.")),
+                (
+                    "llm",
+                    models.ForeignKey(
+                        help_text="The LLM used to generate the stats in this entry.",
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="redditor_stats",
+                        to="app.llm",
+                    ),
+                ),
+                (
+                    "purchaser",
+                    models.ForeignKey(
+                        help_text="The user whose API credits were used for processing.",
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="redditor_stats_purchases",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "redditor",
+                    models.ForeignKey(
+                        help_text="The redditor whose submissions were used to generate the stats in this entry.",
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="stats",
+                        to="app.redditor",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='ThreadStats',
+            name="ThreadStats",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created', models.DateTimeField(auto_now=True, help_text='Date and time of the creation of the thread stats.')),
-                ('sentiment_polarity', models.FloatField(help_text='The sentiment polarity value produced after processing the submissions in this thread using natural language processing.')),
-                ('thread', models.ForeignKey(help_text='The reddit thread whose submissions were used to generate the stats in this entry.', on_delete=django.db.models.deletion.PROTECT, related_name='stats', to='app.thread')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "created",
+                    models.DateTimeField(auto_now=True, help_text="Date and time of the creation of the thread stats."),
+                ),
+                (
+                    "sentiment_polarity",
+                    models.FloatField(
+                        help_text="The sentiment polarity value produced after processing the submissions in this thread using natural language processing."
+                    ),
+                ),
+                (
+                    "thread",
+                    models.ForeignKey(
+                        help_text="The reddit thread whose submissions were used to generate the stats in this entry.",
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="stats",
+                        to="app.thread",
+                    ),
+                ),
             ],
         ),
     ]

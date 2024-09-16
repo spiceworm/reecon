@@ -66,7 +66,7 @@ class RedditorService(RedditBase):
         for thread in self.praw_redditor.submissions.new():
             thread_submission = SubmissionService(thread.selftext)
             if filtered_text := thread_submission.filter(min_characters=min_characters_per_submission):
-                if len('|'.join(submissions | {filtered_text})) < max_characters:
+                if len("|".join(submissions | {filtered_text})) < max_characters:
                     submissions.add(filtered_text)
                 else:
                     break
@@ -75,7 +75,7 @@ class RedditorService(RedditBase):
         for comment in self.praw_redditor.comments.new():
             comment_submission = SubmissionService(comment.body)
             if filtered_text := comment_submission.filter(min_characters=min_characters_per_submission):
-                if len('|'.join(submissions | {filtered_text})) < max_characters:
+                if len("|".join(submissions | {filtered_text})) < max_characters:
                     submissions.add(filtered_text)
                 else:
                     break

@@ -1,6 +1,6 @@
 import logging
 
-from django.conf import settings
+from constance import config
 from django.utils import timezone
 import django_rq
 from drf_spectacular.utils import (
@@ -63,7 +63,7 @@ class RedditorsView(CreateAPIView):
 
         # Usernames of redditors in the database that were inserted recently and not considered stale yet.
         fresh_usernames = set(
-            known_redditors.exclude(last_processed__lte=timezone.now() - settings.REDDITOR_FRESHNESS_TD).values_list(
+            known_redditors.exclude(last_processed__lte=timezone.now() - config.REDDITOR_FRESHNESS_TD).values_list(
                 "username",
                 flat=True,
             )
@@ -72,7 +72,7 @@ class RedditorsView(CreateAPIView):
         # Delete unprocessable redditors that are expired and can attempt to be processed again.
         # TODO: Should deletion of expired objects be handled by a separate process that runs on a schedule?
         UnprocessableRedditor.objects.filter(
-            created__lte=timezone.now() - settings.UNPROCESSABLE_REDDITOR_EXP_TD
+            created__lte=timezone.now() - config.UNPROCESSABLE_REDDITOR_EXP_TD
         ).delete()
         unprocessable_usernames = {redditor.username for redditor in UnprocessableRedditor.objects.only("username")}
         # TODO: clients should have a list of ignored usernames so they never get submit for processing
@@ -114,7 +114,7 @@ class ThreadsView(CreateAPIView):
 
         # URLs of threads in the database that were inserted recently and not considered stale yet.
         fresh_urls = set(
-            known_threads.exclude(last_processed__lte=timezone.now() - settings.THREAD_FRESHNESS_TD).values_list(
+            known_threads.exclude(last_processed__lte=timezone.now() - config.THREAD_FRESHNESS_TD).values_list(
                 "url",
                 flat=True,
             )
@@ -122,7 +122,7 @@ class ThreadsView(CreateAPIView):
 
         # Delete unprocessable threads that are expired and can attempt to be processed again.
         # TODO: Should deletion of expired objects be handled by a separate process that runs on a schedule?
-        UnprocessableThread.objects.filter(created__lte=timezone.now() - settings.UNPROCESSABLE_THREAD_EXP_TD).delete()
+        UnprocessableThread.objects.filter(created__lte=timezone.now() - config.UNPROCESSABLE_THREAD_EXP_TD).delete()
         unprocessable_urls = {thread.url for thread in UnprocessableThread.objects.only("url")}
 
         queue = django_rq.get_queue("default")

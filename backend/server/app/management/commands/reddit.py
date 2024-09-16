@@ -29,15 +29,20 @@ class Command(management.base.BaseCommand):
 
             thread_sp = entity_sp.add_parser("thread", help="Process a reddit thread.")
             thread_sp.add_argument("url", help="Reddit thread URL.")
-            thread_sp.add_argument('--debug', action='store_true', help="Set log level to DEBUG.")
+            thread_sp.add_argument("--debug", action="store_true", help="Set log level to DEBUG.")
 
             thread_sp = entity_sp.add_parser("redditor", help="Process a redditor.")
             thread_sp.add_argument("username", help="Redditor username.")
-            thread_sp.add_argument("--llm", type=lambda name: LLM.objects.get(name=name), default=config.OPENAI_MODEL, help="OpenAI model to use for processing.")
-            thread_sp.add_argument('--debug', action='store_true', help="Set log level to DEBUG.")
+            thread_sp.add_argument(
+                "--llm",
+                type=lambda name: LLM.objects.get(name=name),
+                default=config.OPENAI_MODEL,
+                help="OpenAI model to use for processing.",
+            )
+            thread_sp.add_argument("--debug", action="store_true", help="Set log level to DEBUG.")
 
     def echo(self, s):
-        self.stdout.write(s, ending='\n\r')
+        self.stdout.write(s, ending="\n\r")
         self.stdout.flush()
 
     def echos(self, lst):
