@@ -1,6 +1,9 @@
 from django.contrib.auth.models import User
 from django.db.models import Q
-from drf_spectacular.utils import extend_schema, extend_schema_view
+from drf_spectacular.utils import (
+    extend_schema,
+    extend_schema_view,
+)
 from rest_framework import status
 from rest_framework.generics import CreateAPIView
 from rest_framework.response import Response
@@ -37,6 +40,8 @@ class SignupView(CreateAPIView):
         data = serializer.data
 
         if User.objects.filter(Q(username=data["username"]) | Q(email=data["email"])).exists():
+            # TODO create a table containing reserved usernames that people cannot use and check for those here
+            # e.g. admin, reecon-admin administrator, root, etc
             raise UserSignupConflictException()
 
         # TODO: Send verification email

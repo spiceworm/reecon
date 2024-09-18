@@ -25,7 +25,7 @@ function processThreads(settings) {
 
     if (newThreadUrlPaths.length > 0) {
         // Send request to fetch processed threads and update the DOM with that info.
-        // Response contains a list of [{"sentiment_polarity": "-0.01", "url": "https://old.reddit.com/r/..."} ...] entries.
+        // Response contains a list of [{"sentiment_polarity": "-0.01", "url": "https://reddit.com/r/..."} ...] entries.
         getAccessToken().then(accessToken => {
             if (accessToken !== null) {
                 apiAuthRequest('/api/v1/reddit/threads/', 'POST', accessToken, {'paths': newThreadUrlPaths})

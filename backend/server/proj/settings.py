@@ -15,6 +15,8 @@ from pathlib import Path
 import sys
 
 import decouple
+import openai
+import praw
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -259,19 +261,33 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 def get_llm_choices():
     # Importing a model cannot happen at the top of the file.
-    from app.models import LLM
+    from app.models import Producer
 
-    return ((name, name) for name in LLM.objects.values_list("name", flat=True))
+    return ((name, name) for name in Producer.objects.filter(category__name="LLM").values_list("name", flat=True))
+
+
+def get_nlp_choices():
+    # Importing a model cannot happen at the top of the file.
+    from app.models import Producer
+
+    return ((name, name) for name in Producer.objects.filter(category__name="NLP").values_list("name", flat=True))
 
 
 CONSTANCE_BACKEND = "constance.backends.redisd.RedisBackend"
 CONSTANCE_REDIS_CONNECTION = REDIS_URL
 CONSTANCE_ADDITIONAL_FIELDS = {
-    "llm_model_select": [
+    "llm_select": [
         "django.forms.fields.ChoiceField",
         {
             "widget": "django.forms.Select",
             "choices": get_llm_choices,
+        },
+    ],
+    "nlp_select": [
+        "django.forms.fields.ChoiceField",
+        {
+            "widget": "django.forms.Select",
+            "choices": get_nlp_choices,
         },
     ],
 }
@@ -281,10 +297,17 @@ CONSTANCE_CONFIG = {
         "Minimum length required for a comment/thread to be processed. This is the length of the text after sentences "
         "containing URLs has been removed.",
     ),
-    "OPENAI_MODEL": (
-        "chatgpt-4o-latest",
-        "OpenAPI training model to use for prompts. https://platform.openai.com/docs/models/",
-        "llm_model_select",
+    "LLM_NAME": (
+        "gpt-4o-2024-08-06",
+        "Large language model to use for prompts. OpenAI models currently only supported - "
+        "https://platform.openai.com/docs/models/",
+        "llm_select",
+    ),
+    "NLP_NAME": (
+        "textblob",
+        "Natural language processing package to use. textblob currently only supported - "
+        "https://textblob.readthedocs.io/en/dev/",
+        "nlp_select",
     ),
     "REDDITOR_FRESHNESS_TD": (
         timedelta(days=30),
@@ -292,12 +315,12 @@ CONSTANCE_CONFIG = {
         "will be reprocessed if their username is submitted in an API request.",
         timedelta,
     ),
-    "REDDITOR_LLM_STATS_PROMPT": (
+    "REDDITOR_LLM_PROMPT": (
         "The following pipe delimited messages are unrelated submissions posted by a person. "
         "Determine the age and IQ of that person based on their writing. Provide a confidence "
         "value that represents how accurate you believe your response to be as a value between "
         "0 and 100 where 0 represents no confidence and 100 represents absolute certainty.",
-        "Prompt sent to the OpenAI API to infer stats about redditors based on their submissions.",
+        "Prompt sent to the OpenAI API to infer data about redditors based on their submissions.",
     ),
     "REDDITOR_MIN_SUBMISSIONS": (
         decouple.config("REDDITOR_MIN_SUBMISSIONS", cast=int, default=1),
@@ -310,6 +333,11 @@ CONSTANCE_CONFIG = {
         "Defines how long `Thread` database entries are considered fresh. Entries older than this timedelta they will "
         "be reprocessed if their URL path is submitted in an API request.",
         timedelta,
+    ),
+    "THREAD_LLM_PROMPT": (
+        "The following pipe delimited messages are unrelated submissions posted by multiple people. "
+        "Generate a few sentences that summarize what is being discussed.",
+        "Prompt sent to the OpenAI API to infer data about redditors based on their submissions.",
     ),
     "THREAD_MAX_COMMENTS_PROCESSED": (
         decouple.config("THREAD_MAX_COMMENTS_PROCESSED", cast=int, default=sys.maxsize),
@@ -333,11 +361,11 @@ CONSTANCE_CONFIG = {
     ),
 }
 
-OPENAI_API_KEY = decouple.config("OPENAI_API_KEY")
-REDDIT_API_SETTINGS = {
-    "client_id": decouple.config("REDDIT_API_CLIENT_ID"),
-    "client_secret": decouple.config("REDDIT_API_CLIENT_SECRET"),
-    "password": decouple.config("REDDIT_API_PASSWORD"),
-    "user_agent": decouple.config("REDDIT_API_USER_AGENT"),
-    "username": decouple.config("REDDIT_API_USERNAME"),
-}
+OPENAI_API = openai.OpenAI(api_key=decouple.config("OPENAI_API_KEY"))
+REDDIT_API = praw.Reddit(
+    client_id=decouple.config("REDDIT_API_CLIENT_ID"),
+    client_secret=decouple.config("REDDIT_API_CLIENT_SECRET"),
+    password=decouple.config("REDDIT_API_PASSWORD"),
+    user_agent=decouple.config("REDDIT_API_USER_AGENT"),
+    username=decouple.config("REDDIT_API_USERNAME"),
+)

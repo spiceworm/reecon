@@ -3,6 +3,7 @@ from . import AppError
 
 __all__ = (
     "RedditError",
+    "UnprocessableEntityError",
     "UnprocessableRedditorError",
     "UnprocessableThreadError",
 )
@@ -12,13 +13,17 @@ class RedditError(AppError):
     pass
 
 
-class UnprocessableRedditorError(RedditError):
+class UnprocessableEntityError(RedditError):
+    pass
+
+
+class UnprocessableRedditorError(UnprocessableEntityError):
     def __init__(self, username: str, reason: str):
         self.username = username
         self.reason = reason
 
 
-class UnprocessableThreadError(RedditError):
+class UnprocessableThreadError(UnprocessableEntityError):
     def __init__(self, url: str, reason: str):
         self.url = url
         self.reason = reason
