@@ -375,6 +375,10 @@ CONSTANCE_CONFIG = collections.OrderedDict(
             "deletion, previously unprocessable paths will be reattempted if included in an API request.",
             timedelta,
         ),
+        "API_V1_STATUS_MESSAGE": (
+            "",
+            "A custom message that will be included in the response from /api/v1/status",
+        ),
     }
 )
 
