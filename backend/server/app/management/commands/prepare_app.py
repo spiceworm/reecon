@@ -1,13 +1,92 @@
 """
-Custom management command to collect static, generate api schema, and apply db migrations.
+Custom management command that allows you to perform the following actions individually or all at once:
+- collect static assets (written to /static)
+- generate api schema (written to /static/schema.yml, required for swagger and redoc documentation endpoints)
+- apply database migrations
+- insert hardcoded values into the database (writes must be idempotent)
+
 This is in a custom management command so that it can be run from entrypoint.sh and debug.sh
 without having to list duplicate commands as everything is defined in one place.
 """
 
 import time
 
+import decouple
+from django.contrib.auth.models import User
 from django.core import management
 from django import db
+
+from ...models import (
+    IgnoredRedditor,
+    Producer,
+    ProducerCategory,
+)
+
+
+def create_hardcoded_ignored_redditors():
+    for username, reason in (("AutoModerator", "Bot"), ("VisualMod", "Bot")):
+        IgnoredRedditor.objects.update_or_create(
+            username=username,
+            defaults={
+                "reason": reason,
+            },
+            create_defaults={
+                "username": username,
+                "reason": reason,
+            },
+        )
+
+
+def create_hardcoded_producer_categories():
+    for name, description in (
+        ("LLM", "Large language model"),
+        ("NLP", "Natural language processing"),
+    ):
+        ProducerCategory.objects.update_or_create(
+            name=name,
+            defaults={
+                "description": description,
+            },
+            create_defaults={
+                "description": description,
+                "name": name,
+            },
+        )
+
+
+def create_hardcoded_producers():
+    llm_category = ProducerCategory.objects.get(name="LLM")
+    nlp_category = ProducerCategory.objects.get(name="NLP")
+
+    for name, category, max_input_characters, description in (
+        ("gpt-4o-2024-08-06", llm_category, 128_000, "https://platform.openai.com/docs/models/gpt-4o"),
+        ("textblob", nlp_category, None, "https://textblob.readthedocs.io/en/dev/"),
+    ):
+        Producer.objects.update_or_create(
+            name=name,
+            defaults={
+                "category": category,
+                "description": description,
+                "max_input_characters": max_input_characters,
+            },
+            create_defaults={
+                "category": category,
+                "description": description,
+                "max_input_characters": max_input_characters,
+                "name": name,
+            },
+        )
+
+
+def create_hardcoded_users():
+    if not User.objects.filter(username="admin").exists():
+        User.objects.create_user(
+            username="admin",
+            email=decouple.config("ADMIN_EMAIL"),
+            password=decouple.config("ADMIN_PASSWORD"),
+            is_superuser=True,
+            is_staff=True,
+        )
 
 
 class Command(management.base.BaseCommand):
@@ -16,6 +95,7 @@ class Command(management.base.BaseCommand):
         parser.add_argument("--collectstatic", action="store_true")
         parser.add_argument("--generate-api-schema", action="store_true")
         parser.add_argument("--migrate", action="store_true")
+        parser.add_argument("--populate-database", action="store_true")
 
     def handle(self, *args, **options):
         if options["all"] or options["collectstatic"]:
@@ -37,3 +117,8 @@ class Command(management.base.BaseCommand):
                     break
             else:
                 raise err
+        if options["all"] or options["populate-database"]:
+            create_hardcoded_users()
+            create_hardcoded_ignored_redditors()
+            create_hardcoded_producer_categories()
+            create_hardcoded_producers()
