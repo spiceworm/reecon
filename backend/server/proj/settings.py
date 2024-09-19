@@ -383,6 +383,7 @@ REDDIT_API = praw.Reddit(
     client_id=decouple.config("REDDIT_API_CLIENT_ID"),
     client_secret=decouple.config("REDDIT_API_CLIENT_SECRET"),
     password=decouple.config("REDDIT_API_PASSWORD"),
+    ratelimit_seconds=300,
     user_agent=decouple.config("REDDIT_API_USER_AGENT"),
     username=decouple.config("REDDIT_API_USERNAME"),
 )
