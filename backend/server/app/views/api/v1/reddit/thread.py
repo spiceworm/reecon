@@ -58,16 +58,17 @@ class ThreadsView(CreateAPIView):
         llm_contributor = request.user
         nlp_contributor = User.objects.get(username="admin")
 
-        queue = django_rq.get_queue("default")
-        for thread_url in set(thread_urls) - known_urls - fresh_urls - unprocessable_urls:
-            queue.enqueue(
-                "app.worker.jobs.reddit.process_thread",
-                thread_url,
-                llm_contributor,
-                nlp_contributor,
-                job_id=thread_url,
-                result_ttl=0,
-            )
+        if config.THREAD_PROCESSING_ENABLED:
+            queue = django_rq.get_queue("default")
+            for thread_url in set(thread_urls) - known_urls - fresh_urls - unprocessable_urls:
+                queue.enqueue(
+                    "app.worker.jobs.reddit.process_thread",
+                    thread_url,
+                    llm_contributor,
+                    nlp_contributor,
+                    job_id=thread_url,
+                    result_ttl=0,
+                )
 
         response_serializer = ThreadSerializer(instance=known_threads, many=True)
         headers = self.get_success_headers(response_serializer.data)

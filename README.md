@@ -5,8 +5,7 @@ TODO:
 - Verify email when creating user account
 - Allow/require user to enter their own openai api key for user processing
 - Have some way to inspect list of hidden threads
-- Make enable processing of users and threads an admin switch server side
-- Add toggle to auto collapse AutoModerator comments
+- Add toggle to auto collapse ignored user (e.g. AutoModerator) comments
 - Allow users to define more conditions (e.g. User Age Filter >,<,= number)
 - Look into reddit api rate limits.
 - Extension does not display error messages.

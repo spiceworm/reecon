@@ -1,3 +1,5 @@
+from constance import config
+from rest_framework import status
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.views import Response
 
@@ -13,4 +15,17 @@ class StatusView(RetrieveAPIView):
     serializer_class = StatusSerializer
 
     def get(self, *args, **kwargs):
-        return Response({"status": "ok"})
+        data = {
+            "messages": [
+                message
+                for message in [
+                    "Redditor processing is currently disabled" if not config.REDDITOR_PROCESSING_ENABLED else None,
+                    "Thread processing is currently disabled" if not config.THREAD_PROCESSING_ENABLED else None,
+                ]
+                if message
+            ],
+            "status": "ok",
+        }
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

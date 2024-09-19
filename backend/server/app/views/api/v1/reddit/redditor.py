@@ -61,18 +61,19 @@ class RedditorsView(CreateAPIView):
         llm_contributor = request.user
         nlp_contributor = User.objects.get(username="admin")
 
-        queue = django_rq.get_queue("default")
-        for redditor_username in (
-            set(usernames) - known_usernames - fresh_usernames - unprocessable_usernames - ignored_usernames
-        ):
-            queue.enqueue(
-                "app.worker.jobs.reddit.process_redditor",
-                redditor_username,
-                llm_contributor,
-                nlp_contributor,
-                job_id=redditor_username,
-                result_ttl=0,
-            )
+        if config.REDDITOR_PROCESSING_ENABLED:
+            queue = django_rq.get_queue("default")
+            for redditor_username in (
+                set(usernames) - known_usernames - fresh_usernames - unprocessable_usernames - ignored_usernames
+            ):
+                queue.enqueue(
+                    "app.worker.jobs.reddit.process_redditor",
+                    redditor_username,
+                    llm_contributor,
+                    nlp_contributor,
+                    job_id=redditor_username,
+                    result_ttl=0,
+                )
 
         response_serializer = RedditorSerializer(instance=known_redditors, many=True)
         headers = self.get_success_headers(response_serializer.data)

@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+import collections
 from datetime import timedelta
 from pathlib import Path
 import sys
@@ -276,90 +277,106 @@ def get_nlp_choices():
 CONSTANCE_BACKEND = "constance.backends.redisd.RedisBackend"
 CONSTANCE_REDIS_CONNECTION = REDIS_URL
 CONSTANCE_ADDITIONAL_FIELDS = {
+    "checkbox": [
+        "django.forms.fields.BooleanField",
+        {
+            "required": False,
+        },
+    ],
     "llm_select": [
         "django.forms.fields.ChoiceField",
         {
-            "widget": "django.forms.Select",
             "choices": get_llm_choices,
         },
     ],
     "nlp_select": [
         "django.forms.fields.ChoiceField",
         {
-            "widget": "django.forms.Select",
             "choices": get_nlp_choices,
         },
     ],
 }
-CONSTANCE_CONFIG = {
-    "CONTENT_FILTER_MIN_LENGTH": (
-        decouple.config("CONTENT_FILTER_MIN_LENGTH", cast=int, default=120),
-        "Minimum length required for a comment/thread to be processed. This is the length of the text after sentences "
-        "containing URLs has been removed.",
-    ),
-    "LLM_NAME": (
-        "gpt-4o-2024-08-06",
-        "Large language model to use for prompts. OpenAI models currently only supported - "
-        "https://platform.openai.com/docs/models/",
-        "llm_select",
-    ),
-    "NLP_NAME": (
-        "textblob",
-        "Natural language processing package to use. textblob currently only supported - "
-        "https://textblob.readthedocs.io/en/dev/",
-        "nlp_select",
-    ),
-    "REDDITOR_FRESHNESS_TD": (
-        timedelta(days=30),
-        "Defines how long `Redditor` database entries are considered fresh. Entries older than this timedelta they "
-        "will be reprocessed if their username is submitted in an API request.",
-        timedelta,
-    ),
-    "REDDITOR_LLM_PROMPT": (
-        "The following pipe delimited messages are unrelated submissions posted by a person. "
-        "Determine the age and IQ of that person based on their writing. Provide a confidence "
-        "value that represents how accurate you believe your response to be as a value between "
-        "0 and 100 where 0 represents no confidence and 100 represents absolute certainty.",
-        "Prompt sent to the OpenAI API to infer data about redditors based on their submissions.",
-    ),
-    "REDDITOR_MIN_SUBMISSIONS": (
-        decouple.config("REDDITOR_MIN_SUBMISSIONS", cast=int, default=1),
-        "The minimum number of submissions (comments + threads) that must be available for a redditor to be processed. "
-        "Submissions that fail filtering requirements are considered unavailable for processing (e.g. submission "
-        "content length < CONTENT_FILTER_MIN_LENGTH).",
-    ),
-    "THREAD_FRESHNESS_TD": (
-        timedelta(minutes=15),
-        "Defines how long `Thread` database entries are considered fresh. Entries older than this timedelta they will "
-        "be reprocessed if their URL path is submitted in an API request.",
-        timedelta,
-    ),
-    "THREAD_LLM_PROMPT": (
-        "The following pipe delimited messages are unrelated submissions posted by multiple people. "
-        "Generate a few sentences that summarize what is being discussed.",
-        "Prompt sent to the OpenAI API to infer data about redditors based on their submissions.",
-    ),
-    "THREAD_MAX_COMMENTS_PROCESSED": (
-        decouple.config("THREAD_MAX_COMMENTS_PROCESSED", cast=int, default=sys.maxsize),
-        "The maximum number of comments in a thread that will be considered for processing.",
-    ),
-    "THREAD_MIN_COMMENTS_PROCESSED": (
-        decouple.config("THREAD_MIN_COMMENTS_PROCESSED", cast=int, default=1),
-        "The minimum number of comments that must be present in a thread, after filtering, for processing to occur.",
-    ),
-    "UNPROCESSABLE_REDDITOR_EXP_TD": (
-        timedelta(days=1),
-        "Defines how long `UnprocessableRedditor` entries will remain in the database before being deleted. After "
-        "deletion, previously unprocessable usernames will be reattempted if included in an API request.",
-        timedelta,
-    ),
-    "UNPROCESSABLE_THREAD_EXP_TD": (
-        timedelta(minutes=15),
-        "Defines how long `UnprocessableThread` entries will remain in the database before being deleted. After "
-        "deletion, previously unprocessable paths will be reattempted if included in an API request.",
-        timedelta,
-    ),
-}
+CONSTANCE_CONFIG = collections.OrderedDict(
+    {
+        "REDDITOR_PROCESSING_ENABLED": (
+            decouple.config("REDDITOR_PROCESSING_ENABLED", cast=bool, default=False),
+            "Enabled processing of reddit redditors.",
+            "checkbox",
+        ),
+        "THREAD_PROCESSING_ENABLED": (
+            decouple.config("THREAD_PROCESSING_ENABLED", cast=bool, default=False),
+            "Enabled processing of reddit threads.",
+            "checkbox",
+        ),
+        "LLM_NAME": (
+            "gpt-4o-2024-08-06",
+            "Large language model to use for prompts. OpenAI models currently only supported - "
+            "https://platform.openai.com/docs/models/",
+            "llm_select",
+        ),
+        "NLP_NAME": (
+            "textblob",
+            "Natural language processing package to use. textblob currently only supported - "
+            "https://textblob.readthedocs.io/en/dev/",
+            "nlp_select",
+        ),
+        "REDDITOR_LLM_PROMPT": (
+            "The following pipe delimited messages are unrelated submissions posted by a person. "
+            "Determine the age and IQ of that person based on their writing. Provide a confidence "
+            "value that represents how accurate you believe your response to be as a value between "
+            "0 and 100 where 0 represents no confidence and 100 represents absolute certainty.",
+            "Prompt sent to the OpenAI API to infer data about redditors based on their submissions.",
+        ),
+        "THREAD_LLM_PROMPT": (
+            "The following pipe delimited messages are unrelated submissions posted by multiple people. "
+            "Generate a few sentences that summarize what is being discussed.",
+            "Prompt sent to the OpenAI API to infer data about redditors based on their submissions.",
+        ),
+        "CONTENT_FILTER_MIN_LENGTH": (
+            decouple.config("CONTENT_FILTER_MIN_LENGTH", cast=int, default=120),
+            "Minimum length required for a comment/thread to be processed. This is the length of the text after sentences "
+            "containing URLs has been removed.",
+        ),
+        "REDDITOR_MIN_SUBMISSIONS": (
+            decouple.config("REDDITOR_MIN_SUBMISSIONS", cast=int, default=1),
+            "The minimum number of submissions (comments + threads) that must be available for a redditor to be processed. "
+            "Submissions that fail filtering requirements are considered unavailable for processing (e.g. submission "
+            "content length < CONTENT_FILTER_MIN_LENGTH).",
+        ),
+        "THREAD_MAX_COMMENTS_PROCESSED": (
+            decouple.config("THREAD_MAX_COMMENTS_PROCESSED", cast=int, default=sys.maxsize),
+            "The maximum number of comments in a thread that will be considered for processing.",
+        ),
+        "THREAD_MIN_COMMENTS_PROCESSED": (
+            decouple.config("THREAD_MIN_COMMENTS_PROCESSED", cast=int, default=1),
+            "The minimum number of comments that must be present in a thread, after filtering, for processing to occur.",
+        ),
+        "REDDITOR_FRESHNESS_TD": (
+            timedelta(days=30),
+            "Defines how long `Redditor` database entries are considered fresh. Entries older than this timedelta they "
+            "will be reprocessed if their username is submitted in an API request.",
+            timedelta,
+        ),
+        "THREAD_FRESHNESS_TD": (
+            timedelta(minutes=15),
+            "Defines how long `Thread` database entries are considered fresh. Entries older than this timedelta they will "
+            "be reprocessed if their URL path is submitted in an API request.",
+            timedelta,
+        ),
+        "UNPROCESSABLE_REDDITOR_EXP_TD": (
+            timedelta(days=1),
+            "Defines how long `UnprocessableRedditor` entries will remain in the database before being deleted. After "
+            "deletion, previously unprocessable usernames will be reattempted if included in an API request.",
+            timedelta,
+        ),
+        "UNPROCESSABLE_THREAD_EXP_TD": (
+            timedelta(minutes=15),
+            "Defines how long `UnprocessableThread` entries will remain in the database before being deleted. After "
+            "deletion, previously unprocessable paths will be reattempted if included in an API request.",
+            timedelta,
+        ),
+    }
+)
 
 OPENAI_API = openai.OpenAI(api_key=decouple.config("OPENAI_API_KEY"))
 REDDIT_API = praw.Reddit(
