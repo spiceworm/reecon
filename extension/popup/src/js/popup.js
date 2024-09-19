@@ -1,6 +1,6 @@
 import '../scss/styles.scss';
 import * as bootstrap from 'bootstrap';
-import { apiRequest, getAccessToken } from "../../../src/js/util";
+import { apiRequest, getAccessToken, getApiStatus } from "../../../src/js/util";
 
 
 function saveSettings() {
@@ -26,17 +26,44 @@ function changeElementVisibility(element_id, visible) {
 }
 
 
-function makeAlert(message) {
+function createAlert(message, alertClass, clear = false) {
     // Delete existing alerts
-    for (let el of document.getElementsByClassName("alert")) {
-        el.remove();
+    if (clear) {
+        for (let el of document.getElementsByClassName("alert")) {
+            el.remove();
+        }
     }
 
     let alertDiv = document.createElement("div");
-    alertDiv.classList.add("alert", "alert-danger");
+    alertDiv.classList.add("alert", alertClass);
     alertDiv.setAttribute("role", "alert");
     alertDiv.innerText = message;
     return alertDiv;
+}
+
+
+function createAlerts(messages, alertClass, clear = false) {
+    // Delete existing alerts
+    if (clear) {
+        for (let el of document.getElementsByClassName("alert")) {
+            el.remove();
+        }
+    }
+
+    let alertDivs = [];
+    for (let message of messages) {
+        const alertDiv = createAlert(message, alertClass);
+        alertDivs.push(alertDiv);
+    }
+    return alertDivs;
+}
+
+
+function displayStatusMessages(messages) {
+    let alertsContainer = document.getElementById("alertsContainer");
+    for (let alertDiv of createAlerts(messages, "alert-info", true)) {
+        alertsContainer.prepend(alertDiv);
+    }
 }
 
 
@@ -74,7 +101,7 @@ function showLoginForm() {
                 showSettingsForm();
             });
         }).catch(error => {
-            loginForm.prepend(makeAlert(error));
+            loginForm.prepend(createAlert(error, "alert-danger", true));
         });
     })
 
@@ -137,7 +164,7 @@ function showSignupForm() {
             })
         }).catch(error => {
             console.log(error);
-            signupForm.prepend(makeAlert(error));
+            signupForm.prepend(createAlert(error, "alert-danger", true));
         });
     })
 
@@ -194,12 +221,16 @@ function showSettingsForm() {
 
 
 function loadPopup() {
-    getAccessToken().then(accessToken => {
-        if (accessToken === null) {
-            showLoginForm();
-        } else {
-            showSettingsForm();
-        }
+    getApiStatus().then(statusJson => {
+        displayStatusMessages(statusJson.messages)
+
+        getAccessToken().then(accessToken => {
+            if (accessToken === null) {
+                showLoginForm();
+            } else {
+                showSettingsForm();
+            }
+        })
     })
 }
 

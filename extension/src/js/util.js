@@ -69,3 +69,18 @@ export async function getAccessToken() {
         }
     })
 }
+
+export async function getApiStatus() {
+    return apiRequest(
+        '/api/v1/status/',
+        'get',
+    ).then(response => {
+        if (response.ok) {
+            return response.json();
+        } else {
+            throw new Error(response)
+        }
+    }).catch(error => {
+        console.log(error);
+    })
+}
