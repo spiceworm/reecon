@@ -59,9 +59,9 @@ function createAlerts(messages, alertClass, clear = false) {
 }
 
 
-function displayStatusMessages(messages) {
+function displayStatusMessages(messages, alertClass = "alert-info") {
     let alertsContainer = document.getElementById("alertsContainer");
-    for (let alertDiv of createAlerts(messages, "alert-info", true)) {
+    for (let alertDiv of createAlerts(messages, alertClass, true)) {
         alertsContainer.prepend(alertDiv);
     }
 }
@@ -222,7 +222,7 @@ function showSettingsForm() {
 
 function loadPopup() {
     getApiStatus().then(statusJson => {
-        displayStatusMessages(statusJson.messages)
+        displayStatusMessages(statusJson.messages);
 
         getAccessToken().then(accessToken => {
             if (accessToken === null) {
@@ -231,6 +231,11 @@ function loadPopup() {
                 showSettingsForm();
             }
         })
+    }).catch(error => {
+        displayStatusMessages(
+            [`Unable to contact server at ${process.env.BASE_URL}`],
+            "alert-danger",
+            );
     })
 }
 

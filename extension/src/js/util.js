@@ -80,7 +80,5 @@ export async function getApiStatus() {
         } else {
             throw new Error(response)
         }
-    }).catch(error => {
-        console.log(error);
     })
 }
