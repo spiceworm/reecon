@@ -1,11 +1,12 @@
 import logging
 from typing import List
 
+from constance import config
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils import timezone
-
-from constance import config
+from openai import OpenAIError
+from praw.exceptions import RedditAPIException
 
 from .data import (
     GeneratedRedditorData,
@@ -36,7 +37,9 @@ class RedditorDataService(RedditDataService):
         super().__init__()
         self.username = username
 
-    def create(self, llm_contributor: User, llm_producer: Producer, nlp_contributor: User, nlp_producer: Producer):
+    def create(
+        self, llm_contributor: User, llm_producer: Producer, nlp_contributor: User, nlp_producer: Producer
+    ) -> RedditorData | UnprocessableRedditor:
         """
         Convenience method that executes `get_submissions`, `generate_data`, and `create_object` with the necessary
         arguments.
@@ -47,9 +50,15 @@ class RedditorDataService(RedditDataService):
                 min_characters_per_submission=config.CONTENT_FILTER_MIN_LENGTH,
                 min_submissions=config.REDDITOR_MIN_SUBMISSIONS,
             )
+            generated_data: GeneratedRedditorData = self.generate_data(
+                inputs=submissions,
+                llm_name=llm_producer.name,
+                nlp_name=nlp_producer.name,
+                prompt=config.REDDITOR_LLM_PROMPT,
+            )
         except UnprocessableRedditorError as e:
             log.exception("Unable to process %s", e.username)
-            UnprocessableRedditor.objects.update_or_create(
+            obj, _ = UnprocessableRedditor.objects.update_or_create(
                 username=e.username,
                 defaults={
                     "reason": e.reason,
@@ -60,12 +69,6 @@ class RedditorDataService(RedditDataService):
                 },
             )
         else:
-            generated_data: GeneratedRedditorData = self.generate_data(
-                inputs=submissions,
-                llm_name=llm_producer.name,
-                nlp_name=nlp_producer.name,
-                prompt=config.REDDITOR_LLM_PROMPT,
-            )
             obj: RedditorData = self.create_object(
                 generated_data=generated_data,
                 llm_contributor=llm_contributor,
@@ -73,7 +76,7 @@ class RedditorDataService(RedditDataService):
                 nlp_contributor=nlp_contributor,
                 nlp_producer=nlp_producer,
             )
-            return obj
+        return obj
 
     def create_object(
         self,
@@ -128,33 +131,46 @@ class RedditorDataService(RedditDataService):
         The response from each of those is a `GeneratedRedditorData`. The output from both nlp and llm processors
         is then combined into a single `GeneratedRedditorData`.
         """
-        return super().generate_data(inputs=inputs, llm_name=llm_name, nlp_name=nlp_name, prompt=prompt)
+        try:
+            generated_data = super().generate_data(inputs=inputs, llm_name=llm_name, nlp_name=nlp_name, prompt=prompt)
+        except OpenAIError as e:
+            msg = "OpenAIError thrown when generating data"
+            log.exception(msg)
+            raise UnprocessableRedditorError(self.username, msg)
+        else:
+            return generated_data
 
     def get_submissions(
         self, *, max_characters: int, min_characters_per_submission: int, min_submissions: int
     ) -> List[str]:
         submissions = set()
-        praw_redditor = settings.REDDIT_API.redditor(name=self.username)
 
-        # Get the body of threads submitted by the user.
-        for thread in praw_redditor.submissions.new():
-            if text := self.filter_submission(text=thread.selftext, min_characters=min_characters_per_submission):
-                if len("|".join(submissions | {text})) < max_characters:
-                    submissions.add(text)
-                else:
-                    break
+        try:
+            praw_redditor = settings.REDDIT_API.redditor(name=self.username)
 
-        # Get the body of comments submitted by the user.
-        for comment in praw_redditor.comments.new():
-            if text := self.filter_submission(text=comment.body, min_characters=min_characters_per_submission):
-                if len("|".join(submissions | {text})) < max_characters:
-                    submissions.add(text)
-                else:
-                    break
+            # Get the body of threads submitted by the user.
+            for thread in praw_redditor.submissions.new():
+                if text := self.filter_submission(text=thread.selftext, min_characters=min_characters_per_submission):
+                    if len("|".join(submissions | {text})) < max_characters:
+                        submissions.add(text)
+                    else:
+                        break
 
-        if len(submissions) < min_submissions:
-            raise UnprocessableRedditorError(
-                self.username,
-                f"Less than {min_submissions} submissions available for processing (found {len(submissions)})",
-            )
+            # Get the body of comments submitted by the user.
+            for comment in praw_redditor.comments.new():
+                if text := self.filter_submission(text=comment.body, min_characters=min_characters_per_submission):
+                    if len("|".join(submissions | {text})) < max_characters:
+                        submissions.add(text)
+                    else:
+                        break
+        except RedditAPIException as e:
+            msg = "RedditAPIException thrown when getting submissions"
+            log.exception(msg)
+            raise UnprocessableRedditorError(self.username, msg)
+        else:
+            if len(submissions) < min_submissions:
+                raise UnprocessableRedditorError(
+                    self.username,
+                    f"Less than {min_submissions} submissions available for processing (found {len(submissions)})",
+                )
         return list(submissions)

@@ -19,6 +19,8 @@ from ...exceptions import (
 )
 from ...models import (
     Producer,
+    RedditorData,
+    ThreadData,
     UnprocessableRedditor,
     UnprocessableThread,
 )
@@ -107,19 +109,6 @@ class Command(management.base.BaseCommand):
                     min_characters_per_submission=config.CONTENT_FILTER_MIN_LENGTH,
                     min_submissions=config.REDDITOR_MIN_SUBMISSIONS,
                 )
-            except UnprocessableRedditorError as e:
-                log.exception("Unable to process %s", username)
-                UnprocessableRedditor.objects.update_or_create(
-                    username=e.username,
-                    defaults={
-                        "reason": e.reason,
-                    },
-                    create_defaults={
-                        "reason": e.reason,
-                        "username": e.username,
-                    },
-                )
-            else:
                 if options["action"] == "get-submissions":
                     self.echos(submissions)
                 else:
@@ -131,14 +120,27 @@ class Command(management.base.BaseCommand):
                     )
                     if options["action"] == "generate-data":
                         self.echo(generated_data.model_dump_json())
-                    else:
-                        data_obj = service.create_object(
-                            generated_data=generated_data,
-                            llm_contributor=admin,
-                            llm_producer=llm,
-                            nlp_contributor=admin,
-                            nlp_producer=nlp,
-                        )
+            except UnprocessableRedditorError as e:
+                log.exception("Unable to process %s", username)
+                obj, _ = UnprocessableRedditor.objects.update_or_create(
+                    username=e.username,
+                    defaults={
+                        "reason": e.reason,
+                    },
+                    create_defaults={
+                        "reason": e.reason,
+                        "username": e.username,
+                    },
+                )
+            else:
+                if options["action"] == "create-object":
+                    obj: RedditorData = service.create_object(
+                        generated_data=generated_data,
+                        llm_contributor=admin,
+                        llm_producer=llm,
+                        nlp_contributor=admin,
+                        nlp_producer=nlp,
+                    )
 
         else:
             url = options["url"]
@@ -150,19 +152,6 @@ class Command(management.base.BaseCommand):
                     min_characters_per_submission=config.CONTENT_FILTER_MIN_LENGTH,
                     min_submissions=config.THREAD_MIN_COMMENTS_PROCESSED,
                 )
-            except UnprocessableThreadError as e:
-                log.exception("Unable to process %s", url)
-                UnprocessableThread.objects.update_or_create(
-                    url=e.url,
-                    defaults={
-                        "reason": e.reason,
-                    },
-                    create_defaults={
-                        "reason": e.reason,
-                        "url": e.url,
-                    },
-                )
-            else:
                 if options["action"] == "get-submissions":
                     self.echos(submissions)
                 else:
@@ -174,11 +163,24 @@ class Command(management.base.BaseCommand):
                     )
                     if options["action"] == "generate-data":
                         self.echo(generated_data.model_dump_json())
-                    else:
-                        data_obj = service.create_object(
-                            generated_data=generated_data,
-                            llm_contributor=admin,
-                            llm_producer=llm,
-                            nlp_contributor=admin,
-                            nlp_producer=nlp,
-                        )
+            except UnprocessableThreadError as e:
+                log.exception("Unable to process %s", url)
+                obj, _ = UnprocessableThread.objects.update_or_create(
+                    url=e.url,
+                    defaults={
+                        "reason": e.reason,
+                    },
+                    create_defaults={
+                        "reason": e.reason,
+                        "url": e.url,
+                    },
+                )
+            else:
+                if options["action"] == "create-object":
+                    obj: ThreadData = service.create_object(
+                        generated_data=generated_data,
+                        llm_contributor=admin,
+                        llm_producer=llm,
+                        nlp_contributor=admin,
+                        nlp_producer=nlp,
+                    )
