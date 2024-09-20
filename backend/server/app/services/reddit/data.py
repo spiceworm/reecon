@@ -16,6 +16,10 @@ __all__ = (
     "GeneratedData",
     "GeneratedRedditorData",
     "GeneratedThreadData",
+    "LlmGeneratedRedditorData",
+    "LlmGeneratedThreadData",
+    "NlpGeneratedRedditorData",
+    "NlpGeneratedThreadData",
     "RedditDataService",
 )
 
@@ -23,16 +27,30 @@ __all__ = (
 log = logging.getLogger("app.services.reddit.data")
 
 
-class GeneratedRedditorData(pydantic.BaseModel):
-    age: int | None = None
-    iq: int | None = None
-    sentiment_polarity: float | None = None
-    summary: str | None = None
+class LlmGeneratedRedditorData(pydantic.BaseModel):
+    age: int
+    iq: int
+    summary: str
 
 
-class GeneratedThreadData(pydantic.BaseModel):
-    sentiment_polarity: float | None = None
-    summary: str | None = None
+class NlpGeneratedRedditorData(pydantic.BaseModel):
+    sentiment_polarity: float
+
+
+class GeneratedRedditorData(LlmGeneratedRedditorData, NlpGeneratedRedditorData):
+    pass
+
+
+class LlmGeneratedThreadData(pydantic.BaseModel):
+    summary: str
+
+
+class NlpGeneratedThreadData(pydantic.BaseModel):
+    sentiment_polarity: float
+
+
+class GeneratedThreadData(LlmGeneratedThreadData, NlpGeneratedThreadData):
+    pass
 
 
 GeneratedData = GeneratedRedditorData | GeneratedThreadData
@@ -42,8 +60,8 @@ class RedditDataService(abc.ABC):
     TOKENIZER = nltk.data.load("tokenizers/punkt/english.pickle")
 
     def __init__(self):
-        self.llm = LlmProducerService(response_format=self.response_format)
-        self.nlp = NlpProducerService(response_format=self.response_format)
+        self.llm = LlmProducerService(response_format=self.llm_response_format)
+        self.nlp = NlpProducerService(response_format=self.nlp_response_format)
 
     @abc.abstractmethod
     def create(self, *args, **kwargs):
@@ -89,6 +107,16 @@ class RedditDataService(abc.ABC):
             retval = ""
 
         return retval
+
+    @property
+    @abc.abstractmethod
+    def llm_response_format(self):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def nlp_response_format(self):
+        pass
 
     @property
     @abc.abstractmethod

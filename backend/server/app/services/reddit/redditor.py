@@ -15,6 +15,8 @@ from tenacity import (
 
 from .data import (
     GeneratedRedditorData,
+    LlmGeneratedRedditorData,
+    NlpGeneratedRedditorData,
     RedditDataService,
 )
 from ...exceptions import UnprocessableRedditorError
@@ -36,6 +38,8 @@ log = logging.getLogger("app.services.reddit.redditor")
 
 
 class RedditorDataService(RedditDataService):
+    llm_response_format = LlmGeneratedRedditorData
+    nlp_response_format = NlpGeneratedRedditorData
     response_format = GeneratedRedditorData
 
     def __init__(self, username: str):

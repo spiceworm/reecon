@@ -15,6 +15,8 @@ from tenacity import (
 
 from .data import (
     GeneratedThreadData,
+    LlmGeneratedThreadData,
+    NlpGeneratedThreadData,
     RedditDataService,
 )
 from ...exceptions import (
@@ -38,6 +40,8 @@ log = logging.getLogger("app.services.reddit.thread")
 
 
 class ThreadDataService(RedditDataService):
+    llm_response_format = LlmGeneratedThreadData
+    nlp_response_format = NlpGeneratedThreadData
     response_format = GeneratedThreadData
 
     def __init__(self, url: str):
