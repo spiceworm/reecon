@@ -10,6 +10,7 @@ from ..producer import (
     LlmProducerService,
     NlpProducerService,
 )
+from ...util.regex import match_block_quotes
 
 
 __all__ = (
@@ -86,6 +87,13 @@ class RedditDataService(abc.ABC):
     def filter_submission(self, *, min_characters: int, text: str) -> str:
         if not text or text == "[deleted]":
             return ""
+
+        # Remove block quotes as they are someone else's words and we do not want them included in
+        # the responder's submissions.
+        text = match_block_quotes.sub('', text)
+
+        # Remove excessive leading and trailing whitespace from each line.
+        text = '\n'.join(line.strip() for line in text.splitlines())
 
         # Remove sentences containing URLs while preserving surrounding sentences.
         sentences = []
