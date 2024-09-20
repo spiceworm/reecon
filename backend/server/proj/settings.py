@@ -328,38 +328,39 @@ CONSTANCE_CONFIG = collections.OrderedDict(
         ),
         "THREAD_LLM_PROMPT": (
             "The following pipe delimited messages are unrelated submissions posted by multiple people. "
-            "Generate a few sentences that summarize what is being discussed.",
+            "Generate a brief summary of what is being discussed.",
             "Prompt sent to the OpenAI API to infer data about redditors based on their submissions.",
         ),
-        "CONTENT_FILTER_MIN_LENGTH": (
-            decouple.config("CONTENT_FILTER_MIN_LENGTH", cast=int, default=120),
-            "Minimum length required for a comment/thread to be processed. This is the length of the text after sentences "
-            "containing URLs has been removed.",
+        "SUBMISSION_FILTER_MAX_LENGTH": (
+            decouple.config("SUBMISSION_FILTER_MAX_LENGTH", cast=int, default=2000),
+            "The maximum number of characters allowed for the text of a single submission to be included in "
+            "processing. This is the length of the text after filtering. Applying a limit to the maximum number "
+            "of characters helps exclude text copied from other sources.",
+        ),
+        "SUBMISSION_FILTER_MIN_LENGTH": (
+            decouple.config("SUBMISSION_FILTER_MIN_LENGTH", cast=int, default=120),
+            "The minimum number of characters required for the text of a single submission to be included in "
+            "processing. This is the length of the text after filtering.",
         ),
         "REDDITOR_MIN_SUBMISSIONS": (
             decouple.config("REDDITOR_MIN_SUBMISSIONS", cast=int, default=1),
-            "The minimum number of submissions (comments + threads) that must be available for a redditor to be processed. "
-            "Submissions that fail filtering requirements are considered unavailable for processing (e.g. submission "
-            "content length < CONTENT_FILTER_MIN_LENGTH).",
+            "The minimum number of submissions (comments + threads) that must be available for a redditor to "
+            "be processed.",
         ),
-        "THREAD_MAX_COMMENTS_PROCESSED": (
-            decouple.config("THREAD_MAX_COMMENTS_PROCESSED", cast=int, default=100),
-            "The maximum number of comments in a thread that will be considered for processing.",
-        ),
-        "THREAD_MIN_COMMENTS_PROCESSED": (
-            decouple.config("THREAD_MIN_COMMENTS_PROCESSED", cast=int, default=1),
-            "The minimum number of comments that must be present in a thread, after filtering, for processing to occur.",
+        "THREAD_MIN_SUBMISSIONS": (
+            decouple.config("THREAD_MIN_SUBMISSIONS", cast=int, default=1),
+            "The minimum number of comments that must be available after filtering for processing to occur.",
         ),
         "REDDITOR_FRESHNESS_TD": (
             timedelta(days=30),
-            "Defines how long `Redditor` database entries are considered fresh. Entries older than this timedelta they "
+            "Defines how long `Redditor` database entries are considered fresh. Entries older than this timedelta "
             "will be reprocessed if their username is submitted in an API request.",
             timedelta,
         ),
         "THREAD_FRESHNESS_TD": (
             timedelta(minutes=15),
-            "Defines how long `Thread` database entries are considered fresh. Entries older than this timedelta they will "
-            "be reprocessed if their URL path is submitted in an API request.",
+            "Defines how long `Thread` database entries are considered fresh. Entries older than this timedelta "
+            "will be reprocessed if their URL path is submitted in an API request.",
             timedelta,
         ),
         "UNPROCESSABLE_REDDITOR_EXP_TD": (

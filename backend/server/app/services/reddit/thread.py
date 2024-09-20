@@ -64,11 +64,7 @@ class ThreadDataService(RedditDataService):
         arguments.
         """
         try:
-            submissions = self.get_submissions(
-                max_submissions=config.THREAD_MAX_COMMENTS_PROCESSED,
-                min_characters_per_submission=config.CONTENT_FILTER_MIN_LENGTH,
-                min_submissions=config.THREAD_MIN_COMMENTS_PROCESSED,
-            )
+            submissions = self.get_submissions(context_window=llm_producer.context_window)
         except UnprocessableThreadError as e:
             log.exception("Unable to process %s", e.url)
             obj, _ = UnprocessableThread.objects.update_or_create(
@@ -148,32 +144,31 @@ class ThreadDataService(RedditDataService):
         stop=stop_after_attempt(10),
         wait=wait_random_exponential(min=1, max=60),
     )
-    def get_submissions(
-        self, *, max_submissions: int, min_characters_per_submission: int, min_submissions: int
-    ) -> List[str]:
-        # TODO: include thread.selftext in submissions
+    def get_submissions(self, *, context_window: int) -> List[str]:
         submissions: Set[str] = set()
-
         ignored_usernames = set(IgnoredRedditor.objects.values_list("username", flat=True))
-
         praw_submission: Submission = settings.REDDIT_API.submission(url=self.url)
+
+        if submission_text := self.filter_submission(text=praw_submission.selftext):
+            submissions.add(submission_text)
 
         comment: Comment
         for comment in praw_submission.comments.list():
-            if max_submissions <= 0:
+            if context_window <= 0:
                 break
             if (
                 not isinstance(comment, MoreComments)
                 and comment.author
                 and comment.author.name not in ignored_usernames
             ):
-                if body := self.filter_submission(text=comment.body, min_characters=min_characters_per_submission):
-                    max_submissions -= 1
+                if body := self.filter_submission(text=comment.body):
+                    context_window -= 1  # FIXME: deduct tokens from context window (how much to leave for response?)
                     submissions.add(body)
 
-        if len(submissions) < min_submissions:
+        if len(submissions) < config.THREAD_MIN_SUBMISSIONS:
             raise UnprocessableThreadError(
                 self.url,
-                f"Less than {min_submissions} submissions available for processing (found {len(submissions)})",
+                f"Less than {config.THREAD_MIN_SUBMISSIONS} submissions available for processing "
+                f"(found {len(submissions)})",
             )
         return list(submissions)

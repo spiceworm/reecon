@@ -104,11 +104,7 @@ class Command(management.base.BaseCommand):
             service = RedditorDataService(username)
 
             try:
-                submissions: List[str] = service.get_submissions(
-                    context_window=llm.context_window,
-                    min_characters_per_submission=config.CONTENT_FILTER_MIN_LENGTH,
-                    min_submissions=config.REDDITOR_MIN_SUBMISSIONS,
-                )
+                submissions: List[str] = service.get_submissions(context_window=llm.context_window)
                 if options["action"] == "get-submissions":
                     self.echos(submissions)
                 else:
@@ -147,11 +143,7 @@ class Command(management.base.BaseCommand):
             service = ThreadDataService(url)
 
             try:
-                submissions: List[str] = service.get_submissions(
-                    max_submissions=config.THREAD_MAX_COMMENTS_PROCESSED,
-                    min_characters_per_submission=config.CONTENT_FILTER_MIN_LENGTH,
-                    min_submissions=config.THREAD_MIN_COMMENTS_PROCESSED,
-                )
+                submissions: List[str] = service.get_submissions(context_window=llm.context_window)
                 if options["action"] == "get-submissions":
                     self.echos(submissions)
                 else:

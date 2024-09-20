@@ -2,6 +2,7 @@ import abc
 import logging
 from typing import List
 
+from constance import config
 import nltk
 import pydantic
 import validators
@@ -84,16 +85,16 @@ class RedditDataService(abc.ABC):
     def get_submissions(self, *args, **kwargs):
         pass
 
-    def filter_submission(self, *, min_characters: int, text: str) -> str:
+    def filter_submission(self, *, text: str) -> str:
         if not text or text == "[deleted]":
             return ""
 
         # Remove block quotes as they are someone else's words and we do not want them included in
         # the responder's submissions.
-        text = match_block_quotes.sub('', text)
+        text = match_block_quotes.sub("", text)
 
         # Remove excessive leading and trailing whitespace from each line.
-        text = '\n'.join(line.strip() for line in text.splitlines())
+        text = "\n".join(line.strip() for line in text.splitlines())
 
         # Remove sentences containing URLs while preserving surrounding sentences.
         sentences = []
@@ -110,8 +111,11 @@ class RedditDataService(abc.ABC):
 
         retval = " ".join(sentences)
 
-        # Do not process short comments.
-        if len(retval) < min_characters:
+        # Do not process submissions that are either too short or too long.
+        if any([
+            len(retval) < config.SUBMISSION_FILTER_MIN_LENGTH,
+            len(retval) > config.SUBMISSION_FILTER_MAX_LENGTH
+        ]):
             retval = ""
 
         return retval

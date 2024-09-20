@@ -61,11 +61,7 @@ class RedditorDataService(RedditDataService):
         arguments.
         """
         try:
-            submissions = self.get_submissions(
-                context_window=llm_producer.context_window,
-                min_characters_per_submission=config.CONTENT_FILTER_MIN_LENGTH,
-                min_submissions=config.REDDITOR_MIN_SUBMISSIONS,
-            )
+            submissions = self.get_submissions(context_window=llm_producer.context_window)
         except UnprocessableRedditorError as e:
             log.exception("Unable to process %s", e.username)
             obj, _ = UnprocessableRedditor.objects.update_or_create(
@@ -155,17 +151,14 @@ class RedditorDataService(RedditDataService):
         stop=stop_after_attempt(10),
         wait=wait_random_exponential(min=1, max=60),
     )
-    def get_submissions(
-        self, *, context_window: int, min_characters_per_submission: int, min_submissions: int
-    ) -> List[str]:
+    def get_submissions(self, *, context_window: int) -> List[str]:
         submissions: Set[str] = set()
-
         praw_redditor: PrawRedditor = settings.REDDIT_API.redditor(name=self.username)
 
         # Get the body of threads submitted by the user.
         thread: Submission
         for thread in praw_redditor.submissions.new():
-            if text := self.filter_submission(text=thread.selftext, min_characters=min_characters_per_submission):
+            if text := self.filter_submission(text=thread.selftext):
                 if len("|".join(submissions | {text})) < context_window:
                     submissions.add(text)
                 else:
@@ -175,15 +168,16 @@ class RedditorDataService(RedditDataService):
         comment: Comment
         for comment in praw_redditor.comments.new():
             if not isinstance(comment, MoreComments):
-                if text := self.filter_submission(text=comment.body, min_characters=min_characters_per_submission):
+                if text := self.filter_submission(text=comment.body):
                     if len("|".join(submissions | {text})) < context_window:
                         submissions.add(text)
                     else:
                         break
 
-        if len(submissions) < min_submissions:
+        if len(submissions) < config.REDDITOR_MIN_SUBMISSIONS:
             raise UnprocessableRedditorError(
                 self.username,
-                f"Less than {min_submissions} submissions available for processing (found {len(submissions)})",
+                f"Less than {config.REDDITOR_MIN_SUBMISSIONS} submissions available for processing "
+                f"(found {len(submissions)})",
             )
         return list(submissions)
