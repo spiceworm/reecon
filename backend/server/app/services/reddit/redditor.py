@@ -1,11 +1,20 @@
 import logging
-from typing import List
+from typing import (
+    List,
+    Set,
+)
 
 from constance import config
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils import timezone
-from praw.exceptions import RedditAPIException
+from praw.models import (
+    Comment,
+    MoreComments,
+    Redditor as PrawRedditor,  # Avoid name conflict with Redditor model
+    Submission,
+)
+from prawcore.exceptions import TooManyRequests
 from tenacity import (
     retry,
     retry_if_exception_type,
@@ -30,9 +39,7 @@ from ...models import (
     UnprocessableRedditor,
 )
 
-
 __all__ = ("RedditorDataService",)
-
 
 log = logging.getLogger("app.services.reddit.redditor")
 
@@ -144,18 +151,19 @@ class RedditorDataService(RedditDataService):
 
     @retry(
         reraise=True,
-        retry=retry_if_exception_type(RedditAPIException),
+        retry=retry_if_exception_type(TooManyRequests),
         stop=stop_after_attempt(10),
         wait=wait_random_exponential(min=1, max=60),
     )
     def get_submissions(
         self, *, context_window: int, min_characters_per_submission: int, min_submissions: int
     ) -> List[str]:
-        submissions = set()
+        submissions: Set[str] = set()
 
-        praw_redditor = settings.REDDIT_API.redditor(name=self.username)
+        praw_redditor: PrawRedditor = settings.REDDIT_API.redditor(name=self.username)
 
         # Get the body of threads submitted by the user.
+        thread: Submission
         for thread in praw_redditor.submissions.new():
             if text := self.filter_submission(text=thread.selftext, min_characters=min_characters_per_submission):
                 if len("|".join(submissions | {text})) < context_window:
@@ -164,12 +172,14 @@ class RedditorDataService(RedditDataService):
                     break
 
         # Get the body of comments submitted by the user.
+        comment: Comment
         for comment in praw_redditor.comments.new():
-            if text := self.filter_submission(text=comment.body, min_characters=min_characters_per_submission):
-                if len("|".join(submissions | {text})) < context_window:
-                    submissions.add(text)
-                else:
-                    break
+            if not isinstance(comment, MoreComments):
+                if text := self.filter_submission(text=comment.body, min_characters=min_characters_per_submission):
+                    if len("|".join(submissions | {text})) < context_window:
+                        submissions.add(text)
+                    else:
+                        break
 
         if len(submissions) < min_submissions:
             raise UnprocessableRedditorError(

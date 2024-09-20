@@ -1,11 +1,19 @@
 import logging
-from typing import List
+from typing import (
+    List,
+    Set,
+)
 
 from constance import config
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils import timezone
-from praw.exceptions import RedditAPIException
+from praw.models import (
+    Comment,
+    MoreComments,
+    Submission,
+)
+from prawcore.exceptions import TooManyRequests
 from tenacity import (
     retry,
     retry_if_exception_type,
@@ -136,33 +144,36 @@ class ThreadDataService(RedditDataService):
 
     @retry(
         reraise=True,
-        retry=retry_if_exception_type(RedditAPIException),
+        retry=retry_if_exception_type(TooManyRequests),
         stop=stop_after_attempt(10),
         wait=wait_random_exponential(min=1, max=60),
     )
     def get_submissions(
         self, *, max_submissions: int, min_characters_per_submission: int, min_submissions: int
     ) -> List[str]:
-        # TODO: should submissions be a set so that all comments found are unique?
         # TODO: include thread.selftext in submissions
-        submissions = []
+        submissions: Set[str] = set()
 
         ignored_usernames = set(IgnoredRedditor.objects.values_list("username", flat=True))
 
-        praw_submission = settings.REDDIT_API.submission(url=self.url)
-        praw_submission.comments.replace_more(limit=None)
+        praw_submission: Submission = settings.REDDIT_API.submission(url=self.url)
 
+        comment: Comment
         for comment in praw_submission.comments.list():
             if max_submissions <= 0:
                 break
-            if comment.author and comment.author.name not in ignored_usernames:
+            if (
+                not isinstance(comment, MoreComments)
+                and comment.author
+                and comment.author.name not in ignored_usernames
+            ):
                 if body := self.filter_submission(text=comment.body, min_characters=min_characters_per_submission):
                     max_submissions -= 1
-                    submissions.append(body)
+                    submissions.add(body)
 
         if len(submissions) < min_submissions:
             raise UnprocessableThreadError(
                 self.url,
                 f"Less than {min_submissions} submissions available for processing (found {len(submissions)})",
             )
-        return submissions
+        return list(submissions)

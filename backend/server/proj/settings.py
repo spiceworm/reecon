@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import collections
 from datetime import timedelta
 from pathlib import Path
-import sys
 
 import decouple
 import openai
@@ -344,7 +343,7 @@ CONSTANCE_CONFIG = collections.OrderedDict(
             "content length < CONTENT_FILTER_MIN_LENGTH).",
         ),
         "THREAD_MAX_COMMENTS_PROCESSED": (
-            decouple.config("THREAD_MAX_COMMENTS_PROCESSED", cast=int, default=sys.maxsize),
+            decouple.config("THREAD_MAX_COMMENTS_PROCESSED", cast=int, default=100),
             "The maximum number of comments in a thread that will be considered for processing.",
         ),
         "THREAD_MIN_COMMENTS_PROCESSED": (
