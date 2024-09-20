@@ -105,7 +105,7 @@ class Command(management.base.BaseCommand):
 
             try:
                 submissions: List[str] = service.get_submissions(
-                    max_characters=llm.max_input_characters,
+                    context_window=llm.context_window,
                     min_characters_per_submission=config.CONTENT_FILTER_MIN_LENGTH,
                     min_submissions=config.REDDITOR_MIN_SUBMISSIONS,
                 )

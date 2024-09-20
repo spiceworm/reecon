@@ -46,7 +46,7 @@ class RedditorDataService(RedditDataService):
         """
         try:
             submissions = self.get_submissions(
-                max_characters=llm_producer.max_input_characters,
+                context_window=llm_producer.context_window,
                 min_characters_per_submission=config.CONTENT_FILTER_MIN_LENGTH,
                 min_submissions=config.REDDITOR_MIN_SUBMISSIONS,
             )
@@ -141,7 +141,7 @@ class RedditorDataService(RedditDataService):
             return generated_data
 
     def get_submissions(
-        self, *, max_characters: int, min_characters_per_submission: int, min_submissions: int
+        self, *, context_window: int, min_characters_per_submission: int, min_submissions: int
     ) -> List[str]:
         submissions = set()
 
@@ -151,7 +151,7 @@ class RedditorDataService(RedditDataService):
             # Get the body of threads submitted by the user.
             for thread in praw_redditor.submissions.new():
                 if text := self.filter_submission(text=thread.selftext, min_characters=min_characters_per_submission):
-                    if len("|".join(submissions | {text})) < max_characters:
+                    if len("|".join(submissions | {text})) < context_window:
                         submissions.add(text)
                     else:
                         break
@@ -159,7 +159,7 @@ class RedditorDataService(RedditDataService):
             # Get the body of comments submitted by the user.
             for comment in praw_redditor.comments.new():
                 if text := self.filter_submission(text=comment.body, min_characters=min_characters_per_submission):
-                    if len("|".join(submissions | {text})) < max_characters:
+                    if len("|".join(submissions | {text})) < context_window:
                         submissions.add(text)
                     else:
                         break

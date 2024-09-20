@@ -58,7 +58,7 @@ def create_hardcoded_producers():
     llm_category = ProducerCategory.objects.get(name="LLM")
     nlp_category = ProducerCategory.objects.get(name="NLP")
 
-    for name, category, max_input_characters, description in (
+    for name, category, context_window, description in (
         ("gpt-4o-2024-08-06", llm_category, 128_000, "https://platform.openai.com/docs/models/gpt-4o"),
         ("textblob", nlp_category, None, "https://textblob.readthedocs.io/en/dev/"),
     ):
@@ -67,12 +67,12 @@ def create_hardcoded_producers():
             defaults={
                 "category": category,
                 "description": description,
-                "max_input_characters": max_input_characters,
+                "context_window": context_window,
             },
             create_defaults={
                 "category": category,
                 "description": description,
-                "max_input_characters": max_input_characters,
+                "context_window": context_window,
                 "name": name,
             },
         )

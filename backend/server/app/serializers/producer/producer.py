@@ -30,9 +30,9 @@ class ProducedCategorySerializer(serializers.Serializer):
 
 
 class ProducerSerializer(serializers.Serializer):
+    context_window = serializers.IntegerField()
     category = ProducedCategorySerializer()
     description = serializers.CharField()
-    max_input_characters = serializers.IntegerField()
     name = serializers.CharField()
 
     class Meta:

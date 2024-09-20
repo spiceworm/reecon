@@ -15,9 +15,13 @@ __all__ = (
 class Producer(Created, Description):
     """Stores a single data producer. Related to :model:`ai.ProducerCategory`."""
 
-    max_input_characters = models.IntegerField(
+    context_window = models.IntegerField(
         null=True,
-        help_text="The maximum number of input characters that can be input to the producer.",
+        help_text=(
+            "The maximum number of tokens that can be used in a single request to the pruducers API, inclusive "
+            "of both input and output tokens. For OpenAI models, this number is specified on a per model basis "
+            "(https://platform.openai.com/docs/models)."
+        ),
     )
     name = models.CharField(
         max_length=255,
@@ -35,7 +39,7 @@ class Producer(Created, Description):
 
     def __str__(self):
         return (
-            f"{self.__class__.__name__}(max_input_characters={self.max_input_characters}, "
+            f"{self.__class__.__name__}(context_window={self.context_window}, "
             f"name={self.name}, category={self.category.name})"
         )
 
