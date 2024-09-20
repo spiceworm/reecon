@@ -5,8 +5,13 @@ from constance import config
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils import timezone
-from openai import OpenAIError
 from praw.exceptions import RedditAPIException
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_random_exponential,
+)
 
 from .data import (
     GeneratedThreadData,
@@ -52,12 +57,6 @@ class ThreadDataService(RedditDataService):
                 min_characters_per_submission=config.CONTENT_FILTER_MIN_LENGTH,
                 min_submissions=config.THREAD_MIN_COMMENTS_PROCESSED,
             )
-            generated_data: GeneratedThreadData = self.generate_data(
-                inputs=submissions,
-                llm_name=llm_producer.name,
-                nlp_name=nlp_producer.name,
-                prompt=config.THREAD_LLM_PROMPT,
-            )
         except UnprocessableThreadError as e:
             log.exception("Unable to process %s", e.url)
             obj, _ = UnprocessableThread.objects.update_or_create(
@@ -71,6 +70,12 @@ class ThreadDataService(RedditDataService):
                 },
             )
         else:
+            generated_data: GeneratedThreadData = self.generate_data(
+                inputs=submissions,
+                llm_name=llm_producer.name,
+                nlp_name=nlp_producer.name,
+                prompt=config.THREAD_LLM_PROMPT,
+            )
             obj: ThreadData = self.create_object(
                 generated_data=generated_data,
                 llm_contributor=llm_contributor,
@@ -123,15 +128,14 @@ class ThreadDataService(RedditDataService):
         The response from each of those is a `GeneratedThreadData`. The output from both nlp and llm processors
         is then combined into a single `GeneratedThreadData`.
         """
-        try:
-            generated_data = super().generate_data(inputs=inputs, llm_name=llm_name, nlp_name=nlp_name, prompt=prompt)
-        except OpenAIError as e:
-            msg = "OpenAIError thrown when generating data"
-            log.exception(msg)
-            raise UnprocessableThreadError(self.url, msg)
-        else:
-            return generated_data
+        return super().generate_data(inputs=inputs, llm_name=llm_name, nlp_name=nlp_name, prompt=prompt)
 
+    @retry(
+        reraise=True,
+        retry=retry_if_exception_type(RedditAPIException),
+        stop=stop_after_attempt(10),
+        wait=wait_random_exponential(min=1, max=60),
+    )
     def get_submissions(
         self, *, max_submissions: int, min_characters_per_submission: int, min_submissions: int
     ) -> List[str]:
@@ -141,25 +145,20 @@ class ThreadDataService(RedditDataService):
 
         ignored_usernames = set(IgnoredRedditor.objects.values_list("username", flat=True))
 
-        try:
-            praw_submission = settings.REDDIT_API.submission(url=self.url)
-            praw_submission.comments.replace_more(limit=None)
+        praw_submission = settings.REDDIT_API.submission(url=self.url)
+        praw_submission.comments.replace_more(limit=None)
 
-            for comment in praw_submission.comments.list():
-                if max_submissions <= 0:
-                    break
-                if comment.author and comment.author.name not in ignored_usernames:
-                    if body := self.filter_submission(text=comment.body, min_characters=min_characters_per_submission):
-                        max_submissions -= 1
-                        submissions.append(body)
-        except RedditAPIException as e:
-            msg = "RedditAPIException thrown when getting submissions"
-            log.exception(msg)
-            raise UnprocessableThreadError(self.url, msg)
-        else:
-            if len(submissions) < min_submissions:
-                raise UnprocessableThreadError(
-                    self.url,
-                    f"Less than {min_submissions} submissions available for processing (found {len(submissions)})",
-                )
+        for comment in praw_submission.comments.list():
+            if max_submissions <= 0:
+                break
+            if comment.author and comment.author.name not in ignored_usernames:
+                if body := self.filter_submission(text=comment.body, min_characters=min_characters_per_submission):
+                    max_submissions -= 1
+                    submissions.append(body)
+
+        if len(submissions) < min_submissions:
+            raise UnprocessableThreadError(
+                self.url,
+                f"Less than {min_submissions} submissions available for processing (found {len(submissions)})",
+            )
         return submissions

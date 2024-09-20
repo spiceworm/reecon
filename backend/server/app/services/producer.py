@@ -4,7 +4,15 @@ import statistics
 from typing import List
 
 from django.conf import settings
+from openai import OpenAIError
 import pydantic
+from tenacity import (
+    retry,
+    retry_if_result,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_random_exponential,
+)
 import textblob
 
 
@@ -15,6 +23,10 @@ __all__ = (
     "LlmProducerService",
     "NlpProducerService",
 )
+
+
+def is_missing_expected_generated_data(generated_data: pydantic.BaseModel):
+    return not all(generated_data.model_dump().values())
 
 
 class ProducerService(abc.ABC):
@@ -28,6 +40,12 @@ class LlmProducerService(ProducerService):
     def __init__(self, response_format: type[pydantic.BaseModel]):
         self.response_format = response_format
 
+    @retry(
+        reraise=True,
+        retry=(retry_if_result(is_missing_expected_generated_data) | retry_if_exception_type(OpenAIError)),
+        stop=stop_after_attempt(10),
+        wait=wait_random_exponential(min=1, max=60),
+    )
     def generate_data(self, *, inputs: List[str], llm_name: str, prompt: str) -> pydantic.BaseModel:
         chat_completion = settings.OPENAI_API.beta.chat.completions.parse(
             messages=[
@@ -43,8 +61,6 @@ class LlmProducerService(ProducerService):
             model=llm_name,
             response_format=self.response_format,
         )
-        # # Total tokens used for prompt and response
-        # chat_completion.usage.total_tokens
         return chat_completion.choices[0].message.parsed
 
 
@@ -53,6 +69,8 @@ class NlpProducerService(ProducerService):
         self.response_format = response_format
 
     def generate_data(self, *, inputs: List[str], nlp_name: str) -> pydantic.BaseModel:
+        # tenacity not being used here because only 1 value is being generated and it is being
+        # generated in a predictable manner.
         if nlp_name == "textblob":
             polarity_values = []
             for text in inputs:
