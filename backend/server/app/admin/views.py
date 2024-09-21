@@ -6,9 +6,7 @@ from ..models import (
     Producer,
     ProducerCategory,
     Redditor,
-    RedditorData,
     Thread,
-    ThreadData,
     UnprocessableRedditor,
     UnprocessableThread,
 )
@@ -18,9 +16,7 @@ __all__ = (
     "ProducerAdmin",
     "ProducerCategoryAdmin",
     "RedditorAdmin",
-    "RedditorDataAdmin",
     "ThreadAdmin",
-    "ThreadDataAdmin",
     "UnprocessableRedditorAdmin",
     "UnprocessableThreadAdmin",
 )
@@ -54,19 +50,9 @@ class RedditorAdmin(admin.ModelAdmin):
     list_display = get_list_display(Redditor)
 
 
-@admin.register(RedditorData)
-class RedditorDataAdmin(admin.ModelAdmin):
-    list_display = get_list_display(RedditorData)
-
-
 @admin.register(Thread)
 class ThreadAdmin(admin.ModelAdmin):
     list_display = get_list_display(Thread)
-
-
-@admin.register(ThreadData)
-class ThreadDataAdmin(admin.ModelAdmin):
-    list_display = get_list_display(ThreadData)
 
 
 @admin.register(UnprocessableRedditor)
