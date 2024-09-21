@@ -7,7 +7,6 @@ TODO:
 - Have some way to inspect list of hidden threads
 - Add toggle to auto collapse ignored user (e.g. AutoModerator) comments
 - Allow users to define more conditions (e.g. User Age Filter >,<,= number)
-- Extension does not display error messages.
 - Trigger that causes the extension to execute is still bad. (cache a last run time and check if before running again)
 - Extension does not run when viewing a specific thread
 - If you filter by e.g. age and then undo that filter by setting it back to 0, all previously collapsed comments remain collapsed.

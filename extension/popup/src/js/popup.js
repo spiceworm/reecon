@@ -29,9 +29,7 @@ function changeElementVisibility(element_id, visible) {
 function createAlert(message, alertClass, clear = false) {
     // Delete existing alerts
     if (clear) {
-        for (let el of document.getElementsByClassName("alert")) {
-            el.remove();
-        }
+        document.querySelectorAll(".alert").forEach(el => el.remove());
     }
 
     let alertDiv = document.createElement("div");
@@ -45,9 +43,7 @@ function createAlert(message, alertClass, clear = false) {
 function createAlerts(messages, alertClass, clear = false) {
     // Delete existing alerts
     if (clear) {
-        for (let el of document.getElementsByClassName("alert")) {
-            el.remove();
-        }
+        document.querySelectorAll(".alert").forEach(el => el.remove());
     }
 
     let alertDivs = [];
@@ -90,7 +86,20 @@ function showLoginForm() {
         ).then(response => {
             if (response.ok) {
                 return response.json();
+            } else if (response.status === 401) {
+                response.json().then(invalidCredentialsResponse => {
+                    loginForm.prepend(
+                        createAlert(invalidCredentialsResponse.detail, "alert-danger", true)
+                    );
+                })
             } else {
+                loginForm.prepend(
+                    createAlert(
+                        `${response.status} error occurred when attempting to login.`,
+                        "alert-danger",
+                        true,
+                    )
+                );
                 throw new Error(response);
             }
         }).then(respJson => {
@@ -101,7 +110,7 @@ function showLoginForm() {
                 showSettingsForm();
             });
         }).catch(error => {
-            loginForm.prepend(createAlert(error, "alert-danger", true));
+            console.log(error);
         });
     })
 
@@ -136,7 +145,20 @@ function showSignupForm() {
         ).then(signupResponse => {
             if (signupResponse.ok) {
                 return signupResponse.json();
+            } else if (signupResponse.status === 400) {
+                signupResponse.json().then(invalidSignupResponse => {
+                    signupForm.prepend(
+                        createAlert(invalidSignupResponse.detail, "alert-danger", true)
+                    );
+                })
             } else {
+                signupForm.prepend(
+                    createAlert(
+                        `${signupResponse.status} error occurred when attempting to signup.`,
+                        "alert-danger",
+                        true,
+                    )
+                );
                 throw new Error(signupResponse)
             }
         }).then(signupJson => {
@@ -151,6 +173,13 @@ function showSignupForm() {
                 if (tokenResponse.ok) {
                     return tokenResponse.json();
                 } else {
+                    signupForm.prepend(
+                        createAlert(
+                            `${tokenResponse.status} error occurred when fetching JWT.`,
+                            "alert-danger",
+                            true,
+                        )
+                    );
                     throw new Error(tokenResponse)
                 }
             }).then(tokenJson => {
@@ -164,7 +193,6 @@ function showSignupForm() {
             })
         }).catch(error => {
             console.log(error);
-            signupForm.prepend(createAlert(error, "alert-danger", true));
         });
     })
 
@@ -236,6 +264,7 @@ function loadPopup() {
             [`Unable to contact server at ${process.env.BASE_URL}`],
             "alert-danger",
             );
+        console.log(error);
     })
 }
 
