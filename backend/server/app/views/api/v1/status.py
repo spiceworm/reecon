@@ -20,8 +20,8 @@ class StatusView(RetrieveAPIView):
                 message
                 for message in [
                     config.API_V1_STATUS_MESSAGE,
-                    "Redditor processing is currently disabled" if not config.REDDITOR_PROCESSING_ENABLED else None,
-                    "Thread processing is currently disabled" if not config.THREAD_PROCESSING_ENABLED else None,
+                    config.REDDITOR_PROCESSING_DISABLED_MESSAGE if not config.REDDITOR_PROCESSING_ENABLED else None,
+                    config.THREAD_PROCESSING_DISABLED_MESSAGE if not config.THREAD_PROCESSING_ENABLED else None,
                 ]
                 if message
             ],

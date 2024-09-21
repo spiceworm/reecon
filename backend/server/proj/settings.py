@@ -302,10 +302,18 @@ CONSTANCE_CONFIG = collections.OrderedDict(
             "Enabled processing of reddit redditors.",
             "checkbox",
         ),
+        "REDDITOR_PROCESSING_DISABLED_MESSAGE": (
+            "Redditor processing disabled for all users",
+            "Status message returned when REDDITOR_PROCESSING_ENABLED=False",
+        ),
         "THREAD_PROCESSING_ENABLED": (
             decouple.config("THREAD_PROCESSING_ENABLED", cast=bool, default=False),
             "Enabled processing of reddit threads.",
             "checkbox",
+        ),
+        "THREAD_PROCESSING_DISABLED_MESSAGE": (
+            "Thread processing disabled for all users",
+            "Status message returned when THREAD_PROCESSING_ENABLED=False",
         ),
         "LLM_NAME": (
             "gpt-4o-2024-08-06",
