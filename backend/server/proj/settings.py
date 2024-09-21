@@ -339,6 +339,11 @@ CONSTANCE_CONFIG = collections.OrderedDict(
             "Generate a brief summary of what is being discussed.",
             "Prompt sent to the OpenAI API to infer data about redditors based on their submissions.",
         ),
+        "LLM_MAX_CONTEXT_WINDOW_FOR_INPUTS": (
+            0.5,
+            "The maximum percentage (expressed as a decimal from 0 to 1) of the LLM context window tokens "
+            "that can be used for inputs."
+        ),
         "SUBMISSION_FILTER_MAX_LENGTH": (
             decouple.config("SUBMISSION_FILTER_MAX_LENGTH", cast=int, default=2000),
             "The maximum number of characters allowed for the text of a single submission to be included in "

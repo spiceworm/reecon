@@ -12,6 +12,7 @@ from typing import List
 from constance import config
 from django.contrib.auth.models import User
 from django.core import management
+import tiktoken
 
 from ...exceptions import (
     UnprocessableRedditorError,
@@ -99,14 +100,22 @@ class Command(management.base.BaseCommand):
         nlp = Producer.objects.get(name=options["nlp"])
         admin = User.objects.get(username="admin")
 
+        encoding = tiktoken.encoding_for_model(llm.name)
+
         if options["entity"] == "redditor":
             username = options["username"]
             service = RedditorDataService(username)
 
             try:
-                submissions: List[str] = service.get_submissions(context_window=llm.context_window)
+                submissions: List[str] = service.get_submissions(llm_producer=llm)
                 if options["action"] == "get-submissions":
                     self.echos(submissions)
+                    log.debug(
+                        "Retrieved %s submissions (%s tokens) for %s",
+                        len(submissions),
+                        len(encoding.encode("|".join(submissions))),
+                        service.username,
+                    )
                 else:
                     generated_data: GeneratedRedditorData = service.generate_data(
                         inputs=submissions,
@@ -143,9 +152,15 @@ class Command(management.base.BaseCommand):
             service = ThreadDataService(url)
 
             try:
-                submissions: List[str] = service.get_submissions(context_window=llm.context_window)
+                submissions: List[str] = service.get_submissions(llm_producer=llm)
                 if options["action"] == "get-submissions":
                     self.echos(submissions)
+                    log.debug(
+                        "Retrieved %s submissions (%s tokens) for %s",
+                        len(submissions),
+                        len(encoding.encode("|".join(submissions))),
+                        service.url,
+                    )
                 else:
                     generated_data: GeneratedThreadData = service.generate_data(
                         inputs=submissions,

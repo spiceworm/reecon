@@ -20,6 +20,7 @@ from tenacity import (
     stop_after_attempt,
     wait_random_exponential,
 )
+import tiktoken
 
 from .data import (
     GeneratedThreadData,
@@ -64,7 +65,7 @@ class ThreadDataService(RedditDataService):
         arguments.
         """
         try:
-            submissions = self.get_submissions(context_window=llm_producer.context_window)
+            submissions = self.get_submissions(llm_producer=llm_producer)
         except UnprocessableThreadError as e:
             log.exception("Unable to process %s", e.url)
             obj, _ = UnprocessableThread.objects.update_or_create(
@@ -144,26 +145,35 @@ class ThreadDataService(RedditDataService):
         stop=stop_after_attempt(10),
         wait=wait_random_exponential(min=1, max=60),
     )
-    def get_submissions(self, *, context_window: int) -> List[str]:
+    def get_submissions(self, *, llm_producer: Producer) -> List[str]:
         submissions: Set[str] = set()
         ignored_usernames = set(IgnoredRedditor.objects.values_list("username", flat=True))
         praw_submission: Submission = settings.REDDIT_API.submission(url=self.url)
 
-        if submission_text := self.filter_submission(text=praw_submission.selftext):
-            submissions.add(submission_text)
+        context_window = llm_producer.context_window
+        max_input_tokens = context_window * config.LLM_MAX_CONTEXT_WINDOW_FOR_INPUTS
+        encoding = tiktoken.encoding_for_model(llm_producer.name)
 
+        # Get the thread selftext
+        if text := self.filter_submission(text=praw_submission.selftext):
+            pending_inputs = "|".join(submissions | {text})
+            pending_tokens = len(encoding.encode(pending_inputs))
+            if pending_tokens < max_input_tokens:
+                submissions.add(text)
+
+        # Get thread comments
         comment: Comment
         for comment in praw_submission.comments.list():
-            if context_window <= 0:
-                break
-            if (
-                not isinstance(comment, MoreComments)
-                and comment.author
-                and comment.author.name not in ignored_usernames
-            ):
-                if body := self.filter_submission(text=comment.body):
-                    context_window -= 1  # FIXME: deduct tokens from context window (how much to leave for response?)
-                    submissions.add(body)
+            if isinstance(comment, MoreComments):
+                continue
+            if comment.author and comment.author.name not in ignored_usernames:
+                if text := self.filter_submission(text=comment.body):
+                    pending_inputs = "|".join(submissions | {text})
+                    pending_tokens = len(encoding.encode(pending_inputs))
+                    if pending_tokens < max_input_tokens:
+                        submissions.add(text)
+                    else:
+                        break
 
         if len(submissions) < config.THREAD_MIN_SUBMISSIONS:
             raise UnprocessableThreadError(
@@ -171,4 +181,5 @@ class ThreadDataService(RedditDataService):
                 f"Less than {config.THREAD_MIN_SUBMISSIONS} submissions available for processing "
                 f"(found {len(submissions)})",
             )
+
         return list(submissions)

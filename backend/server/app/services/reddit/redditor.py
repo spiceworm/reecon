@@ -21,6 +21,7 @@ from tenacity import (
     stop_after_attempt,
     wait_random_exponential,
 )
+import tiktoken
 
 from .data import (
     GeneratedRedditorData,
@@ -61,7 +62,7 @@ class RedditorDataService(RedditDataService):
         arguments.
         """
         try:
-            submissions = self.get_submissions(context_window=llm_producer.context_window)
+            submissions = self.get_submissions(llm_producer=llm_producer)
         except UnprocessableRedditorError as e:
             log.exception("Unable to process %s", e.username)
             obj, _ = UnprocessableRedditor.objects.update_or_create(
@@ -151,15 +152,21 @@ class RedditorDataService(RedditDataService):
         stop=stop_after_attempt(10),
         wait=wait_random_exponential(min=1, max=60),
     )
-    def get_submissions(self, *, context_window: int) -> List[str]:
+    def get_submissions(self, *, llm_producer: Producer) -> List[str]:
         submissions: Set[str] = set()
         praw_redditor: PrawRedditor = settings.REDDIT_API.redditor(name=self.username)
+
+        context_window = llm_producer.context_window
+        max_input_tokens = context_window * config.LLM_MAX_CONTEXT_WINDOW_FOR_INPUTS
+        encoding = tiktoken.encoding_for_model(llm_producer.name)
 
         # Get the body of threads submitted by the user.
         thread: Submission
         for thread in praw_redditor.submissions.new():
             if text := self.filter_submission(text=thread.selftext):
-                if len("|".join(submissions | {text})) < context_window:
+                pending_inputs = "|".join(submissions | {text})
+                pending_tokens = len(encoding.encode(pending_inputs))
+                if pending_tokens < max_input_tokens:
                     submissions.add(text)
                 else:
                     break
@@ -167,12 +174,15 @@ class RedditorDataService(RedditDataService):
         # Get the body of comments submitted by the user.
         comment: Comment
         for comment in praw_redditor.comments.new():
-            if not isinstance(comment, MoreComments):
-                if text := self.filter_submission(text=comment.body):
-                    if len("|".join(submissions | {text})) < context_window:
-                        submissions.add(text)
-                    else:
-                        break
+            if isinstance(comment, MoreComments):
+                continue
+            if text := self.filter_submission(text=comment.body):
+                pending_inputs = "|".join(submissions | {text})
+                pending_tokens = len(encoding.encode(pending_inputs))
+                if pending_tokens < max_input_tokens:
+                    submissions.add(text)
+                else:
+                    break
 
         if len(submissions) < config.REDDITOR_MIN_SUBMISSIONS:
             raise UnprocessableRedditorError(
@@ -180,4 +190,5 @@ class RedditorDataService(RedditDataService):
                 f"Less than {config.REDDITOR_MIN_SUBMISSIONS} submissions available for processing "
                 f"(found {len(submissions)})",
             )
+
         return list(submissions)

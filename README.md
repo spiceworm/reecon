@@ -15,7 +15,6 @@ TODO:
 - All button to expand all comments.
 - Add extension hot keys to quickly change settings?
 - Track submission count since last redditor/thread processing event. Do no reprocess unless some number of new submissions have been made. Few or no new submissions does not warrant reprocessing unless the processing is done by a new model.
-- Use https://github.com/openai/tiktoken to count number of tokens when determining how many submissions to fetch.
 
 Firefox extension that:
 - Scans all usernames on the current page of old reddit.com layout (does not work on new layout)
