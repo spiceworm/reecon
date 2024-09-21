@@ -10,18 +10,17 @@ TODO:
 - Extension does not display error messages.
 - Trigger that causes the extension to execute is still bad. (cache a last run time and check if before running again)
 - Extension does not run when viewing a specific thread
-- Only process threads that have a positive upvote count ( > 2 ?) because you wouldnt read downvoted comments anyways.
 - If you filter by e.g. age and then undo that filter by setting it back to 0, all previously collapsed comments remain collapsed.
-- All button to expand all comments.
-- Add extension hot keys to quickly change settings?
+- Add button to expand all comments.
 - Track submission count since last redditor/thread processing event. Do no reprocess unless some number of new submissions have been made. Few or no new submissions does not warrant reprocessing unless the processing is done by a new model.
+- Determine list of themes related to each thread. Recommend threads to users based on their interests determined from their submissions history. 
 
 Firefox extension that:
-- Scans all usernames on the current page of old reddit.com layout (does not work on new layout)
-- Posts them to a local server to analyze all submissions made by that user
-- The server provide stats for each user based on analysis of their posts
-- The extension then injects the stats so they appear beside each username
-- The stats currently include age and IQ
+- Scans all usernames and threads on the current page of old reddit.com layout (does not currently support new layout)
+- The usernames and thread paths are sent to server for processing of submissions
+- Based on found submissions, the server generates data for each redditor and thread using natural language processing and large language models
+- The extension then injects the generated data onto the page so it is visible when browsing
+- Data currently include age, IQ, sentiment polarity, and a brief summary about the user based on their submissions.
 
 # Development
 - In extension/webpack.config.js, change BASE_URL to 'http://127.0.0.1:8888'

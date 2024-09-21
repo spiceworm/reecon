@@ -298,7 +298,7 @@ CONSTANCE_ADDITIONAL_FIELDS = {
 CONSTANCE_CONFIG = collections.OrderedDict(
     {
         "REDDITOR_PROCESSING_ENABLED": (
-            decouple.config("REDDITOR_PROCESSING_ENABLED", cast=bool, default=False),
+            False,
             "Enabled processing of reddit redditors.",
             "checkbox",
         ),
@@ -307,7 +307,7 @@ CONSTANCE_CONFIG = collections.OrderedDict(
             "Status message returned when REDDITOR_PROCESSING_ENABLED=False",
         ),
         "THREAD_PROCESSING_ENABLED": (
-            decouple.config("THREAD_PROCESSING_ENABLED", cast=bool, default=False),
+            False,
             "Enabled processing of reddit threads.",
             "checkbox",
         ),
@@ -329,15 +329,14 @@ CONSTANCE_CONFIG = collections.OrderedDict(
         ),
         "REDDITOR_LLM_PROMPT": (
             "The following pipe delimited messages are unrelated submissions posted by a person. "
-            "Determine the age and IQ of that person based on their writing. Provide a confidence "
-            "value that represents how accurate you believe your response to be as a value between "
-            "0 and 100 where 0 represents no confidence and 100 represents absolute certainty.",
-            "Prompt sent to the OpenAI API to infer data about redditors based on their submissions.",
+            "Determine the age and IQ of that person based on their writing. Also generate a short "
+            "summary that describes the author that uses 50 completion_tokens or less.",
+            "Prompt sent to the OpenAI API to infer data about redditors based on submissions.",
         ),
         "THREAD_LLM_PROMPT": (
             "The following pipe delimited messages are unrelated submissions posted by multiple people. "
-            "Generate a brief summary of what is being discussed.",
-            "Prompt sent to the OpenAI API to infer data about redditors based on their submissions.",
+            "Generate a brief summary of what is being discussed that uses 50 completion_tokens or less.",
+            "Prompt sent to the OpenAI API to infer data about a thread based on submissions.",
         ),
         "LLM_MAX_CONTEXT_WINDOW_FOR_INPUTS": (
             0.5,
@@ -345,35 +344,34 @@ CONSTANCE_CONFIG = collections.OrderedDict(
             "that can be used for inputs."
         ),
         "SUBMISSION_FILTER_MAX_LENGTH": (
-            decouple.config("SUBMISSION_FILTER_MAX_LENGTH", cast=int, default=2000),
+            2000,
             "The maximum number of characters allowed for the text of a single submission to be included in "
             "processing. This is the length of the text after filtering. Applying a limit to the maximum number "
             "of characters helps exclude text copied from other sources.",
         ),
         "SUBMISSION_FILTER_MIN_LENGTH": (
-            decouple.config("SUBMISSION_FILTER_MIN_LENGTH", cast=int, default=120),
+            120,
             "The minimum number of characters required for the text of a single submission to be included in "
             "processing. This is the length of the text after filtering.",
         ),
         "REDDITOR_MIN_SUBMISSIONS": (
-            decouple.config("REDDITOR_MIN_SUBMISSIONS", cast=int, default=1),
-            "The minimum number of submissions (comments + threads) that must be available for a redditor to "
-            "be processed.",
+            1,
+            "The minimum number of submissions available after filtering for processing of a redditor to occur.",
         ),
         "THREAD_MIN_SUBMISSIONS": (
-            decouple.config("THREAD_MIN_SUBMISSIONS", cast=int, default=1),
-            "The minimum number of comments that must be available after filtering for processing to occur.",
+            1,
+            "The minimum number of submissions available after filtering for processing of a thread to occur.",
         ),
         "REDDITOR_FRESHNESS_TD": (
             timedelta(days=30),
             "Defines how long `Redditor` database entries are considered fresh. Entries older than this timedelta "
-            "will be reprocessed if their username is submitted in an API request.",
+            "will be reprocessed if the username is submitted in an API request.",
             timedelta,
         ),
         "THREAD_FRESHNESS_TD": (
             timedelta(minutes=15),
             "Defines how long `Thread` database entries are considered fresh. Entries older than this timedelta "
-            "will be reprocessed if their URL path is submitted in an API request.",
+            "will be reprocessed if the URL path is submitted in an API request.",
             timedelta,
         ),
         "UNPROCESSABLE_REDDITOR_EXP_TD": (
