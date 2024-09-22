@@ -1,5 +1,34 @@
 import lscache from "lscache";
-import { apiAuthRequest, getAccessToken } from "./util";
+import { apiAuthRequest, getAccessToken, getIgnoredRedditors } from "./util";
+
+
+function processIgnoredRedditors(settings) {
+    let ignoredRedditors = lscache.get('ignoredRedditors');
+    if (ignoredRedditors === null) {
+        getIgnoredRedditors(settings.accessToken).then(ignoredRedditorsResponse => {
+            // ignored redditors cache expires in 1 week.
+            lscache.set('ignoredRedditors', ignoredRedditorsResponse, 10080);
+            ignoredRedditors = ignoredRedditorsResponse;
+        })
+    }
+
+    // FIXME: This works but this extension script does not run when a thread is loaded so you
+    //    still need to open and close the popup to manually execute the extension.
+    // TODO: Get list of all ignored redditors and not just he the hardcoded AutoModerator one.
+    const ignoredRedditorSelector = ignoredRedditors.map(obj => `[data-author=${obj.username}]`).join(',');
+
+    for (let commentDiv of document.querySelectorAll(ignoredRedditorSelector)) {
+        if (settings.hideIgnoredRedditors) {
+            commentDiv.classList.remove("noncollapsed");
+            commentDiv.classList.add("collapsed");
+        } else {
+            commentDiv.classList.remove("collapsed");
+            commentDiv.classList.add("noncollapsed");
+        }
+    }
+
+    return ignoredRedditors;
+}
 
 
 function processThreads(settings) {
@@ -167,15 +196,21 @@ function updateDOM_usernames(userObjects, username_linkElements, settings) {
 
 
 function run(settings) {
+    lscache.setBucket('api-data');
+    lscache.flushExpired();
+    const ignoredRedditors = processIgnoredRedditors(settings);
+
     if (settings.enableRedditorProcessing) {
         lscache.setBucket('usernames');
         lscache.flushExpired();
+        // TODO: do not process ignored redditors
         processUsernames(settings);
     }
 
     if (settings.enableThreadProcessing) {
         lscache.setBucket('threads');
         lscache.flushExpired();
+        // TODO: do not process ignored redditors
         processThreads(settings);
     }
 }
@@ -187,6 +222,8 @@ function main() {
     // Only run on the current active reddit tab
     if (url.host.endsWith('reddit.com') && document.visibilityState === "visible") {
         browser.storage.local.get().then(settings => {
+            // TODO: can maybe remove the below condition because background.js already checks the same
+            //  conditions when sending executeExtension trigger message.
             if (settings.accessToken !== null && !settings.disableExtension) {
                 run(settings);
             }
@@ -198,30 +235,20 @@ function main() {
 browser.runtime.onMessage.addListener(data => {
     if (data.trigger === 'disableExtension') {
         let userStatSpans = document.querySelectorAll(`[id^='${process.env.APP_NAME}-user']`);
-        userStatSpans.forEach(el => el.style.display = 'none');
-
         let threadSentimentSpans = document.querySelectorAll(`[id^='${process.env.APP_NAME}-thread']`);
-        threadSentimentSpans.forEach(el => el.style.display = 'none');
-    }
-});
 
-
-browser.runtime.onMessage.addListener(data => {
-    if (data.trigger === 'enableExtension') {
-        let userStatSpans = document.querySelectorAll(`[id^='${process.env.APP_NAME}-user']`);
-        userStatSpans.forEach(el => el.style.display = '');
-
-        let threadSentimentSpans = document.querySelectorAll(`[id^='${process.env.APP_NAME}-thread']`);
-        threadSentimentSpans.forEach(el => el.style.display = '');
-    }
-});
-
-
-// background.js will send an 'executeExtension' message which we are listening for here.
-browser.runtime.onMessage.addListener(data => {
-    if (data.trigger === 'executeExtension') {
-        main();
-        // Execute run again 5 seconds later to fetch processed results and update the DOM with those results.
-        setTimeout(main, 5000);
+        if (data.value) {
+            userStatSpans.forEach(el => el.style.display = 'none');
+            threadSentimentSpans.forEach(el => el.style.display = 'none');
+        } else {
+            userStatSpans.forEach(el => el.style.display = '');
+            threadSentimentSpans.forEach(el => el.style.display = '');
+        }
+    } else if (data.trigger === 'executeExtension') {
+        if (data.value) {
+            main();
+            // Execute run again 5 seconds later to fetch processed results and update the DOM with those results.
+            setTimeout(main, 5000);
+        }
     }
 });

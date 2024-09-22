@@ -5,7 +5,10 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 import django_rq
 from rest_framework import status
-from rest_framework.generics import CreateAPIView
+from rest_framework.generics import (
+    CreateAPIView,
+    ListAPIView,
+)
 from rest_framework.response import Response
 
 from ..util import response_schema
@@ -15,15 +18,24 @@ from .....models import (
     UnprocessableRedditor,
 )
 from .....serializers import (
+    IgnoredRedditorSerializer,
     RedditorSerializer,
     RedditorUsernameSerializer,
 )
 
 
-__all__ = ("RedditorsView",)
+__all__ = (
+    "IgnoredRedditorsView",
+    "RedditorsView",
+)
 
 
 log = logging.getLogger("app.views.api.v1.reddit.redditor")
+
+
+class IgnoredRedditorsView(ListAPIView):
+    queryset = IgnoredRedditor.objects.all()
+    serializer_class = IgnoredRedditorSerializer
 
 
 @response_schema(serializer=RedditorSerializer(many=True))

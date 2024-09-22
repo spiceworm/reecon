@@ -1,11 +1,9 @@
 TODO:
-- Add option to hide comments for unprocessable redditors (they have only created threads or their comments are all less than 120 characters)
 - Add option to hide thread posts for users with no comments (bots posting articles?)
 - subreddit specific settings
 - Verify email when creating user account
 - Allow/require user to enter their own openai api key for user processing
 - Have some way to inspect list of hidden threads
-- Add toggle to auto collapse ignored user (e.g. AutoModerator) comments
 - Allow users to define more conditions (e.g. User Age Filter >,<,= number)
 - Trigger that causes the extension to execute is still bad. (cache a last run time and check if before running again)
 - Extension does not run when viewing a specific thread

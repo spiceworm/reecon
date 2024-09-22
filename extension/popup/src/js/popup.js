@@ -9,6 +9,7 @@ function saveSettings() {
         enableRedditorProcessing: document.getElementById("enableRedditorProcessing").checked || false,
         enableThreadProcessing: document.getElementById("enableThreadProcessing").checked || false,
         hideBadJujuThreads: document.getElementById("hideBadJujuThreads").checked || false,
+        hideIgnoredRedditors: document.getElementById("hideIgnoredRedditors").checked || false,
         minThreadSentiment: parseFloat(document.getElementById("minThreadSentiment").value || '0.05'),
         minUserAge: parseInt(document.getElementById("minUserAge").value || '0'),
         minUserIQ: parseInt(document.getElementById("minUserIQ").value || '0')
@@ -212,6 +213,7 @@ function showSettingsForm() {
         let enableRedditorProcessing = document.getElementById("enableRedditorProcessing");
         let enableThreadProcessing = document.getElementById("enableThreadProcessing");
         let hideBadJujuThreads = document.getElementById("hideBadJujuThreads");
+        let hideIgnoredRedditors = document.getElementById("hideIgnoredRedditors");
         let minThreadSentiment = document.getElementById("minThreadSentiment");
         let minUserAge = document.getElementById("minUserAge");
         let minUserIQ = document.getElementById("minUserIQ");
@@ -220,6 +222,7 @@ function showSettingsForm() {
             enableRedditorProcessing,
             enableThreadProcessing,
             hideBadJujuThreads,
+            hideIgnoredRedditors,
             minThreadSentiment,
             minUserAge,
             minUserIQ
@@ -236,6 +239,7 @@ function showSettingsForm() {
         enableRedditorProcessing.checked = settings.enableRedditorProcessing;
         enableThreadProcessing.checked = settings.enableThreadProcessing;
         hideBadJujuThreads.checked = settings.hideBadJujuThreads;
+        hideIgnoredRedditors.checked = settings.hideIgnoredRedditors;
         minThreadSentiment.value = settings.minThreadSentiment;
         minUserAge.value = settings.minUserAge;
         minUserIQ.value = settings.minUserIQ;

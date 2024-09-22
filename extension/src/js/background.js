@@ -1,16 +1,16 @@
 // Send 'executeExtension' message to listener in extension.js
-async function sendExtensionMessage(trigger) {
+async function sendExtensionMessage(trigger, value = null) {
     browser.tabs.query({ currentWindow: true, active: true }).then((tabInfo) => {
         const tab = tabInfo[0]
         if (tab.status === 'complete') {
-            browser.tabs.sendMessage(tab.id, { trigger: trigger });
+            browser.tabs.sendMessage(tab.id, { trigger: trigger, value: value });
         }
     })
 }
 
 
 browser.storage.onChanged.addListener(() => {
-    browser.storage.local.get(['accessToken', 'disableExtension']).then(settings => {
+    browser.storage.local.get().then(settings => {
         if (settings.accessToken === null || settings.disableExtension) {
             browser.action.setBadgeText({ text: "❕" });
             browser.action.setBadgeBackgroundColor({ color: "red" });
@@ -19,13 +19,12 @@ browser.storage.onChanged.addListener(() => {
             browser.action.setBadgeBackgroundColor({ color: null });
         }
 
-        if (settings.disableExtension) {
-            sendExtensionMessage('disableExtension').then();
-        } else {
-            sendExtensionMessage('enableExtension').then();
+        // Do not send messages to extension.js unless user is authenticated and can change settings in the popup.
+        if (settings.accessToken !== null) {
+            sendExtensionMessage('disableExtension', settings.disableExtension).then(() => {
+                sendExtensionMessage('executeExtension', !settings.disableExtension).then();
+            })
         }
-    }).then(() => {
-        sendExtensionMessage('executeExtension').then();
     });
 })
 
@@ -55,6 +54,7 @@ browser.runtime.onInstalled.addListener((reasonObj) => {
             enableThreadProcessing: false,
             refreshToken: null,
             hideBadJujuThreads: false,
+            hideIgnoredRedditors: false,
             minThreadSentiment: 0.05,
             minUserAge: 0,
             minUserIQ: 0,

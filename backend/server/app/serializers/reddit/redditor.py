@@ -12,10 +12,16 @@ from ...models import (
 
 
 __all__ = (
+    "IgnoredRedditorSerializer",
     "RedditorSerializer",
     "RedditorDataSerializer",
     "RedditorUsernameSerializer",
 )
+
+
+class IgnoredRedditorSerializer(serializers.Serializer):
+    reason = serializers.CharField()
+    username = serializers.CharField(max_length=32)
 
 
 class RedditorDataSerializer(serializers.ModelSerializer):

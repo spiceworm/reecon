@@ -17,6 +17,7 @@ from .views.api import v1
 
 v1_endpoints = [
     path("status/", v1.StatusView.as_view(), name="status"),
+    path("reddit/redditors/ignored/", v1.reddit.IgnoredRedditorsView.as_view(), name="reddit-ignored-redditors"),
     path("reddit/redditors/", v1.reddit.RedditorsView.as_view(), name="reddit-redditors"),
     path("reddit/threads/", v1.reddit.ThreadsView.as_view(), name="reddit-threads"),
 ]
