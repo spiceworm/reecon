@@ -2,36 +2,10 @@ import lscache from "lscache";
 import { apiAuthRequest, getAccessToken, getIgnoredRedditors } from "./util";
 
 
-function processIgnoredRedditors(settings) {
-    let ignoredRedditors = lscache.get('ignoredRedditors');
-    if (ignoredRedditors === null) {
-        getIgnoredRedditors(settings.accessToken).then(ignoredRedditorsResponse => {
-            // ignored redditors cache expires in 1 week.
-            lscache.set('ignoredRedditors', ignoredRedditorsResponse, 10080);
-            ignoredRedditors = ignoredRedditorsResponse;
-        })
-    }
-
-    // FIXME: This works but this extension script does not run when a thread is loaded so you
-    //    still need to open and close the popup to manually execute the extension.
-    // TODO: Get list of all ignored redditors and not just he the hardcoded AutoModerator one.
-    const ignoredRedditorSelector = ignoredRedditors.map(obj => `[data-author=${obj.username}]`).join(',');
-
-    for (let commentDiv of document.querySelectorAll(ignoredRedditorSelector)) {
-        if (settings.hideIgnoredRedditors) {
-            commentDiv.classList.remove("noncollapsed");
-            commentDiv.classList.add("collapsed");
-        } else {
-            commentDiv.classList.remove("collapsed");
-            commentDiv.classList.add("noncollapsed");
-        }
-    }
-
-    return ignoredRedditors;
-}
-
-
 function processThreads(settings) {
+    lscache.setBucket('threads');
+    lscache.flushExpired();
+
     let newThreadUrlPaths = [];
     let cachedThreadData = [];
 
@@ -63,7 +37,7 @@ function processThreads(settings) {
                         updateDOM_threads(responseJson, settings);
 
                         for (let thread of responseJson) {
-                            lscache.set(thread.path, thread, process.env.CACHE_EXP_MINUTES);
+                            lscache.set(thread.path, thread, process.env.CACHE_THREAD_FRESHNESS_MINUTES);
                         }
                     });
             }
@@ -72,7 +46,10 @@ function processThreads(settings) {
 }
 
 
-function processUsernames(settings) {
+function processRedditors(settings, ignoredRedditorObjects) {
+    lscache.setBucket('redditors');
+    lscache.flushExpired();
+
     // Map all usernames to an array containing link elements for that username.
     // The username link may appear multiple times on the same page.
     let username_linkElements = {};
@@ -86,18 +63,23 @@ function processUsernames(settings) {
         username_linkElements[username].push(el);
     }
 
-    // We only want to post usernames for processing if processed data for that username is not cached.
+    const ignoredRedditorUsernames = new Set(ignoredRedditorObjects.map(obj => obj.username));
+
+    // We only want to post usernames for processing if processed data for that username is not cached and
+    // the username is not present in `ignoredRedditors`.
     let usernames = [];
     for (let username of Object.keys(username_linkElements)) {
-        const redditorData = lscache.get(username);
-        if (redditorData !== null) {
-            cachedRedditorData.push(redditorData);
-        } else {
-            usernames.push(username);
+        if (!ignoredRedditorUsernames.has(username)) {
+            const redditorData = lscache.get(username);
+            if (redditorData !== null) {
+                cachedRedditorData.push(redditorData);
+            } else {
+                usernames.push(username);
+            }
         }
     }
 
-    updateDOM_usernames(cachedRedditorData, username_linkElements, settings);
+    updateDOM_usernames(cachedRedditorData, ignoredRedditorObjects, username_linkElements, settings);
 
     if (usernames.length > 0) {
         getAccessToken().then(accessToken => {
@@ -106,10 +88,10 @@ function processUsernames(settings) {
                     .then(response => response.json())
                     .then(responseJson => {
                         // `responseJson` contains a list of [{"<username>": "spiceworm", "age": "99", "iq": "9000"}, ...] objects.
-                        updateDOM_usernames(responseJson, username_linkElements, settings);
+                        updateDOM_usernames(responseJson, ignoredRedditorObjects, username_linkElements, settings);
 
                         for (let redditor of responseJson) {
-                            lscache.set([redditor.username], redditor, process.env.CACHE_EXP_MINUTES);
+                            lscache.set(redditor.username, redditor, process.env.CACHE_REDDITOR_FRESHNESS_MINUTES);
                         }
                     });
             }
@@ -131,10 +113,13 @@ function updateDOM_threads(threadObjects, settings) {
             threadTitleElement.insertAdjacentElement("beforeend", sentimentSpan);
         }
 
-        sentimentSpan.title = thread.sentiment_polarity;
+        const sentiment_polarity = thread.data.sentiment_polarity.value;
+        const summary = thread.data.summary.value;
+
+        sentimentSpan.title = `sentiment_polarity: ${sentiment_polarity}\u000dsummary: ${summary}`;
         sentimentSpan.innerText = " 🔮";
 
-        if (thread.sentiment_polarity < settings.minThreadSentiment) {
+        if (sentiment_polarity < settings.minThreadSentiment) {
             if (settings.hideBadJujuThreads) {
                 threadRow.style.display = "none";
             } else {
@@ -149,33 +134,33 @@ function updateDOM_threads(threadObjects, settings) {
 // Take the `userObjects` param containing a list of [{"<username>": "spiceworm, "age": 99, "iq": 9000}, ...]
 // objects and create a new <span> element to insert after each username link that appears in
 // the DOM.
-function updateDOM_usernames(userObjects, username_linkElements, settings) {
-    for (let user of userObjects) {
-        let username = user.username;
-        const statsSpanID = `${process.env.APP_NAME}-user-${username}`;
+function updateDOM_usernames(redditorObjects, ignoredRedditorObjects, username_linkElements, settings) {
+    for (let redditor of redditorObjects) {
+        let username = redditor.username;
+        const redditorDataSpanID = `${process.env.APP_NAME}-redditor-${username}`;
 
         if (username in username_linkElements) {
             for (let linkElement of username_linkElements[username]) {
-                let statsSpan;
+                let redditorDataSpan;
 
-                if (linkElement.parentElement.lastElementChild.id === statsSpanID) {
+                if (linkElement.parentElement.lastElementChild.id === redditorDataSpanID) {
                     // Use existing statsSpan if one exists for the current linkElement
-                    statsSpan = linkElement.parentElement.lastElementChild;
+                    redditorDataSpan = linkElement.parentElement.lastElementChild;
                 } else {
-                    // There is no statsSpan yet. Create one and insert it after the current linkElement
-                    statsSpan = document.createElement('span');
-                    statsSpan.setAttribute("id", statsSpanID);
-                    statsSpan.style.color = "yellow";
-                    linkElement.parentElement.insertAdjacentElement("beforeend", statsSpan);
+                    // There is no redditorStatsSpan yet. Create one and insert it after the current linkElement
+                    redditorDataSpan = document.createElement('span');
+                    redditorDataSpan.setAttribute("id", redditorDataSpanID);
+                    redditorDataSpan.style.color = "yellow";
+                    linkElement.parentElement.insertAdjacentElement("beforeend", redditorDataSpan);
                 }
 
-                statsSpan.innerText = ` [age=${user.age}, iq=${user.iq}]`;
-                // if ("error" in stats) {
-                //     statsSpan.innerText = ` [error=${stats['error']}]`;
-                //     statsSpan.style.color = "red";
-                // } else {
-                //     statsSpan.innerText = ` [age=${stats['age']}, iq=${stats['iq']}]`;
-                // }
+                const age = redditor.data.age.value;
+                const iq = redditor.data.iq.value;
+                const sentiment_polarity = redditor.data.sentiment_polarity.value;
+                const summary = redditor.data.summary.value;
+
+                redditorDataSpan.title = `age: ${age}\u000diq: ${iq}\u000dsentiment_polarity: ${sentiment_polarity}\u000dsummary: ${summary}`
+                redditorDataSpan.innerText = ` [age=${age}, iq=${iq}]`;
 
                 let commentDiv = linkElement.closest("div").parentElement;
 
@@ -184,9 +169,48 @@ function updateDOM_usernames(userObjects, username_linkElements, settings) {
                 if (commentDiv.classList.contains("comment")) {
                     // Collapse all comments that are posted by users with an age or IQ less than the specified
                     // minimum age or IQ in the settings. Otherwise, make sure they are expanded.
-                    if (parseInt(user.age) < settings.minUserAge || parseInt(user.iq) < settings.minUserIQ) {
+                    if (parseInt(age) < settings.minUserAge || parseInt(iq) < settings.minUserIQ) {
                         commentDiv.classList.remove("noncollapsed");
                         commentDiv.classList.add("collapsed");
+                    }
+                }
+            }
+        }
+    }
+
+    for (let ignoredRedditor of ignoredRedditorObjects) {
+        let username = ignoredRedditor.username;
+        const ignoredRedditorDataSpanID = `${process.env.APP_NAME}-redditor-${username}`;
+
+        if (username in username_linkElements) {
+            for (let linkElement of username_linkElements[username]) {
+                let ignoredRedditorDataSpan;
+
+                if (linkElement.parentElement.lastElementChild.id === ignoredRedditorDataSpanID) {
+                    // Use existing statsSpan if one exists for the current linkElement
+                    ignoredRedditorDataSpan = linkElement.parentElement.lastElementChild;
+                } else {
+                    // There is no statsSpan yet. Create one and insert it after the current linkElement
+                    ignoredRedditorDataSpan = document.createElement('span');
+                    ignoredRedditorDataSpan.setAttribute("id", ignoredRedditorDataSpanID);
+                    ignoredRedditorDataSpan.style.color = "yellow";
+                    linkElement.parentElement.insertAdjacentElement("beforeend", ignoredRedditorDataSpan);
+                }
+
+                ignoredRedditorDataSpan.title = `reason: ${ignoredRedditor.reason}`
+                ignoredRedditorDataSpan.innerText = ' [ignored]';
+
+                let commentDiv = linkElement.closest("div").parentElement;
+
+                // Make sure `commentDiv` is actually a comment as it will be a `threadRow` element if the user is
+                // browsing a thread list in a subreddit.
+                if (commentDiv.classList.contains("comment")) {
+                    if (settings.hideIgnoredRedditors) {
+                        commentDiv.classList.remove("noncollapsed");
+                        commentDiv.classList.add("collapsed");
+                    } else {
+                        commentDiv.classList.remove("collapsed");
+                        commentDiv.classList.add("noncollapsed");
                     }
                 }
             }
@@ -196,23 +220,15 @@ function updateDOM_usernames(userObjects, username_linkElements, settings) {
 
 
 function run(settings) {
-    lscache.setBucket('api-data');
-    lscache.flushExpired();
-    const ignoredRedditors = processIgnoredRedditors(settings);
+    getIgnoredRedditors(settings.accessToken).then(ignoredRedditorObjects => {
+        if (settings.enableRedditorProcessing) {
+            processRedditors(settings, ignoredRedditorObjects);
+        }
 
-    if (settings.enableRedditorProcessing) {
-        lscache.setBucket('usernames');
-        lscache.flushExpired();
-        // TODO: do not process ignored redditors
-        processUsernames(settings);
-    }
-
-    if (settings.enableThreadProcessing) {
-        lscache.setBucket('threads');
-        lscache.flushExpired();
-        // TODO: do not process ignored redditors
-        processThreads(settings);
-    }
+        if (settings.enableThreadProcessing) {
+            processThreads(settings);
+        }
+    })
 }
 
 

@@ -1,4 +1,5 @@
 import { jwtDecode } from "jwt-decode";
+import lscache from "lscache";
 
 
 export function apiAuthRequest(urlPath, type, accessToken, body) {
@@ -70,6 +71,7 @@ export async function getAccessToken() {
     })
 }
 
+
 export async function getApiStatus() {
     return apiRequest(
         '/api/v1/status/',
@@ -81,4 +83,32 @@ export async function getApiStatus() {
             throw new Error(response)
         }
     })
+}
+
+
+export async function getIgnoredRedditors(accessToken) {
+    lscache.setBucket('api-data');
+    lscache.flushExpired();
+    let cachedIgnoredRedditorObjects = lscache.get('ignoredRedditors');
+
+    if (cachedIgnoredRedditorObjects === null) {
+        return apiAuthRequest(
+            '/api/v1/reddit/redditors/ignored/',
+            'GET',
+            accessToken,
+        ).then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error(response)
+            }
+        }).then(ignoredRedditorObjects => {
+            lscache.set('ignoredRedditors', ignoredRedditorObjects, 10080);
+            return ignoredRedditorObjects;
+        })
+    }
+
+    else {
+        return cachedIgnoredRedditorObjects;
+    }
 }

@@ -23,7 +23,10 @@ module.exports = {
       APP_NAME: 'reecon',
       BASE_URL: 'http://127.0.0.1:8888',
       // BASE_URL: 'https://reecon.xyz',
-      CACHE_EXP_MINUTES: 5,
+
+      // TODO: These values should be returned from the backend server if they should match server settings
+      CACHE_REDDITOR_FRESHNESS_MINUTES: 43800, // 1 month. Equal to REDDITOR_FRESHNESS_TD in backend server.
+      CACHE_THREAD_FRESHNESS_MINUTES: 15, // Equal to THREAD_FRESHNESS_TD in backend server.
     }),
     new HtmlWebpackPlugin({ template: './popup/src/index.html' }),
     new miniCssExtractPlugin()
