@@ -51,8 +51,8 @@ browser.runtime.onInstalled.addListener((reasonObj) => {
         browser.storage.local.set({
             accessToken: null,
             disableExtension: false,
+            enableRedditorProcessing: false,
             enableThreadProcessing: false,
-            enableUserProcessing: false,
             refreshToken: null,
             hideBadJujuThreads: false,
             minThreadSentiment: 0.05,

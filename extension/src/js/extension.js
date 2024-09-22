@@ -167,16 +167,16 @@ function updateDOM_usernames(userObjects, username_linkElements, settings) {
 
 
 function run(settings) {
+    if (settings.enableRedditorProcessing) {
+        lscache.setBucket('usernames');
+        lscache.flushExpired();
+        processUsernames(settings);
+    }
+
     if (settings.enableThreadProcessing) {
         lscache.setBucket('threads');
         lscache.flushExpired();
         processThreads(settings);
-    }
-
-    if (settings.enableUserProcessing) {
-        lscache.setBucket('usernames');
-        lscache.flushExpired();
-        processUsernames(settings);
     }
 }
 

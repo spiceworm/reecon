@@ -6,8 +6,8 @@ import { apiRequest, getAccessToken, getApiStatus } from "../../../src/js/util";
 function saveSettings() {
     browser.storage.local.set({
         disableExtension: document.getElementById("disableExtension").checked || false,
+        enableRedditorProcessing: document.getElementById("enableRedditorProcessing").checked || false,
         enableThreadProcessing: document.getElementById("enableThreadProcessing").checked || false,
-        enableUserProcessing: document.getElementById("enableUserProcessing").checked || false,
         hideBadJujuThreads: document.getElementById("hideBadJujuThreads").checked || false,
         minThreadSentiment: parseFloat(document.getElementById("minThreadSentiment").value || '0.05'),
         minUserAge: parseInt(document.getElementById("minUserAge").value || '0'),
@@ -209,16 +209,16 @@ function showSettingsForm() {
         changeElementVisibility("settingsForm", true);
 
         let disableExtension = document.getElementById("disableExtension");
+        let enableRedditorProcessing = document.getElementById("enableRedditorProcessing");
         let enableThreadProcessing = document.getElementById("enableThreadProcessing");
-        let enableUserProcessing = document.getElementById("enableUserProcessing");
         let hideBadJujuThreads = document.getElementById("hideBadJujuThreads");
         let minThreadSentiment = document.getElementById("minThreadSentiment");
         let minUserAge = document.getElementById("minUserAge");
         let minUserIQ = document.getElementById("minUserIQ");
 
         let options = [
+            enableRedditorProcessing,
             enableThreadProcessing,
-            enableUserProcessing,
             hideBadJujuThreads,
             minThreadSentiment,
             minUserAge,
@@ -233,8 +233,8 @@ function showSettingsForm() {
         };
 
         disableExtension.checked = settings.disableExtension;
+        enableRedditorProcessing.checked = settings.enableRedditorProcessing;
         enableThreadProcessing.checked = settings.enableThreadProcessing;
-        enableUserProcessing.checked = settings.enableUserProcessing;
         hideBadJujuThreads.checked = settings.hideBadJujuThreads;
         minThreadSentiment.value = settings.minThreadSentiment;
         minUserAge.value = settings.minUserAge;
