@@ -341,7 +341,7 @@ CONSTANCE_CONFIG = collections.OrderedDict(
         "LLM_MAX_CONTEXT_WINDOW_FOR_INPUTS": (
             0.5,
             "The maximum percentage (expressed as a decimal from 0 to 1) of the LLM context window tokens "
-            "that can be used for inputs."
+            "that can be used for inputs.",
         ),
         "SUBMISSION_FILTER_MAX_LENGTH": (
             2000,

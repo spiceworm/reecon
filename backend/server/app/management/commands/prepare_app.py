@@ -24,7 +24,11 @@ from ...models import (
 
 
 def create_hardcoded_ignored_redditors():
-    for username, reason in (("AutoModerator", "Bot"), ("VisualMod", "Bot")):
+    for username, reason in (
+        ("AutoModerator", "Bot"),
+        ("coinfeeds-bot", "Bot"),
+        ("VisualMod", "Bot"),
+    ):
         IgnoredRedditor.objects.update_or_create(
             username=username,
             defaults={
@@ -59,7 +63,12 @@ def create_hardcoded_producers():
     nlp_category = ProducerCategory.objects.get(name="NLP")
 
     for name, category, context_window, description in (
-        ("gpt-4o-2024-08-06", llm_category, 128_000, "https://platform.openai.com/docs/models/gpt-4o"),
+        (
+            "gpt-4o-2024-08-06",
+            llm_category,
+            128_000,
+            "https://platform.openai.com/docs/models/gpt-4o",
+        ),
         ("textblob", nlp_category, None, "https://textblob.readthedocs.io/en/dev/"),
     ):
         Producer.objects.update_or_create(

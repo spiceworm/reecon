@@ -58,7 +58,11 @@ class ThreadDataService(RedditDataService):
         self.url = url
 
     def create(
-        self, llm_contributor: User, llm_producer: Producer, nlp_contributor: User, nlp_producer: Producer
+        self,
+        llm_contributor: User,
+        llm_producer: Producer,
+        nlp_contributor: User,
+        nlp_producer: Producer,
     ) -> ThreadData | UnprocessableThread:
         """
         Convenience method that executes `get_submissions`, `generate_data`, and `create_object` with the necessary

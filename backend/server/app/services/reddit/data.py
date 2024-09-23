@@ -112,10 +112,12 @@ class RedditDataService(abc.ABC):
         retval = " ".join(sentences)
 
         # Do not process submissions that are either too short or too long.
-        if any([
-            len(retval) < config.SUBMISSION_FILTER_MIN_LENGTH,
-            len(retval) > config.SUBMISSION_FILTER_MAX_LENGTH
-        ]):
+        if any(
+            [
+                len(retval) < config.SUBMISSION_FILTER_MIN_LENGTH,
+                len(retval) > config.SUBMISSION_FILTER_MAX_LENGTH,
+            ]
+        ):
             retval = ""
 
         return retval
