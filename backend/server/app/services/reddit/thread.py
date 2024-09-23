@@ -36,6 +36,7 @@ from ...models import (
     Producer,
     ProducedFloat,
     ProducedText,
+    ProducedTextList,
     Thread,
     ThreadData,
     UnprocessableThread,
@@ -122,6 +123,11 @@ class ThreadDataService(RedditDataService):
             },
         )
         return ThreadData.objects.create(
+            keywords=ProducedTextList.objects.create(
+                contributor=llm_contributor,
+                producer=llm_producer,
+                value=generated_data.normalized_keywords(),
+            ),
             sentiment_polarity=ProducedFloat.objects.create(
                 contributor=nlp_contributor,
                 producer=nlp_producer,

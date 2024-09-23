@@ -10,7 +10,7 @@ TODO:
 - If you filter by e.g. age and then undo that filter by setting it back to 0, all previously collapsed comments remain collapsed.
 - Add button to expand all comments.
 - Track submission count since last redditor/thread processing event. Do no reprocess unless some number of new submissions have been made. Few or no new submissions does not warrant reprocessing unless the processing is done by a new model.
-- Determine list of themes related to each thread. Recommend threads to users based on their interests determined from their submissions history. 
+- Recommend threads to users based on their interests determined from their submissions history.
 
 Firefox extension that:
 - Scans all usernames and threads on the current page of old reddit.com layout (does not currently support new layout)

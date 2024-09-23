@@ -329,13 +329,14 @@ CONSTANCE_CONFIG = collections.OrderedDict(
         ),
         "REDDITOR_LLM_PROMPT": (
             "The following pipe delimited messages are unrelated submissions posted by a person. "
-            "Determine the age and IQ of that person based on their writing. Also generate a short "
-            "summary that describes the author that uses 50 completion_tokens or less.",
+            "Determine the age, a list of interests, and the IQ of that person based on their writing. "
+            "Also generate a short summary that describes the author that uses 50 completion_tokens or less.",
             "Prompt sent to the OpenAI API to infer data about redditors based on submissions.",
         ),
         "THREAD_LLM_PROMPT": (
             "The following pipe delimited messages are unrelated submissions posted by multiple people. "
-            "Generate a brief summary of what is being discussed that uses 50 completion_tokens or less.",
+            "Determine a list of keywords that describe the discussion. Also generate a brief summary of what "
+            "is being discussed that uses 50 completion_tokens or less.",
             "Prompt sent to the OpenAI API to infer data about a thread based on submissions.",
         ),
         "LLM_MAX_CONTEXT_WINDOW_FOR_INPUTS": (

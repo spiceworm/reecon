@@ -3,6 +3,7 @@ from rest_framework import serializers
 from ..producer import (
     ProducedFloatSerializer,
     ProducedTextSerializer,
+    ProducedTextListSerializer,
 )
 from ...models import (
     Thread,
@@ -18,6 +19,7 @@ __all__ = (
 
 
 class ThreadDataSerializer(serializers.ModelSerializer):
+    keywords = ProducedTextListSerializer()
     sentiment_polarity = ProducedFloatSerializer()
     summary = ProducedTextSerializer()
 

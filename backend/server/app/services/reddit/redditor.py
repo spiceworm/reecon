@@ -35,6 +35,7 @@ from ...models import (
     ProducedFloat,
     ProducedInteger,
     ProducedText,
+    ProducedTextList,
     Redditor,
     RedditorData,
     UnprocessableRedditor,
@@ -123,6 +124,11 @@ class RedditorDataService(RedditDataService):
                 contributor=llm_contributor,
                 producer=llm_producer,
                 value=generated_data.age,
+            ),
+            interests=ProducedTextList.objects.create(
+                contributor=llm_contributor,
+                producer=llm_producer,
+                value=generated_data.normalized_interests(),
             ),
             iq=ProducedInteger.objects.create(
                 contributor=llm_contributor,

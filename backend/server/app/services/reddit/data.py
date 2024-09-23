@@ -31,8 +31,14 @@ log = logging.getLogger("app.services.reddit.data")
 
 class LlmGeneratedRedditorData(pydantic.BaseModel):
     age: int
+    interests: List[str]
     iq: int
     summary: str
+
+    def normalized_interests(self) -> List[str]:
+        lowercase = [s.lower() for s in self.interests]
+        hyphenated = ["-".join(s.split()) for s in lowercase]
+        return list(set(hyphenated))
 
 
 class NlpGeneratedRedditorData(pydantic.BaseModel):
@@ -44,7 +50,13 @@ class GeneratedRedditorData(LlmGeneratedRedditorData, NlpGeneratedRedditorData):
 
 
 class LlmGeneratedThreadData(pydantic.BaseModel):
+    keywords: List[str]
     summary: str
+
+    def normalized_keywords(self) -> List[str]:
+        lowercase = [s.lower() for s in self.keywords]
+        hyphenated = ["-".join(s.split()) for s in lowercase]
+        return list(set(hyphenated))
 
 
 class NlpGeneratedThreadData(pydantic.BaseModel):

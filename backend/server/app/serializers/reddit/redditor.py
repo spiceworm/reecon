@@ -4,6 +4,7 @@ from ..producer import (
     ProducedFloatSerializer,
     ProducedIntegerSerializer,
     ProducedTextSerializer,
+    ProducedTextListSerializer,
 )
 from ...models import (
     Redditor,
@@ -26,6 +27,7 @@ class IgnoredRedditorSerializer(serializers.Serializer):
 
 class RedditorDataSerializer(serializers.ModelSerializer):
     age = ProducedIntegerSerializer()
+    interests = ProducedTextListSerializer()
     iq = ProducedIntegerSerializer()
     sentiment_polarity = ProducedFloatSerializer()
     summary = ProducedTextSerializer()

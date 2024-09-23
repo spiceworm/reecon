@@ -10,6 +10,7 @@ from ...models import (
     ProducedFloat,
     ProducedInteger,
     ProducedText,
+    ProducedTextList,
 )
 
 
@@ -54,4 +55,15 @@ class ProducedTextSerializer(serializers.Serializer):
 
     class Meta:
         model = ProducedText
+        exclude = ("id",)
+
+
+class ProducedTextListSerializer(serializers.Serializer):
+    contributor = ContributorSerializer()
+    created = serializers.DateTimeField()
+    producer = ProducerSerializer()
+    value = serializers.ListField(child=serializers.CharField())
+
+    class Meta:
+        model = ProducedTextList
         exclude = ("id",)

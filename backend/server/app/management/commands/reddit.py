@@ -139,6 +139,7 @@ class Command(management.base.BaseCommand):
                 )
             else:
                 if options["action"] == "create-object":
+                    log.debug("Generated data = %s", generated_data.model_dump())
                     obj: RedditorData = service.create_object(
                         generated_data=generated_data,
                         llm_contributor=admin,
@@ -184,6 +185,7 @@ class Command(management.base.BaseCommand):
                 )
             else:
                 if options["action"] == "create-object":
+                    log.debug("Generated data = %s", generated_data.model_dump())
                     obj: ThreadData = service.create_object(
                         generated_data=generated_data,
                         llm_contributor=admin,

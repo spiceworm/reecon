@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 from .producer import Producer
@@ -10,6 +11,7 @@ __all__ = (
     "ProducedFloat",
     "ProducedInteger",
     "ProducedText",
+    "ProducedTextList",
 )
 
 
@@ -120,6 +122,37 @@ class ProducedText(Created):
     value = models.TextField(
         null=False,
         help_text="The value of the produced text.",
+    )
+
+    def __str__(self):
+        return (
+            f"{self.__class__.__name__}(contributor={self.contributor.username}, producer={self.producer.name}, "
+            f"value={self.value})"
+        )
+
+
+class ProducedTextList(Created):
+    contributor = models.ForeignKey(
+        User,
+        null=False,
+        on_delete=models.PROTECT,
+        related_name="contributed_text_list",
+        help_text="The user who contributed the resources that produced the data value.",
+    )
+    producer = models.ForeignKey(
+        Producer,
+        null=False,
+        on_delete=models.PROTECT,
+        related_name="produced_text_list",
+        help_text="The producer of the value attribute.",
+    )
+    value = ArrayField(
+        models.CharField(
+            null=False,
+        ),
+        default=list,
+        null=False,
+        help_text="The value of the produced list of text.",
     )
 
     def __str__(self):

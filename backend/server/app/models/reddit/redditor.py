@@ -11,6 +11,7 @@ from ..producer import (
     ProducedInteger,
     ProducedFloat,
     ProducedText,
+    ProducedTextList,
 )
 
 
@@ -47,14 +48,21 @@ class RedditorData(Created):
 
     age = models.OneToOneField(
         ProducedInteger,
-        null=True,
+        null=False,
         on_delete=models.PROTECT,
         related_name="redditor_age_data",
         help_text="The inferred age of the redditor based on their submissions.",
     )
+    interests = models.OneToOneField(
+        ProducedTextList,
+        null=False,
+        on_delete=models.PROTECT,
+        related_name="redditor_interests_data",
+        help_text="The inferred interests of the redditor based on their submissions.",
+    )
     iq = models.OneToOneField(
         ProducedInteger,
-        null=True,
+        null=False,
         on_delete=models.PROTECT,
         related_name="redditor_iq_data",
         help_text="The inferred IQ of the redditor based on their submissions.",
@@ -68,14 +76,14 @@ class RedditorData(Created):
     )
     sentiment_polarity = models.OneToOneField(
         ProducedFloat,
-        null=True,
+        null=False,
         on_delete=models.PROTECT,
         related_name="redditor_sentiment_polarity_data",
         help_text="The inferred sentiment polarity of the redditor based on their submissions.",
     )
     summary = models.OneToOneField(
         ProducedText,
-        null=True,
+        null=False,
         on_delete=models.PROTECT,
         related_name="redditor_summary_data",
         help_text="An inferred summary of the redditor based on their submissions.",
@@ -83,8 +91,8 @@ class RedditorData(Created):
 
     def __str__(self):
         return (
-            f"{self.__class__.__name__}(age={self.age.value}, iq={self.iq.value}, redditor={self.redditor.username}, "
-            f"sentiment_polarity={self.sentiment_polarity.value}, summary=...)"
+            f"{self.__class__.__name__}(age={self.age.value}, iq={self.iq.value}, interests={self.interests.value}, "
+            f"redditor={self.redditor.username}, sentiment_polarity={self.sentiment_polarity.value}, summary=...)"
         )
 
 
