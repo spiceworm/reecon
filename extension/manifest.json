@@ -9,13 +9,17 @@
   },
   "background": {
     "scripts": [
-      "src/js/background.js"
+      "dist/background.bundle.js"
     ],
     "type": "module"
   },
   "host_permissions": [
     "*://reecon.xyz/*"
   ],
+  "options_ui": {
+    "page": "dist/settings.html",
+    "open_in_tab": true
+  },
   "permissions": [
     "storage",
     "tabs",
@@ -34,7 +38,7 @@
       "64": "icons/crystal-ball-64.png"
     },
     "default_title": "reecon",
-    "default_popup": "dist/index.html"
+    "default_popup": "dist/popup.html"
   },
   "browser_specific_settings": {
     "gecko": {

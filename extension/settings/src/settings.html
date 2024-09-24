@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+
+<html lang="en" data-bs-theme="dark">
+    <head>
+        <meta charset="utf-8">
+        <title><%= process.env.APP_NAME %> settings</title>
+        <link rel="icon" type="image/png" href="./icons/favicon-32x32.png" sizes="32x32" />
+        <link rel="icon" type="image/png" href="./icons/favicon-16x16.png" sizes="16x16" />
+
+        <link rel="stylesheet" href="./settings.css">
+        <script type="application/javascript" src="./settings.bundle.js"></script>
+    </head>
+
+    <body>
+        <div class="container p-3">
+            <h1><%= process.env.APP_NAME %> settings</h1>
+
+            <form>
+                <div class="d-flex justify-content-center">
+                    <button type="button" class="btn btn-primary" id="saveSettingsBtn">Save</button>
+                </div>
+            </form>
+        </div>
+    </body>
+</html>

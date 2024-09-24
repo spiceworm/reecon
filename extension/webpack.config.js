@@ -1,5 +1,6 @@
 const path = require('path');
 const autoprefixer = require('autoprefixer');
+const CopyPlugin = require("copy-webpack-plugin");
 const { EnvironmentPlugin } = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const miniCssExtractPlugin = require('mini-css-extract-plugin')
@@ -7,11 +8,17 @@ const miniCssExtractPlugin = require('mini-css-extract-plugin')
 module.exports = {
   mode: 'development',
   entry: {
-    'popup': {
-      'import': './popup/src/js/popup.js',
+    'background': {
+      'import': './src/js/background.js',
     },
     'extension': {
       'import': './src/js/extension.js',
+    },
+    'popup': {
+      'import': './popup/src/js/popup.js',
+    },
+    'settings': {
+      'import': './settings/src/js/settings.js',
     },
   },
   output: {
@@ -19,6 +26,11 @@ module.exports = {
     path: path.resolve(__dirname, 'dist'),
   },
   plugins: [
+    new CopyPlugin({
+      patterns: [
+        { from: "icons", to: "icons" },
+      ],
+    }),
     new EnvironmentPlugin({
       APP_NAME: 'reecon',
       BASE_URL: 'http://127.0.0.1:8888',
@@ -28,7 +40,14 @@ module.exports = {
       CACHE_REDDITOR_FRESHNESS_MINUTES: 43800, // 1 month. Equal to REDDITOR_FRESHNESS_TD in backend server.
       CACHE_THREAD_FRESHNESS_MINUTES: 15, // Equal to THREAD_FRESHNESS_TD in backend server.
     }),
-    new HtmlWebpackPlugin({ template: './popup/src/index.html' }),
+    new HtmlWebpackPlugin({
+      filename: 'settings.html',
+      template: './settings/src/settings.html'
+    }),
+    new HtmlWebpackPlugin({
+      filename: 'popup.html',
+      template: './popup/src/popup.html'
+    }),
     new miniCssExtractPlugin()
   ],
   module: {

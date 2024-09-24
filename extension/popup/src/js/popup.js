@@ -235,6 +235,14 @@ function showSettingsForm() {
             }
         };
 
+        document.getElementById("allSettingsBtn").onclick = function (e) {
+            let openingPage = browser.runtime.openOptionsPage();
+            openingPage.then(() => {
+                // Close the popup as we are now looking at the settings page in a new tab.
+                window.close();
+            })
+        }
+
         disableExtension.checked = settings.disableExtension;
         enableRedditorProcessing.checked = settings.enableRedditorProcessing;
         enableThreadProcessing.checked = settings.enableThreadProcessing;
