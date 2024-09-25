@@ -49,15 +49,29 @@ browser.runtime.onInstalled.addListener((reasonObj) => {
         // Set default settings. Do not reset settings back to defaults for extension updates or browser updates.
         browser.storage.local.set({
             accessToken: null,
+            contentFilters: {
+                custom: {},
+                default: {
+                    age: 0,
+                    context: 'default',
+                    iq: 0,
+                    sentiment: 0.05,
+                    type: 'default',
+                },
+                home: {
+                    age: 0,
+                    context: 'home',
+                    iq: 0,
+                    sentiment: 0.05,
+                    type: 'home',
+                },
+            },
             disableExtension: false,
             enableRedditorProcessing: false,
             enableThreadProcessing: false,
             refreshToken: null,
             hideBadJujuThreads: false,
             hideIgnoredRedditors: false,
-            minThreadSentiment: 0.05,
-            minUserAge: 0,
-            minUserIQ: 0,
             username: null,
         });
     }

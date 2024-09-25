@@ -1,5 +1,5 @@
 import lscache from "lscache";
-import { apiAuthRequest, getAccessToken, getIgnoredRedditors } from "./util";
+import { apiAuthRequest, getAccessToken, getContentFilter, getIgnoredRedditors } from "./util";
 
 
 function processThreads(settings) {
@@ -24,25 +24,28 @@ function processThreads(settings) {
         }
     }
 
-    updateDOM_threads(cachedThreadData, settings);
+    const url = new URL(window.location.href);
+    getContentFilter(url).then(contentFilter => {
+        updateDOM_threads(cachedThreadData, settings, contentFilter);
 
-    if (newThreadUrlPaths.length > 0) {
-        // Send request to fetch processed threads and update the DOM with that info.
-        // Response contains a list of [{"sentiment_polarity": "-0.01", "url": "https://reddit.com/r/..."} ...] entries.
-        getAccessToken().then(accessToken => {
-            if (accessToken !== null) {
-                apiAuthRequest('/api/v1/reddit/threads/', 'POST', accessToken, {'paths': newThreadUrlPaths})
-                    .then(response => response.json())
-                    .then(responseJson => {
-                        updateDOM_threads(responseJson, settings);
+        if (newThreadUrlPaths.length > 0) {
+            // Send request to fetch processed threads and update the DOM with that info.
+            // Response contains a list of [{"sentiment_polarity": "-0.01", "url": "https://reddit.com/r/..."} ...] entries.
+            getAccessToken().then(accessToken => {
+                if (accessToken !== null) {
+                    apiAuthRequest('/api/v1/reddit/threads/', 'POST', accessToken, {'paths': newThreadUrlPaths})
+                        .then(response => response.json())
+                        .then(responseJson => {
+                            updateDOM_threads(responseJson, settings, contentFilter);
 
-                        for (let thread of responseJson) {
-                            lscache.set(thread.path, thread, process.env.CACHE_THREAD_FRESHNESS_MINUTES);
-                        }
-                    });
-            }
-        })
-    }
+                            for (let thread of responseJson) {
+                                lscache.set(thread.path, thread, process.env.CACHE_THREAD_FRESHNESS_MINUTES);
+                            }
+                        });
+                }
+            })
+        }
+    })
 }
 
 
@@ -79,28 +82,31 @@ function processRedditors(settings, ignoredRedditorObjects) {
         }
     }
 
-    updateDOM_usernames(cachedRedditorData, ignoredRedditorObjects, username_linkElements, settings);
+    const url = new URL(window.location.href);
+    getContentFilter(url).then(contentFilter => {
+        updateDOM_usernames(cachedRedditorData, ignoredRedditorObjects, username_linkElements, settings, contentFilter);
 
-    if (usernames.length > 0) {
-        getAccessToken().then(accessToken => {
-            if (accessToken !== null) {
-                apiAuthRequest('/api/v1/reddit/redditors/', 'POST', accessToken, {'usernames': usernames})
-                    .then(response => response.json())
-                    .then(responseJson => {
-                        // `responseJson` contains a list of [{"<username>": "spiceworm", "age": "99", "iq": "9000"}, ...] objects.
-                        updateDOM_usernames(responseJson, ignoredRedditorObjects, username_linkElements, settings);
+        if (usernames.length > 0) {
+            getAccessToken().then(accessToken => {
+                if (accessToken !== null) {
+                    apiAuthRequest('/api/v1/reddit/redditors/', 'POST', accessToken, {'usernames': usernames})
+                        .then(response => response.json())
+                        .then(responseJson => {
+                            // `responseJson` contains a list of [{"<username>": "spiceworm", "age": "99", "iq": "9000"}, ...] objects.
+                            updateDOM_usernames(responseJson, ignoredRedditorObjects, username_linkElements, settings, contentFilter);
 
-                        for (let redditor of responseJson) {
-                            lscache.set(redditor.username, redditor, process.env.CACHE_REDDITOR_FRESHNESS_MINUTES);
-                        }
-                    });
-            }
-        })
-    }
+                            for (let redditor of responseJson) {
+                                lscache.set(redditor.username, redditor, process.env.CACHE_REDDITOR_FRESHNESS_MINUTES);
+                            }
+                        });
+                }
+            })
+        }
+    })
 }
 
 
-function updateDOM_threads(threadObjects, settings) {
+function updateDOM_threads(threadObjects, settings, contentFilter) {
     for (let thread of threadObjects) {
         const threadRow = document.querySelector(`[data-permalink="${thread.path}"]`);
         const sentimentSpanID = `${process.env.APP_NAME}-thread-${thread.path}`;
@@ -119,7 +125,7 @@ function updateDOM_threads(threadObjects, settings) {
         sentimentSpan.title = `sentiment_polarity: ${sentiment_polarity}\u000dsummary: ${summary}`;
         sentimentSpan.innerText = " 🔮";
 
-        if (sentiment_polarity < settings.minThreadSentiment) {
+        if (sentiment_polarity < contentFilter.sentiment) {
             if (settings.hideBadJujuThreads) {
                 threadRow.style.display = "none";
             } else {
@@ -134,7 +140,7 @@ function updateDOM_threads(threadObjects, settings) {
 // Take the `userObjects` param containing a list of [{"<username>": "spiceworm, "age": 99, "iq": 9000}, ...]
 // objects and create a new <span> element to insert after each username link that appears in
 // the DOM.
-function updateDOM_usernames(redditorObjects, ignoredRedditorObjects, username_linkElements, settings) {
+function updateDOM_usernames(redditorObjects, ignoredRedditorObjects, username_linkElements, settings, contentFilter) {
     for (let redditor of redditorObjects) {
         let username = redditor.username;
         const redditorDataSpanID = `${process.env.APP_NAME}-redditor-${username}`;
@@ -169,7 +175,7 @@ function updateDOM_usernames(redditorObjects, ignoredRedditorObjects, username_l
                 if (commentDiv.classList.contains("comment")) {
                     // Collapse all comments that are posted by users with an age or IQ less than the specified
                     // minimum age or IQ in the settings. Otherwise, make sure they are expanded.
-                    if (parseInt(age) < settings.minUserAge || parseInt(iq) < settings.minUserIQ) {
+                    if (parseInt(age) < contentFilter.age || parseInt(iq) < contentFilter.iq) {
                         commentDiv.classList.remove("noncollapsed");
                         commentDiv.classList.add("collapsed");
                     }

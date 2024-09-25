@@ -1,6 +1,5 @@
 TODO:
 - Add option to hide thread posts for users with no comments (bots posting articles?)
-- subreddit specific settings
 - Verify email when creating user account
 - Allow/require user to enter their own openai api key for user processing
 - Have some way to inspect list of hidden threads

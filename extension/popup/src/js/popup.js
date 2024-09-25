@@ -1,6 +1,6 @@
 import '../scss/styles.scss';
 import * as bootstrap from 'bootstrap';
-import { apiRequest, getAccessToken, getApiStatus } from "../../../src/js/util";
+import { apiRequest, createFilterTableRow, getAccessToken, getApiStatus, getContentFilter } from "../../../src/js/util";
 
 
 function saveSettings() {
@@ -10,9 +10,6 @@ function saveSettings() {
         enableThreadProcessing: document.getElementById("enableThreadProcessing").checked || false,
         hideBadJujuThreads: document.getElementById("hideBadJujuThreads").checked || false,
         hideIgnoredRedditors: document.getElementById("hideIgnoredRedditors").checked || false,
-        minThreadSentiment: parseFloat(document.getElementById("minThreadSentiment").value || '0.05'),
-        minUserAge: parseInt(document.getElementById("minUserAge").value || '0'),
-        minUserIQ: parseInt(document.getElementById("minUserIQ").value || '0')
     });
 }
 
@@ -214,18 +211,12 @@ function showSettingsForm() {
         let enableThreadProcessing = document.getElementById("enableThreadProcessing");
         let hideBadJujuThreads = document.getElementById("hideBadJujuThreads");
         let hideIgnoredRedditors = document.getElementById("hideIgnoredRedditors");
-        let minThreadSentiment = document.getElementById("minThreadSentiment");
-        let minUserAge = document.getElementById("minUserAge");
-        let minUserIQ = document.getElementById("minUserIQ");
 
         let options = [
             enableRedditorProcessing,
             enableThreadProcessing,
             hideBadJujuThreads,
             hideIgnoredRedditors,
-            minThreadSentiment,
-            minUserAge,
-            minUserIQ
         ];
 
         disableExtension.onchange = function(e) {
@@ -235,26 +226,37 @@ function showSettingsForm() {
             }
         };
 
+        disableExtension.checked = settings.disableExtension;
+        enableRedditorProcessing.checked = settings.enableRedditorProcessing;
+        enableThreadProcessing.checked = settings.enableThreadProcessing;
+        hideBadJujuThreads.checked = settings.hideBadJujuThreads;
+        hideIgnoredRedditors.checked = settings.hideIgnoredRedditors;
+
+        // Enable / disable option when settings page is shown
+        for (let option of options) {
+            option.disabled = disableExtension.checked;
+        }
+
+        getContentFilter().then(filter => {
+            let activeContentFilterTableBody = document.getElementById("activeContentFilterTable").getElementsByTagName('tbody')[0];
+            let activeFilterRow = activeContentFilterTableBody.insertRow();
+            activeFilterRow.innerHTML = createFilterTableRow(
+                filter.context,
+                filter.age,
+                filter.iq,
+                filter.sentiment,
+                filter.type,
+                ['context', 'age', 'iq', 'sentiment'],
+                false,
+            )
+        })
+
         document.getElementById("allSettingsBtn").onclick = function (e) {
             let openingPage = browser.runtime.openOptionsPage();
             openingPage.then(() => {
                 // Close the popup as we are now looking at the settings page in a new tab.
                 window.close();
             })
-        }
-
-        disableExtension.checked = settings.disableExtension;
-        enableRedditorProcessing.checked = settings.enableRedditorProcessing;
-        enableThreadProcessing.checked = settings.enableThreadProcessing;
-        hideBadJujuThreads.checked = settings.hideBadJujuThreads;
-        hideIgnoredRedditors.checked = settings.hideIgnoredRedditors;
-        minThreadSentiment.value = settings.minThreadSentiment;
-        minUserAge.value = settings.minUserAge;
-        minUserIQ.value = settings.minUserIQ;
-
-        // Enable / disable option when settings page is shown
-        for (let option of options) {
-            option.disabled = disableExtension.checked;
         }
     })
 }
