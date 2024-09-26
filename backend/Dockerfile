@@ -9,6 +9,7 @@ WORKDIR /server
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         gettext-base \
+        htop \
         nginx \
         libpq-dev \
         postgresql-client-15 \
