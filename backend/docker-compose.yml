@@ -1,6 +1,5 @@
-name: "reecon"
+name: "reecon-backend"
 
-version: "3.8"
 services:
   server:
     image: "${REGISTRY_URL}/${CONTAINER_REPO}/${APP_NAME}/server:${VERSION}"
