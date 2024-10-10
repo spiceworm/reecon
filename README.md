@@ -1,15 +1,19 @@
 TODO:
-- Add option to hide thread posts for users with no comments (bots posting articles?)
+- Add option to collapse comments for unprocessable redditors
 - Verify email when creating user account
 - Allow/require user to enter their own openai api key for user processing
 - Have some way to inspect list of hidden threads
-- Allow users to define more conditions (e.g. User Age Filter >,<,= number)
 - Trigger that causes the extension to execute is still bad. (cache a last run time and check if before running again)
-- Extension does not run when viewing a specific thread
-- If you filter by e.g. age and then undo that filter by setting it back to 0, all previously collapsed comments remain collapsed.
+- Extension does not run after loading a specific thread
 - Add button to expand all comments.
 - Track submission count since last redditor/thread processing event. Do no reprocess unless some number of new submissions have been made. Few or no new submissions does not warrant reprocessing unless the processing is done by a new model.
 - Recommend threads to users based on their interests determined from their submissions history.
+- Track tokens used to generate each object so you can determine how many tokens are being used as the prompts/generated data changes over time
+- Allow users to submit AI queries within the context of a thread or redditor comments. For example: "what are the largest concerns users have about about the topic discussed in this thread?", "what industry do you think this redditor works in?"
+- Post to openai batch api to update existing stale entries. Maybe new entries can be processed immediately, but a job can run in the background to refresh entries that are stale. This may only apply to stale users as stale threads are no longer relevant as no one is looking at or posting to them anymore
+- Update threads and users api endpoints to return {threads: [...], unprocessable_threads: [...], pending_threads: [...]}
+- Log when tenacity retries requests so you can see how much rate limiting is occurring. Modify rq config to process jobs in smaller batches / slower to avoid rate limiting
+- Fix generated documentation for api endpoints
 
 Firefox extension that:
 - Scans all usernames and threads on the current page of old reddit.com layout (does not currently support new layout)
@@ -22,8 +26,10 @@ Firefox extension that:
 - In extension/webpack.config.js, change BASE_URL to 'http://127.0.0.1:8888'
 ```bash
 cd reecon/extension
-npm install
-npm run build
+nvm install 21
+nvm use 21
+pnpm install
+pnpm dev --target=firefox-mv2
 ```
 - In firefox, go to about:debugging#/runtime/this-firefox
 - Click "Load Temporary Add-..." button

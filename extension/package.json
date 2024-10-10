@@ -1,24 +1,59 @@
 {
-  "devDependencies": {
-    "autoprefixer": "^10.4.20",
-    "copy-webpack-plugin": "^12.0.2",
-    "css-loader": "^7.1.2",
-    "html-webpack-plugin": "^5.6.0",
-    "mini-css-extract-plugin": "^2.9.1",
-    "postcss-loader": "^8.1.1",
-    "sass": "^1.78.0",
-    "sass-loader": "^16.0.1",
-    "style-loader": "^4.0.0",
-    "webpack": "^5.94.0"
+  "name": "reecon",
+  "displayName": "reecon",
+  "version": "0.3.0",
+  "description": "reecon",
+  "author": "me@reecon.xyz",
+  "scripts": {
+    "dev": "plasmo dev",
+    "build": "plasmo build",
+    "package": "plasmo package"
   },
   "dependencies": {
-    "@popperjs/core": "^2.11.8",
+    "@plasmohq/messaging": "^0.6.2",
+    "@plasmohq/storage": "^1.12.0",
+    "@tanstack/react-table": "^8.20.5",
     "bootstrap": "^5.3.3",
-    "bootstrap-icons": "^1.11.3",
     "jwt-decode": "^4.0.0",
-    "lscache": "^1.3.2"
+    "lscache": "^1.3.2",
+    "plasmo": "0.89.3",
+    "react": "18.3.1",
+    "react-bootstrap-icons": "^1.11.4",
+    "react-dom": "18.3.1",
+    "react-router-dom": "^6.26.2",
+    "reactstrap": "^9.2.3",
+    "swr": "^2.2.5"
   },
-  "scripts": {
-    "build": "webpack build --config=webpack.config.js --mode=production"
+  "devDependencies": {
+    "@ianvs/prettier-plugin-sort-imports": "4.3.1",
+    "@types/chrome": "0.0.277",
+    "@types/node": "22.7.5",
+    "@types/react": "18.3.11",
+    "@types/react-dom": "18.3.0",
+    "prettier": "3.3.3",
+    "typescript": "5.6.3"
+  },
+  "manifest": {
+    "browser_specific_settings": {
+      "gecko": {
+        "id": "me@reecon.xyz"
+      }
+    },
+    "homepage_url": "$PLASMO_PUBLIC_BASE_URL",
+    "host_permissions": [
+      "https://*/*"
+    ],
+    "permissions": [
+      "scripting",
+      "tabs",
+      "webRequest"
+    ],
+    "web_accessible_resources": [
+      {
+        "resources": [
+          "tabs/options.html"
+        ]
+      }
+    ]
   }
 }
