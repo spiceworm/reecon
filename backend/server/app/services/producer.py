@@ -7,6 +7,7 @@ from django.conf import settings
 from openai import OpenAIError
 import pydantic
 from tenacity import (
+    before_sleep_log,
     retry,
     retry_if_result,
     retry_if_exception_type,
@@ -41,6 +42,7 @@ class LlmProducerService(ProducerService):
         self.response_format = response_format
 
     @retry(
+        before_sleep=before_sleep_log(log, logging.DEBUG),
         reraise=True,
         retry=(retry_if_result(is_missing_expected_generated_data) | retry_if_exception_type(OpenAIError)),
         stop=stop_after_attempt(10),

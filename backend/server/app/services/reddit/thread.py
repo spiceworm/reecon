@@ -15,6 +15,7 @@ from praw.models import (
 )
 from prawcore.exceptions import TooManyRequests
 from tenacity import (
+    before_sleep_log,
     retry,
     retry_if_exception_type,
     stop_after_attempt,
@@ -150,6 +151,7 @@ class ThreadDataService(RedditDataService):
         return super().generate_data(inputs=inputs, llm_name=llm_name, nlp_name=nlp_name, prompt=prompt)
 
     @retry(
+        before_sleep=before_sleep_log(log, logging.DEBUG),
         reraise=True,
         retry=retry_if_exception_type(TooManyRequests),
         stop=stop_after_attempt(10),

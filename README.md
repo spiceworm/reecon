@@ -12,7 +12,7 @@ TODO:
 - Allow users to submit AI queries within the context of a thread or redditor comments. For example: "what are the largest concerns users have about about the topic discussed in this thread?", "what industry do you think this redditor works in?"
 - Post to openai batch api to update existing stale entries. Maybe new entries can be processed immediately, but a job can run in the background to refresh entries that are stale. This may only apply to stale users as stale threads are no longer relevant as no one is looking at or posting to them anymore
 - Update threads and users api endpoints to return {threads: [...], unprocessable_threads: [...], pending_threads: [...]}
-- Log when tenacity retries requests so you can see how much rate limiting is occurring. Modify rq config to process jobs in smaller batches / slower to avoid rate limiting
+- (X) Log when tenacity retries requests so you can see how much rate limiting is occurring. Modify rq config to process jobs in smaller batches / slower to avoid rate limiting
 - Fix generated documentation for api endpoints
 
 Firefox extension that:
