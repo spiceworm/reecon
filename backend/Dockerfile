@@ -1,4 +1,4 @@
-FROM python:3.12.6-bookworm
+FROM python:3.13.0-bookworm
 
 EXPOSE 80
 
