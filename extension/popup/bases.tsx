@@ -4,7 +4,7 @@ import {Container, Nav, NavItem} from "reactstrap"
 
 export const Unauthenticated = ({children}) => {
     return (
-        <Container className="bg-light p-3">
+        <Container className={"p-3"}>
             {children}
         </Container>
     )

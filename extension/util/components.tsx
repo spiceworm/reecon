@@ -152,8 +152,6 @@ export const ContentFilterTable = (
         'defaultFilter', (cf) => cf === undefined ? {} as types.ContentFilter : cf
     )
 
-    console.log([...columnFilters])
-
     const table = useReactTable({
         data,
         columns,

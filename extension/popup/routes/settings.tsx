@@ -65,7 +65,7 @@ export const Settings = () => {
     return (
         <base.Authenticated>
             <Form>
-                <div className={"form-check"}>
+                <div className={"form-check pt-2"}>
                     <Input
                         className={"form-check-input"}
                         checked={disableExtension}
