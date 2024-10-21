@@ -113,6 +113,17 @@ export const loginRequest = async (body: object) => {
 }
 
 
+export const signupRequest = async (body: object) => {
+    const response = await apiRequest(`/api/v1/auth/signup/`, 'post', body)
+
+    if (response.ok) {
+        return await loginRequest(body)
+    } else {
+        throw new Error(`Signup failed (${response.status})`)
+    }
+}
+
+
 // set difference until Set.prototype.difference` is available
 const difference = <T>(a: Set<T>, b: Set<T>) => new Set([...a].filter(x => !b.has(x)));
 

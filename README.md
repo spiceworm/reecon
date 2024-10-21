@@ -13,6 +13,7 @@ TODO:
 - Update threads and users api endpoints to return {threads: [...], unprocessable_threads: [...], pending_threads: [...]}
 - (X) Log when tenacity retries requests so you can see how much rate limiting is occurring. Modify rq config to process jobs in smaller batches / slower to avoid rate limiting
 - Fix generated documentation for api endpoints
+- Implement signup/login flow how it is shown in examples at https://github.com/remix-run/react-router/blob/dev/examples/auth/src/App.tsx
 
 Firefox extension that:
 - Scans all usernames and threads on the current page of old reddit.com layout (does not currently support new layout)
