@@ -10,11 +10,10 @@ __all__ = (
 
 class SignupSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
-    email = serializers.EmailField(required=True)
     password = serializers.CharField(required=True)
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        exclude = ("id", "password")
+        exclude = ("email", "id", "password")

@@ -12,9 +12,6 @@ export const Signup = () => {
                     <Input id="signupUsername" placeholder={"Username"} type="text"/>
                 </div>
                 <div className={"mb-3"}>
-                    <Input id="signupEmail" placeholder={"Email"} type="email"/>
-                </div>
-                <div className={"mb-3"}>
                     <Input id="signupPassword" placeholder={"Password"} type="password"/>
                 </div>
                 <div className="hstack gap-3 justify-content-center">

@@ -1,7 +1,6 @@
 TODO:
 - Add option to collapse comments for unprocessable redditors
-- Verify email when creating user account
-- Allow/require user to enter their own openai api key for user processing
+- Require user to enter their own openai api key for user processing
 - Have some way to inspect list of hidden threads
 - Trigger that causes the extension to execute is still bad. (cache a last run time and check if before running again)
 - Extension does not run after loading a specific thread

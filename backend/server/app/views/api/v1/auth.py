@@ -39,15 +39,13 @@ class SignupView(CreateAPIView):
         serializer.is_valid(raise_exception=True)
         data = serializer.data
 
-        if User.objects.filter(Q(username=data["username"]) | Q(email=data["email"])).exists():
+        if User.objects.filter(username=data["username"]).exists():
             # TODO create a table containing reserved usernames that people cannot use and check for those here
             # e.g. admin, reecon-admin administrator, root, etc
             raise UserSignupConflictException()
 
-        # TODO: Send verification email
         user = User.objects.create_user(
             username=data["username"],
-            email=data["email"],
             password=data["password"],
         )
         response_serializer = UserSerializer(instance=user)
