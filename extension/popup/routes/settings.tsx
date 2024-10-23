@@ -8,31 +8,6 @@ import * as api from "~util/api"
 import * as base from "~popup/bases"
 import * as components from "~util/components"
 import * as storage from "~util/storage"
-import type * as types from "~util/types";
-
-
-const getCurrentContext = async () => {
-    // FIXME: for some reason using `chrome.tabs` is undefined even though `browser.tabs` works as expected
-    const tabs = await browser.tabs.query({currentWindow: true, active: true})
-    const url = new URL(tabs[0].url)
-
-    // this will be the subreddit name if we are viewing a sub or an empty string if viewing home
-    const context: string = url.pathname.split('/r/').at(-1).split('/')[0]
-    return context === '' ? 'default' : context
-}
-
-
-const getContentFilter = async () => {
-    const context: string = await getCurrentContext()
-
-    for (const contentFilter of await storage.storage.get('contentFilters') as types.ContentFilter[]) {
-        if (contentFilter.context === context) {
-            return contentFilter
-        }
-    }
-
-    return await storage.storage.get('defaultFilter') as types.ContentFilter
-}
 
 
 export const Settings = () => {
@@ -58,7 +33,7 @@ export const Settings = () => {
         await chrome.tabs.create({url: "/tabs/index.html"})
     }
 
-    getContentFilter().then(contentFilter => setCurrentContext(contentFilter.context))
+    storage.getContentFilter().then(contentFilter => setCurrentContext(contentFilter.context))
 
     return (
         <base.Authenticated>

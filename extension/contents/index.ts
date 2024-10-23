@@ -2,6 +2,7 @@ import type {PlasmoCSConfig} from "plasmo"
 import * as data from "~util/storage"
 import * as dom from "~util/dom"
 import * as backgroundMessage from "~util/messages"
+import * as storage from "~util/storage"
 
 
 export const config: PlasmoCSConfig = {
@@ -50,7 +51,11 @@ const run = () => {
 
     lastExecution = Date.now()
 
-    execute().then()
+    storage.isAuthenticated().then(authenticated => {
+        if (authenticated) {
+            execute().then()
+        }
+    })
 }
 
 

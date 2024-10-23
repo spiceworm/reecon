@@ -18,3 +18,8 @@ export const getContentFilter = async () => {
 
     return await storage.get('defaultFilter') as types.ContentFilter
 }
+
+
+export const isAuthenticated = async () => {
+    return await storage.get('auth') !== null
+}
