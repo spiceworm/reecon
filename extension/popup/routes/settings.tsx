@@ -37,8 +37,6 @@ const getContentFilter = async () => {
 
 export const Settings = () => {
     const [disableExtension, setDisableExtension] = useStorage("disableExtension", (v) => v === undefined ? false : v)
-    const [enableRedditorProcessing, setEnableRedditorProcessing] = useStorage("enableRedditorProcessing", (v) => v === undefined ? false : v)
-    const [enableThreadProcessing, setEnableThreadProcessing] = useStorage("enableThreadProcessing", (v) => v === undefined ? false : v)
     const [hideBadSentimentThreads, setHideBadSentimentThreads] = useStorage("hideBadSentimentThreads", (v) => v === undefined ? false : v)
     const [hideIgnoredRedditors, setHideIgnoredRedditors] = useStorage("hideIgnoredRedditors", (v) => v === undefined ? false : v)
 
@@ -74,26 +72,6 @@ export const Settings = () => {
                         type="checkbox"
                     />
                     <Label for={"disableExtension"}>Disable reecon</Label>
-                </div>
-                <div className={"form-check"}>
-                    <Input
-                        className={"form-check-input"}
-                        checked={enableRedditorProcessing}
-                        id="enableRedditorProcessing"
-                        onChange={(e) => setEnableRedditorProcessing(e.target.checked)}
-                        type="checkbox"
-                    />
-                    <Label for={"enableRedditorProcessing"}>Enable processing of redditors</Label>
-                </div>
-                <div className={"form-check"}>
-                    <Input
-                        className={"form-check-input"}
-                        checked={enableThreadProcessing}
-                        id="enableThreadProcessing"
-                        onChange={(e) => setEnableThreadProcessing(e.target.checked)}
-                        type="checkbox"
-                    />
-                    <Label for={"enableThreadProcessing"}>Enable processing of threads</Label>
                 </div>
                 <div className={"form-check"}>
                     <Input

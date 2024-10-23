@@ -12,7 +12,6 @@ TODO:
 - (X) Log when tenacity retries requests so you can see how much rate limiting is occurring. Modify rq config to process jobs in smaller batches / slower to avoid rate limiting
 - Fix generated documentation for api endpoints
 - Implement signup/login flow how it is shown in examples at https://github.com/remix-run/react-router/blob/dev/examples/auth/src/App.tsx
-- Remove option to enable/disable thread and redditor processing from extension popup
 - Use batching API for processing redditors because they don't have to be processed immediately especially in the beginning. Then a job can just check the ones that are expired and resubmit them to the batch processing API again in the future
 
 Firefox extension that:

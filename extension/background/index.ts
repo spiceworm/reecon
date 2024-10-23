@@ -16,8 +16,6 @@ const initStorage = async () => {
         'contentFilters': [defaultContentFilter],
         'defaultFilter': defaultContentFilter,
         'disableExtension': false,
-        'enableRedditorProcessing': false,
-        'enableThreadProcessing': false,
         'hideBadSentimentThreads': false,
         'hideIgnoredRedditors': false,
         'username': null,
