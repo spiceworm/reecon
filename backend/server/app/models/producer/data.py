@@ -21,14 +21,14 @@ class ProducedBinary(Created):
     contributor = models.ForeignKey(
         User,
         null=False,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="contributed_binary",
         help_text="The user who contributed the resources that produced the data value.",
     )
     producer = models.ForeignKey(
         Producer,
         null=False,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="produced_binary",
         help_text="The producer of value attribute.",
     )
@@ -50,14 +50,14 @@ class ProducedFloat(Created):
     contributor = models.ForeignKey(
         User,
         null=False,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="contributed_floats",
         help_text="The user who contributed the resources that produced the data value.",
     )
     producer = models.ForeignKey(
         Producer,
         null=False,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="produced_floats",
         help_text="The producer of the value attribute.",
     )
@@ -79,14 +79,14 @@ class ProducedInteger(Created):
     contributor = models.ForeignKey(
         User,
         null=False,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="contributed_integers",
         help_text="The user who contributed the resources that produced the data value.",
     )
     producer = models.ForeignKey(
         Producer,
         null=False,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="produced_integers",
         help_text="The producer of the value attribute.",
     )
@@ -108,14 +108,14 @@ class ProducedText(Created):
     contributor = models.ForeignKey(
         User,
         null=False,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="contributed_text",
         help_text="The user who contributed the resources that produced the data value.",
     )
     producer = models.ForeignKey(
         Producer,
         null=False,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="produced_text",
         help_text="The producer of the value attribute.",
     )
@@ -135,14 +135,14 @@ class ProducedTextList(Created):
     contributor = models.ForeignKey(
         User,
         null=False,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="contributed_text_list",
         help_text="The user who contributed the resources that produced the data value.",
     )
     producer = models.ForeignKey(
         Producer,
         null=False,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="produced_text_list",
         help_text="The producer of the value attribute.",
     )

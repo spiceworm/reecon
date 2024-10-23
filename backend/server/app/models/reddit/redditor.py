@@ -49,42 +49,42 @@ class RedditorData(Created):
     age = models.OneToOneField(
         ProducedInteger,
         null=False,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="redditor_age_data",
         help_text="The inferred age of the redditor based on their submissions.",
     )
     interests = models.OneToOneField(
         ProducedTextList,
         null=False,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="redditor_interests_data",
         help_text="The inferred interests of the redditor based on their submissions.",
     )
     iq = models.OneToOneField(
         ProducedInteger,
         null=False,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="redditor_iq_data",
         help_text="The inferred IQ of the redditor based on their submissions.",
     )
     redditor = models.ForeignKey(
         Redditor,
         null=False,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="data",
         help_text="The redditor whose submissions were used to produce the data associated with this entry.",
     )
     sentiment_polarity = models.OneToOneField(
         ProducedFloat,
         null=False,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="redditor_sentiment_polarity_data",
         help_text="The inferred sentiment polarity of the redditor based on their submissions.",
     )
     summary = models.OneToOneField(
         ProducedText,
         null=False,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="redditor_summary_data",
         help_text="An inferred summary of the redditor based on their submissions.",
     )

@@ -32,7 +32,7 @@ class Producer(Created, Description):
     category = models.ForeignKey(
         "ProducerCategory",
         null=False,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="producers",
         help_text="The category of the producer.",
     )

@@ -37,28 +37,28 @@ class ThreadData(Created):
     keywords = models.OneToOneField(
         ProducedTextList,
         null=False,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="thread_keywords_data",
         help_text="The inferred keywords of the thread based on the submissions.",
     )
     sentiment_polarity = models.OneToOneField(
         ProducedFloat,
         null=False,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="thread_sentiment_polarity_data",
         help_text="The inferred sentiment polarity of the thread based on the submissions.",
     )
     summary = models.OneToOneField(
         ProducedText,
         null=False,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="thread_summary_data",
         help_text="The inferred summary of what is being discussed in the thread based on the submissions.",
     )
     thread = models.ForeignKey(
         Thread,
         null=False,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="data",
         help_text="The reddit thread whose submissions were used to generate the stats in this entry.",
     )
