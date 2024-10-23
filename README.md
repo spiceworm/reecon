@@ -1,18 +1,19 @@
 TODO:
-- Add option to collapse comments for unprocessable redditors
 - Require user to enter their own openai api key for user processing
-- Have some way to inspect list of hidden threads
-- Add button to expand all comments.
-- Track submission count since last redditor/thread processing event. Do no reprocess unless some number of new submissions have been made. Few or no new submissions does not warrant reprocessing unless the processing is done by a new model.
-- Recommend threads to users based on their interests determined from their submissions history.
+- Track submission count since last redditor/thread processing event. Do not reprocess unless some number of new submissions have been made. Few or no new submissions does not warrant reprocessing unless the processing is done by a new model.
 - Track tokens used to generate each object so you can determine how many tokens are being used as the prompts/generated data changes over time
-- Allow users to submit AI queries within the context of a thread or redditor comments. For example: "what are the largest concerns users have about about the topic discussed in this thread?", "what industry do you think this redditor works in?"
-- Post to openai batch api to update existing stale entries. Maybe new entries can be processed immediately, but a job can run in the background to refresh entries that are stale. This may only apply to stale users as stale threads are no longer relevant as no one is looking at or posting to them anymore
 - Update threads and users api endpoints to return {threads: [...], unprocessable_threads: [...], pending_threads: [...]}
 - (X) Log when tenacity retries requests so you can see how much rate limiting is occurring. Modify rq config to process jobs in smaller batches / slower to avoid rate limiting
 - Fix generated documentation for api endpoints
 - Implement signup/login flow how it is shown in examples at https://github.com/remix-run/react-router/blob/dev/examples/auth/src/App.tsx
 - Use batching API for processing redditors because they don't have to be processed immediately especially in the beginning. Then a job can just check the ones that are expired and resubmit them to the batch processing API again in the future
+
+Enhancements:
+- Add option to collapse comments for unprocessable redditors
+- (?) Add button to expand all comments
+- Have some way to inspect list of hidden threads
+- Recommend threads to users based on their interests determined from their submissions history.
+- Allow users to submit AI queries within the context of a thread or redditor comments. For example: "what are the largest concerns users have about about the topic discussed in this thread?", "what industry do you think this redditor works in?"
 
 Firefox extension that:
 - Scans all usernames and threads on the current page of old reddit.com layout (does not currently support new layout)
@@ -49,18 +50,16 @@ docker exec -it reecon-server-1 tail -f /var/log/supervisor/app/api.log
 # DigitalOcean currently has a bug - https://www.digitalocean.com/community/questions/app-platform-supervisor-error
 # For a local dev instance, uncomment unix_http_server lines at top of reecon/app/supervisord.conf
 # in order to use `supervisorctl`.
-docker exec -it reecon-server-1 ./debug.sh
+docker exec -it reecon-backend-server-1 ./debug.sh
 ```
 
 # Environment Variables
 ### These are all required for dev and prod
 ```
+ADMIN_PASSWORD=<admin-password>
 APP_NAME=reecon
 CONTAINER_REPO=<container-repo-name-in-container-registry>
-DESCRIPTION=<description>
 OPENAI_API_KEY=<api-key>
-OPENAI_MODEL=<whichever-model-you-want>
-OPENAI_MODEL_MAX_TOKENS=<max-tokens-for-chosen-model>
 POSTGRES_DB=<name>
 POSTGRES_HOST=<host>
 POSTGRES_PASSWORD=<password>
@@ -79,7 +78,7 @@ VERSION=<semantic-version>
 
 ### Set these for dev instance
 ```
-DEBUG=1
+DEBUG=True
 LOG_LEVEL=DEBUG
 POSTGRES_DB=postgres
 POSTGRES_HOST=db
