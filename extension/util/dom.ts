@@ -99,25 +99,24 @@ export const getCurrentContext = async () => {
 }
 
 
-export const getThreadUrlPaths = () => {
-    let urlPaths: string[] = []
+const getThreadElements = () => {
+    return document.querySelectorAll('[data-permalink]:not(.comment, .ad-container)')
+}
 
-    for (const el of document.querySelectorAll('[data-permalink]')) {
-        // The above querySelector will also select comments if we are viewing a thread. However,
-        // we only want to select thread rows. There will be multiple when viewing a subreddit, but
-        // only one when viewing a thread. Also ignore ads that appear in the list of threads.
-        if (!(el.classList.contains('comment')) && !(el.classList.contains('ad-container'))) {
-            const urlPath = el.getAttribute('data-permalink')
-            urlPaths.push(urlPath)
-        }
-    }
-    return urlPaths
+
+export const getThreadUrlPaths = () => {
+    return [...getThreadElements()].map(el => el.getAttribute('data-permalink'))
+}
+
+
+const getUsernameElements = () => {
+    return document.getElementsByClassName('author')
 }
 
 
 export const getUsernameElementsMap = () => {
     let usernameElements = {}
-    for (const el of document.getElementsByClassName('author') as HTMLCollectionOf<HTMLLinkElement>) {
+    for (const el of getUsernameElements() as HTMLCollectionOf<HTMLLinkElement>) {
         const username = el.innerText;
         username in usernameElements ? usernameElements[username].push(el) : usernameElements[username] = [el]
     }

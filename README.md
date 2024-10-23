@@ -2,8 +2,6 @@ TODO:
 - Add option to collapse comments for unprocessable redditors
 - Require user to enter their own openai api key for user processing
 - Have some way to inspect list of hidden threads
-- Trigger that causes the extension to execute is still bad. (cache a last run time and check if before running again)
-- Extension does not run after loading a specific thread
 - Add button to expand all comments.
 - Track submission count since last redditor/thread processing event. Do no reprocess unless some number of new submissions have been made. Few or no new submissions does not warrant reprocessing unless the processing is done by a new model.
 - Recommend threads to users based on their interests determined from their submissions history.
@@ -14,6 +12,8 @@ TODO:
 - (X) Log when tenacity retries requests so you can see how much rate limiting is occurring. Modify rq config to process jobs in smaller batches / slower to avoid rate limiting
 - Fix generated documentation for api endpoints
 - Implement signup/login flow how it is shown in examples at https://github.com/remix-run/react-router/blob/dev/examples/auth/src/App.tsx
+- Remove option to enable/disable thread and redditor processing from extension popup
+- Use batching API for processing redditors because they don't have to be processed immediately especially in the beginning. Then a job can just check the ones that are expired and resubmit them to the batch processing API again in the future
 
 Firefox extension that:
 - Scans all usernames and threads on the current page of old reddit.com layout (does not currently support new layout)
