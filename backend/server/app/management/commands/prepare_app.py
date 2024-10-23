@@ -27,6 +27,7 @@ def create_hardcoded_ignored_redditors():
     for username, reason in (
         ("AutoModerator", "Bot"),
         ("coinfeeds-bot", "Bot"),
+        ("ethfinance", "Bot"),
         ("VisualMod", "Bot"),
     ):
         IgnoredRedditor.objects.update_or_create(
@@ -63,6 +64,12 @@ def create_hardcoded_producers():
     nlp_category = ProducerCategory.objects.get(name="NLP")
 
     for name, category, context_window, description in (
+        (
+            "gpt-4o-mini-2024-07-18",
+            llm_category,
+            128_000,
+            "https://platform.openai.com/docs/models/gpt-4o-mini",
+        ),
         (
             "gpt-4o-2024-08-06",
             llm_category,

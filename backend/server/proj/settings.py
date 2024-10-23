@@ -316,7 +316,7 @@ CONSTANCE_CONFIG = collections.OrderedDict(
             "Status message returned when THREAD_PROCESSING_ENABLED=False",
         ),
         "LLM_NAME": (
-            "gpt-4o-2024-08-06",
+            "gpt-4o-mini-2024-07-18",
             "Large language model to use for prompts. OpenAI models currently only supported - "
             "https://platform.openai.com/docs/models/",
             "llm_select",
