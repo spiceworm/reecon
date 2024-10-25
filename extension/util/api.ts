@@ -1,6 +1,6 @@
-import {jwtDecode} from "jwt-decode"
 import lscache from "lscache"
 
+import * as misc from "~util/misc"
 import * as storage from "~util/storage"
 import type * as types from "~util/types"
 
@@ -41,11 +41,11 @@ export const ensureAccessToken = async (refreshUrlPath): Promise<string | null> 
     const auth: types.Auth = await storage.get('auth')
 
     if (auth !== null) {
-        if (jwtIsValid(auth.access)) {
+        if (misc.jwtIsValid(auth.access)) {
             return auth.access;
         }
 
-        if (jwtIsValid(auth.refresh)) {
+        if (misc.jwtIsValid(auth.refresh)) {
             const response = await apiRequest(
                 refreshUrlPath,
                 'post',
