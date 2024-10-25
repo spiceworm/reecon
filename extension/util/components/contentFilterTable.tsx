@@ -82,7 +82,7 @@ const ActionCell = ({row, table}) => {
 
 const FooterCell = ({table}) => {
     return (
-        <div className={"d-flex justify-content-end"}>
+        <div className={"d-flex justify-content-center"}>
             <Button color={"success"} onClick={table.options.meta.addRow} title={"Add new row"}>
                 Add New <Plus/>
             </Button>

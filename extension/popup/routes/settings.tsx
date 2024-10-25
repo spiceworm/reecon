@@ -6,8 +6,8 @@ import {useState} from "react"
 
 import * as api from "~util/api"
 import * as base from "~popup/bases"
-import * as components from "~util/components"
 import * as storage from "~util/storage"
+import {ContentFilterTable} from "~util/components/contentFilterTable"
 
 
 export const Settings = () => {
@@ -70,7 +70,7 @@ export const Settings = () => {
                 </div>
             </Form>
 
-            <components.ContentFilterTable
+            <ContentFilterTable
                 columnFilters={[{
                     id: 'context',
                     value: currentContext
