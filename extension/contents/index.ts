@@ -48,8 +48,8 @@ const run = () => {
 
     lastExecution = Date.now()
 
-    storage.userIsAuthenticated().then(userAuthenticated => {
-        if (userAuthenticated) {
+    storage.get('userIsAuthenticated').then(userIsAuthenticated => {
+        if (userIsAuthenticated) {
             execute().then()
         }
     })

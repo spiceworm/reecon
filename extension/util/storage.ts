@@ -1,10 +1,30 @@
-import { Storage } from "@plasmohq/storage"
+import {Storage} from "@plasmohq/storage"
 
 import * as backgroundMessage from "~util/messages"
 import type * as types from "~util/types"
 
 
-const _storage = new Storage()
+const _storage = new Storage({
+    area: 'local',
+})
+
+
+_storage.watch({
+    auth: (storageChange) => {
+        const auth = storageChange.newValue
+
+        // Manifest v2: Use `chrome.action` instead of `chrome.browserAction` for mv3
+        if (!auth || !auth?.access) {
+            _storage.set('userIsAuthenticated', false).then()
+            chrome.browserAction.setBadgeText({text: "❕"})
+            chrome.browserAction.setBadgeBackgroundColor({color: "red"})
+        } else {
+            _storage.set('userIsAuthenticated', true).then()
+            chrome.browserAction.setBadgeText({text: ""})
+            chrome.browserAction.setBadgeBackgroundColor({color: null})
+        }
+    },
+})
 
 
 export const init = async () => {
@@ -23,6 +43,7 @@ export const init = async () => {
         'disableExtension': false,
         'hideBadSentimentThreads': false,
         'hideIgnoredRedditors': false,
+        'userIsAuthenticated': false,
         'username': null,
     })
 }
@@ -48,10 +69,4 @@ export const getContentFilter = async () => {
     }
 
     return await _storage.get('defaultFilter') as types.ContentFilter
-}
-
-
-export const userIsAuthenticated = async () => {
-    const auth: types.Auth = await get('auth')
-    return auth !== null && auth.access !== null
 }
