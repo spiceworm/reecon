@@ -1,4 +1,4 @@
-import * as data from "~util/storage"
+import * as storage from "~util/storage"
 import type * as types from "~util/types"
 
 
@@ -22,7 +22,7 @@ export const annotateThreads = async (threads: types.Thread[], contentFilter: ty
         threadDataSpan.innerText = " 🔮"
 
         if (sentiment_polarity < contentFilter.sentiment) {
-            const hideBadSentimentThreads = await data.storage.get('hideBadSentimentThreads')
+            const hideBadSentimentThreads = await storage.get('hideBadSentimentThreads')
 
             if (hideBadSentimentThreads) {
                 threadRow.style.display = "none";

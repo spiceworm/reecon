@@ -11,14 +11,14 @@ export const Login = () => {
     const [credentials, setCredentials] = useState(null)
     const [username, setUsername] = useState(null)
     const [password, setPassword] = useState(null)
-    const {data, error, isLoading} = useSWR(credentials ? credentials : null, api.loginRequest)
+    const {data: accessToken, error, isLoading} = useSWR(credentials ? credentials : null, api.loginRequest)
 
     const handleSubmit = async (e) => {
         e.preventDefault()
         setCredentials({username: username, password: password})
     }
 
-    if (data) {
+    if (accessToken !== null) {
         // mutating this key will cause `api.ensureAccessToken` in the `Settings` route to get re-evaluated.
         // This is required so that we do not get redirected back to the login page.
         mutate('/api/v1/auth/token/refresh/', true).then()

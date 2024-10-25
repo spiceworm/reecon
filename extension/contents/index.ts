@@ -1,5 +1,4 @@
 import type {PlasmoCSConfig} from "plasmo"
-import * as data from "~util/storage"
 import * as dom from "~util/dom"
 import * as backgroundMessage from "~util/messages"
 import * as storage from "~util/storage"
@@ -18,29 +17,27 @@ let lastExecution = null
 
 
 const execute = async () => {
-    const settings = await data.storage.getMany([
-        'disableExtension',
-    ])
+    storage.get('disableExtension').then(isDisabled => {
+        if (!isDisabled) {
+            storage.getContentFilter().then(contentFilter => {
+                const urlPaths = dom.getThreadUrlPaths()
+                const usernameElementsMap = dom.getUsernameElementsMap()
+                const usernames = Object.keys(usernameElementsMap)
 
-    if (!settings.disableExtension) {
-        data.getContentFilter().then(contentFilter => {
-            const urlPaths = dom.getThreadUrlPaths()
-            const usernameElementsMap = dom.getUsernameElementsMap()
-            const usernames = Object.keys(usernameElementsMap)
+                backgroundMessage.processThreads(urlPaths).then(threads => {
+                    dom.annotateThreads(threads, contentFilter).then()
+                })
 
-            backgroundMessage.processThreads(urlPaths).then(threads => {
-                dom.annotateThreads(threads, contentFilter).then()
-            })
+                backgroundMessage.getIgnoredRedditors().then(ignoredRedditors => {
+                    const ignoredUsernames = new Set(ignoredRedditors.map(obj => obj.username))
 
-            backgroundMessage.getIgnoredRedditors().then(ignoredRedditors => {
-                const ignoredUsernames = new Set(ignoredRedditors.map(obj => obj.username))
-
-                backgroundMessage.processRedditors(usernames, ignoredUsernames).then(redditors => {
-                    dom.annotateUsernames(redditors, ignoredRedditors, usernameElementsMap, contentFilter).then()
+                    backgroundMessage.processRedditors(usernames, ignoredUsernames).then(redditors => {
+                        dom.annotateUsernames(redditors, ignoredRedditors, usernameElementsMap, contentFilter).then()
+                    })
                 })
             })
-        })
-    }
+        }
+    })
 }
 
 
@@ -51,8 +48,8 @@ const run = () => {
 
     lastExecution = Date.now()
 
-    storage.isAuthenticated().then(authenticated => {
-        if (authenticated) {
+    storage.userIsAuthenticated().then(userAuthenticated => {
+        if (userAuthenticated) {
             execute().then()
         }
     })

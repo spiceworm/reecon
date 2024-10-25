@@ -14,9 +14,7 @@ export const Settings = () => {
     const [disableExtension, setDisableExtension] = useStorage("disableExtension", (v) => v === undefined ? false : v)
     const [hideBadSentimentThreads, setHideBadSentimentThreads] = useStorage("hideBadSentimentThreads", (v) => v === undefined ? false : v)
     const [hideIgnoredRedditors, setHideIgnoredRedditors] = useStorage("hideIgnoredRedditors", (v) => v === undefined ? false : v)
-
     const [currentContext, setCurrentContext] = useState('default')
-
     const {data: accessToken, error, isLoading} = useSWR('/api/v1/auth/token/refresh/', api.ensureAccessToken)
 
     if (isLoading) {
@@ -25,7 +23,7 @@ export const Settings = () => {
     if (error) {
         return <p>{error.message}</p>
     }
-    if (!accessToken) {
+    if (accessToken === null) {
         return <Navigate to="/auth/login" replace={true}/>
     }
 
@@ -33,7 +31,9 @@ export const Settings = () => {
         await chrome.tabs.create({url: "/tabs/index.html"})
     }
 
-    storage.getContentFilter().then(contentFilter => setCurrentContext(contentFilter.context))
+    storage.getContentFilter().then(contentFilter => {
+        setCurrentContext(contentFilter.context)
+    })
 
     return (
         <base.Authenticated>

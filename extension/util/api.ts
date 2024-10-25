@@ -1,11 +1,11 @@
 import {jwtDecode} from "jwt-decode"
 import lscache from "lscache"
 
-import * as data from "~util/storage"
+import * as storage from "~util/storage"
 import type * as types from "~util/types"
 
 
-export const apiRequest = async (urlPath: string, type: string, body: object = {}, authenticated= false) => {
+export const apiRequest = async (urlPath: string, type: string, body: object = {}, authenticatedRequest = false) => {
     let headers = {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
@@ -15,8 +15,8 @@ export const apiRequest = async (urlPath: string, type: string, body: object = {
         headers: headers,
     }
 
-    if (authenticated) {
-        const auth: types.Auth = await data.storage.get('auth')
+    if (authenticatedRequest) {
+        const auth: types.Auth = await storage.get('auth')
         headers['Authorization'] = `Bearer ${auth.access}`
     }
     if (type.toLowerCase() !== 'get') {
@@ -38,7 +38,7 @@ export const getJson = async (urlPath: string) => {
 
 
 export const ensureAccessToken = async (refreshUrlPath): Promise<string | null> => {
-    const auth: types.Auth = await data.storage.get('auth')
+    const auth: types.Auth = await storage.get('auth')
 
     if (auth !== null) {
         if (jwtIsValid(auth.access)) {
@@ -54,9 +54,10 @@ export const ensureAccessToken = async (refreshUrlPath): Promise<string | null> 
 
             if (response.ok) {
                 const refreshJson = await response.json()
-                await data.storage.set('auth', {access: refreshJson.access, refresh: refreshJson.refresh})
+                await storage.set('auth', {access: refreshJson.access, refresh: refreshJson.refresh})
                 return refreshJson.access
             } else {
+                console.error(response)
                 throw new Error(`Refreshing access token failed (${response.status})`)
             }
         }
@@ -84,6 +85,7 @@ export const getIgnoredRedditors = async () => {
             lscache.set('ignoredRedditors', ignoredRedditors, process.env.PLASMO_PUBLIC_IGNORED_REDDITOR_CACHE_EXP_MINUTES)
             return ignoredRedditors
         } else {
+            console.error(response)
             throw new Error(`Fetching ignored redditors failed (${response.status})`)
         }
     }
@@ -105,9 +107,10 @@ export const loginRequest = async (body: object) => {
 
     if (response.ok) {
         const responseJson = await response.json()
-        await data.storage.set('auth', {access: responseJson.access, refresh: responseJson.refresh})
+        await storage.set('auth', {access: responseJson.access, refresh: responseJson.refresh})
         return responseJson.access
     } else {
+        console.error(response)
         throw new Error(`Login failed (${response.status})`)
     }
 }
@@ -119,6 +122,7 @@ export const signupRequest = async (body: object) => {
     if (response.ok) {
         return await loginRequest(body)
     } else {
+        console.error(response)
         throw new Error(`Signup failed (${response.status})`)
     }
 }
