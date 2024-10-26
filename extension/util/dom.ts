@@ -22,9 +22,7 @@ export const annotateThreads = async (threads: types.Thread[], contentFilter: ty
         threadDataSpan.innerText = " 🔮"
 
         if (sentiment_polarity < contentFilter.sentiment) {
-            const hideBadSentimentThreads = await storage.get('hideBadSentimentThreads')
-
-            if (hideBadSentimentThreads) {
+            if (await storage.getHideBadSentimentThreads()) {
                 threadRow.style.display = "none";
             } else {
                 threadRow.style.display = "block";
@@ -82,6 +80,8 @@ export const annotateUsernames = async (redditors: types.Redditor[], ignoredRedd
             for (let linkElement of usernameElementsMap[username]) {
                 linkElement.parentElement.insertAdjacentElement("beforeend", ignoredRedditorDataSpan);
             }
+
+            // TODO: Hide/collapse ignored redditors if `storage.getHideIgnoredRedditors()` is true
         }
     }
 }

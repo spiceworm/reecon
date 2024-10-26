@@ -14,6 +14,7 @@ import {
     useReactTable
 } from '@tanstack/react-table'
 
+import * as storage from "~util/storage"
 import type * as types from "~util/types"
 
 
@@ -141,15 +142,15 @@ const defaultColumnVisibility = {
 }
 
 
-export const ContentFilterTable = (
-    {columnVisibility = defaultColumnVisibility, columnFilters = [], footerVisible = true}
-) => {
-
+export const ContentFilterTable = ({columnVisibility = defaultColumnVisibility, columnFilters = [], footerVisible = true}) => {
     const [data, setData] = useStorage<types.ContentFilter[]>(
-        'contentFilters', (cfArray) => cfArray === undefined ? [] as types.ContentFilter[] : cfArray
+        {instance: storage.instance, key: storage.CONTENT_FILTERS},
+        (v: types.ContentFilter[]) => v === undefined ? [] as types.ContentFilter[] : v,
     )
+
     const [defaultFilter, setDefaultFilter] = useStorage<types.ContentFilter>(
-        'defaultFilter', (cf) => cf === undefined ? {} as types.ContentFilter : cf
+        {instance: storage.instance, key: storage.DEFAULT_FILTER},
+        (v: types.ContentFilter) => v === undefined ? {} as types.ContentFilter : v,
     )
 
     const table = useReactTable({

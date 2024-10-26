@@ -37,31 +37,29 @@ export const getJson = async (urlPath: string) => {
 }
 
 
-export const ensureAccessToken = async (refreshUrlPath): Promise<string | null> => {
-    const auth: types.Auth = await storage.get('auth')
+export const ensureAccessToken = async (refreshUrlPath: string): Promise<string | null> => {
+    let retval = null
+
+    const auth: types.Auth = await storage.getAuth()
 
     if (auth !== null) {
         if (misc.jwtIsValid(auth.access)) {
-            return auth.access;
-        }
-
-        if (misc.jwtIsValid(auth.refresh)) {
-            const response = await apiRequest(
-                refreshUrlPath,
-                'post',
-                {'refresh': auth.refresh},
-            )
+            retval = auth.access
+        } else if (misc.jwtIsValid(auth.refresh)) {
+            const response = await apiRequest(refreshUrlPath, POST, {'refresh': auth.refresh})
 
             if (response.ok) {
                 const refreshJson = await response.json()
-                await storage.set('auth', {access: refreshJson.access, refresh: refreshJson.refresh})
-                return refreshJson.access
+                await storage.setAuth({access: refreshJson.access, refresh: refreshJson.refresh})
+                retval = refreshJson.access
             } else {
                 console.error(response)
                 throw new Error(`Refreshing access token failed (${response.status})`)
             }
         }
     }
+
+    return retval
 }
 
 
@@ -92,22 +90,12 @@ export const getIgnoredRedditors = async () => {
 }
 
 
-function jwtIsValid(token: string | null) {
-    if (token === null) {
-        return false;
-    } else {
-        const jwt = jwtDecode(token);
-        return Date.now() < jwt.exp * 1000;
-    }
-}
-
-
 export const loginRequest = async (body: object) => {
     const response = await apiRequest(`/api/v1/auth/token/`, 'post', body)
 
     if (response.ok) {
         const responseJson = await response.json()
-        await storage.set('auth', {access: responseJson.access, refresh: responseJson.refresh})
+        await storage.setAuth({access: responseJson.access, refresh: responseJson.refresh})
         return responseJson.access
     } else {
         console.error(response)

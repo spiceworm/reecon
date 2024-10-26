@@ -11,9 +11,18 @@ import {ContentFilterTable} from "~util/components/contentFilterTable"
 
 
 export const Settings = () => {
-    const [disableExtension, setDisableExtension] = useStorage("disableExtension", (v) => v === undefined ? false : v)
-    const [hideBadSentimentThreads, setHideBadSentimentThreads] = useStorage("hideBadSentimentThreads", (v) => v === undefined ? false : v)
-    const [hideIgnoredRedditors, setHideIgnoredRedditors] = useStorage("hideIgnoredRedditors", (v) => v === undefined ? false : v)
+    const [disableExtension, setDisableExtension] = useStorage(
+        {instance: storage.instance, key: storage.DISABLE_EXTENSION},
+        (v: boolean) => v === undefined ? false : v,
+    )
+    const [hideBadSentimentThreads, setHideBadSentimentThreads] = useStorage(
+        {instance: storage.instance, key: storage.HIDE_BAD_SENTIMENT_THREADS},
+        (v: boolean) => v === undefined ? false : v,
+    )
+    const [hideIgnoredRedditors, setHideIgnoredRedditors] = useStorage(
+        {instance: storage.instance, key: storage.HIDE_IGNORED_REDDITORS},
+        (v: boolean) => v === undefined ? false : v,
+    )
     const [currentContext, setCurrentContext] = useState('default')
     const {data: accessToken, error, isLoading} = useSWR('/api/v1/auth/token/refresh/', api.ensureAccessToken)
 
