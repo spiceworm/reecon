@@ -1,6 +1,7 @@
 import {Storage} from "@plasmohq/storage"
 
 import * as backgroundMessage from "~util/messages"
+import * as contents from "~util/contents"
 import type * as types from "~util/types"
 
 
@@ -134,5 +135,11 @@ instance.watch({
         getAuth().then(auth => {
             setShouldExecuteContentScript(auth !== null && !disableExtension).then()
         })
+    },
+    [SHOULD_EXECUTE_CONTENT_SCRIPTS]: (storageChange) => {
+        // Only call `execute` if _shouldExecuteContentScripts changed from false to true
+        if (!storageChange.oldValue && storageChange.newValue) {
+            contents.execute().then()
+        }
     },
 })
