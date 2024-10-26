@@ -52,3 +52,18 @@ export const processThreads = async (urlPaths: string[]) => {
     })
     return resp.message as types.Thread[]
 }
+
+
+export const setPopupIcon = async (color: string | null, text: string) => {
+    const resp = await sendToBackground({
+        name: "misc",
+        body: {
+            action: 'setPopupIcon',
+            kwargs: {
+                color: color,
+                text: text,
+            }
+        }
+    })
+    return resp.message as null
+}
