@@ -16,28 +16,24 @@ export const config: PlasmoCSConfig = {
 let lastExecution = null
 
 
+// FIXME: bad flow for initial user experience
+// Current flow: user install extension -> login -> nothing happens because the page loaded when they were not logged in
+// Desired flow: user install extension -> login -> successful login triggers `execute`
 const execute = async () => {
-    storage.get('disableExtension').then(isDisabled => {
-        if (!isDisabled) {
-            storage.getContentFilter().then(contentFilter => {
-                const urlPaths = dom.getThreadUrlPaths()
-                const usernameElementsMap = dom.getUsernameElementsMap()
-                const usernames = Object.keys(usernameElementsMap)
+    const shouldExecuteContentScript = storage.getShouldExecuteContentScript()
+    if (shouldExecuteContentScript) {
+        const urlPaths = dom.getThreadUrlPaths()
+        const threads = await backgroundMessage.processThreads(urlPaths)
+        const contentFilter = await storage.getContentFilter()
+        await dom.annotateThreads(threads, contentFilter)
 
-                backgroundMessage.processThreads(urlPaths).then(threads => {
-                    dom.annotateThreads(threads, contentFilter).then()
-                })
-
-                backgroundMessage.getIgnoredRedditors().then(ignoredRedditors => {
-                    const ignoredUsernames = new Set(ignoredRedditors.map(obj => obj.username))
-
-                    backgroundMessage.processRedditors(usernames, ignoredUsernames).then(redditors => {
-                        dom.annotateUsernames(redditors, ignoredRedditors, usernameElementsMap, contentFilter).then()
-                    })
-                })
-            })
-        }
-    })
+        const usernameElementsMap = dom.getUsernameElementsMap()
+        const usernames = Object.keys(usernameElementsMap)
+        const ignoredRedditors = await backgroundMessage.getIgnoredRedditors()
+        const ignoredUsernames = new Set(ignoredRedditors.map(obj => obj.username))
+        const redditors = await backgroundMessage.processRedditors(usernames, ignoredUsernames)
+        await dom.annotateUsernames(redditors, ignoredRedditors, usernameElementsMap, contentFilter)
+    }
 }
 
 

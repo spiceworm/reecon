@@ -5,21 +5,30 @@ import * as storage from "~util/storage"
 import type * as types from "~util/types"
 
 
-export const apiRequest = async (urlPath: string, type: string, body: object = {}, authenticatedRequest = false) => {
+const GET = 'GET'
+const POST = 'POST'
+
+
+export const apiRequest = async (urlPath: string, method: string, body: object = {}, sendAuthenticated = false) => {
     let headers = {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
     }
     let options = {
-        method: type,
+        method: method,
         headers: headers,
     }
 
-    if (authenticatedRequest) {
-        const auth: types.Auth = await storage.get('auth')
-        headers['Authorization'] = `Bearer ${auth.access}`
+    if (sendAuthenticated) {
+        const auth: types.Auth = await storage.getAuth()
+
+        if (auth === null) {
+            throw new Error(`User authentication missing. Cannot send authenticated ${method} request to ${urlPath}`)
+        } else {
+            headers['Authorization'] = `Bearer ${auth.access}`
+        }
     }
-    if (type.toLowerCase() !== 'get') {
+    if (method.toUpperCase() !== GET) {
         options['body'] = JSON.stringify(body)
     }
 
@@ -27,13 +36,13 @@ export const apiRequest = async (urlPath: string, type: string, body: object = {
 }
 
 
-export const apiAuthRequest = async (urlPath: string, type: string, body: object = {}) => {
-    return apiRequest(urlPath, type, body, true)
+export const apiAuthRequest = async (urlPath: string, method: string, body: object = {}) => {
+    return apiRequest(urlPath, method, body, true)
 }
 
 
 export const getJson = async (urlPath: string) => {
-    return apiRequest(urlPath, 'GET').then(response => response.json())
+    return apiRequest(urlPath, GET).then(response => response.json())
 }
 
 
@@ -73,10 +82,7 @@ export const getIgnoredRedditors = async () => {
     if (cachedIgnoredRedditors !== null && cachedIgnoredRedditors.length > 0) {
         return cachedIgnoredRedditors
     } else {
-        const response = await apiAuthRequest(
-            '/api/v1/reddit/redditors/ignored/',
-            'GET',
-        )
+        const response = await apiAuthRequest('/api/v1/reddit/redditors/ignored/', GET)
 
         if (response.ok) {
             const ignoredRedditors: types.IgnoredRedditor[] = await response.json()
@@ -91,7 +97,7 @@ export const getIgnoredRedditors = async () => {
 
 
 export const loginRequest = async (body: object) => {
-    const response = await apiRequest(`/api/v1/auth/token/`, 'post', body)
+    const response = await apiRequest(`/api/v1/auth/token/`, POST, body)
 
     if (response.ok) {
         const responseJson = await response.json()
@@ -105,7 +111,7 @@ export const loginRequest = async (body: object) => {
 
 
 export const signupRequest = async (body: object) => {
-    const response = await apiRequest(`/api/v1/auth/signup/`, 'post', body)
+    const response = await apiRequest(`/api/v1/auth/signup/`, POST, body)
 
     if (response.ok) {
         return await loginRequest(body)
@@ -148,11 +154,7 @@ export const processRedditors = async (usernames: string[], ignoredUsernames: Se
     }
 
     if (usernamesToProcess.length > 0) {
-        const response = await apiAuthRequest(
-            '/api/v1/reddit/redditors/',
-            'POST',
-            {'usernames': usernamesToProcess},
-        )
+        const response = await apiAuthRequest('/api/v1/reddit/redditors/', POST, {'usernames': usernamesToProcess})
 
         if (response.ok) {
             const redditors: types.Redditor[] = await response.json()
@@ -203,11 +205,7 @@ export const processThreads = async (urlPaths: string[]) => {
     }
 
     if (urlPathsToProcess.length > 0) {
-        const response = await apiAuthRequest(
-            '/api/v1/reddit/threads/',
-            'POST',
-            {'paths': urlPathsToProcess},
-        )
+        const response = await apiAuthRequest('/api/v1/reddit/threads/', POST, {'paths': urlPathsToProcess})
 
         if (response.ok) {
             const threads: types.Thread[] = await response.json()

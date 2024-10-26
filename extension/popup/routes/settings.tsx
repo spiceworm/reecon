@@ -32,7 +32,7 @@ export const Settings = () => {
     if (error) {
         return <p>{error.message}</p>
     }
-    if (accessToken === null) {
+    if (accessToken === null || accessToken === undefined) {
         return <Navigate to="/auth/login" replace={true}/>
     }
 

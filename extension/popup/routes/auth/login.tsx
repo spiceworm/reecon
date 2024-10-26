@@ -18,7 +18,7 @@ export const Login = () => {
         setCredentials({username: username, password: password})
     }
 
-    if (accessToken !== null) {
+    if (accessToken !== null && accessToken !== undefined) {
         // mutating this key will cause `api.ensureAccessToken` in the `Settings` route to get re-evaluated.
         // This is required so that we do not get redirected back to the login page.
         mutate('/api/v1/auth/token/refresh/', true).then()
