@@ -24,8 +24,10 @@ from ...models import (
 
 
 def create_hardcoded_ignored_redditors():
+    # TODO: Read these from a file
     for username, reason in (
         ("AutoModerator", "Bot"),
+        ("ccticker", "Bot"),
         ("coinfeeds-bot", "Bot"),
         ("ethfinance", "Bot"),
         ("VisualMod", "Bot"),
