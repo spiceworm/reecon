@@ -11,7 +11,6 @@ from rest_framework.generics import (
 )
 from rest_framework.response import Response
 
-from ..util import response_schema
 from .....models import (
     Redditor,
     IgnoredRedditor,
@@ -22,6 +21,7 @@ from .....serializers import (
     RedditorSerializer,
     RedditorUsernameSerializer,
 )
+from .....util import schema
 
 
 __all__ = (
@@ -38,7 +38,7 @@ class IgnoredRedditorsView(ListAPIView):
     serializer_class = IgnoredRedditorSerializer
 
 
-@response_schema(serializer=RedditorSerializer(many=True))
+@schema.response_schema(serializer=RedditorSerializer(many=True))
 class RedditorsView(CreateAPIView):
     queryset = Redditor.objects.all()
     serializer_class = RedditorUsernameSerializer

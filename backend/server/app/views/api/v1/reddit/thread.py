@@ -9,7 +9,6 @@ from rest_framework.generics import CreateAPIView
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from ..util import response_schema
 from .....models import (
     Thread,
     UnprocessableThread,
@@ -18,6 +17,7 @@ from .....serializers import (
     ThreadSerializer,
     ThreadUrlPathsSerializer,
 )
+from .....util import schema
 
 
 __all__ = ("ThreadsView",)
@@ -26,7 +26,7 @@ __all__ = ("ThreadsView",)
 log = logging.getLogger("app.views.api.v1.reddit.thread")
 
 
-@response_schema(serializer=ThreadSerializer(many=True))
+@schema.response_schema(serializer=ThreadSerializer(many=True))
 class ThreadsView(CreateAPIView):
     queryset = Thread.objects.all()
     serializer_class = ThreadUrlPathsSerializer

@@ -1,9 +1,4 @@
 from django.contrib.auth.models import User
-from django.db.models import Q
-from drf_spectacular.utils import (
-    extend_schema,
-    extend_schema_view,
-)
 from rest_framework import status
 from rest_framework.generics import CreateAPIView
 from rest_framework.response import Response
@@ -13,22 +8,13 @@ from ....serializers import (
     SignupSerializer,
     UserSerializer,
 )
+from ....util import schema
 
 
 __all__ = ("SignupView",)
 
 
-def response_schema(**kwargs):
-    def decorator(view):
-        extend_schema_view(
-            post=extend_schema(responses={201: kwargs["serializer"]}),
-        )(view)
-        return view
-
-    return decorator
-
-
-@response_schema(serializer=UserSerializer)
+@schema.response_schema(serializer=UserSerializer)
 class SignupView(CreateAPIView):
     authentication_classes = ()
     queryset = User.objects.all()
