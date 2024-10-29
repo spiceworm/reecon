@@ -38,13 +38,8 @@ v1_docs = [
     path("redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
 ]
 
-v1_validate = [
-    path("producer/settings/", v1.ValidateProducerSettingsView.as_view(), name="validate-producer-settings"),
-]
-
 urlpatterns = [
     path("v1/", include(v1_endpoints)),
     path("v1/auth/", include(v1_auth)),
     path("v1/docs/", include(v1_docs)),
-    path("v1/validate/", include(v1_validate)),
 ]
