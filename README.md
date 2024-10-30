@@ -1,5 +1,4 @@
 TODO:
-- Require user to enter their own openai api key for user processing
 - Track submission count since last redditor/thread processing event. Do not reprocess unless some number of new submissions have been made. Few or no new submissions does not warrant reprocessing unless the processing is done by a new model.
 - Track tokens used to generate each object so you can determine how many tokens are being used as the prompts/generated data changes over time
 - Update threads and users api endpoints to return {threads: [...], unprocessable_threads: [...], pending_threads: [...]}
@@ -8,7 +7,8 @@ TODO:
 - Fix generated documentation for api endpoints
 - Implement signup/login flow how it is shown in examples at https://github.com/remix-run/react-router/blob/dev/examples/auth/src/App.tsx
 - Errors (such as api key validation errors) returned from the backend API need to be shown to the user somehow
-- Make `producer_settings` a pydantic model so it can be used in type annotations. This is better than `typing.Dict` 
+- Make `producer_settings` a pydantic model so it can be used in type annotations. This is better than `typing.Dict`
+- Store extension auth and producer settings using plasmo's SecureStorage
 
 Enhancements:
 - Use batching API for processing redditors because they don't have to be processed immediately especially in the beginning. Then a job can just check the ones that are expired and resubmit them to the batch processing API again in the future

@@ -1,9 +1,7 @@
 import lscache from "lscache"
 
-import * as misc from "~util/misc"
 import * as storage from "~util/storage"
 import type * as types from "~util/types"
-
 
 const GET = 'GET'
 const POST = 'POST'
@@ -36,39 +34,56 @@ export const apiRequest = async (urlPath: string, method: string, body: object =
 }
 
 
-export const apiAuthRequest = async (urlPath: string, method: string, body: object = {}) => {
-    return apiRequest(urlPath, method, body, true)
-}
-
-
-export const getJson = async (urlPath: string) => {
-    return apiRequest(urlPath, GET).then(response => response.json())
-}
-
-
-export const ensureAccessToken = async (refreshUrlPath: string): Promise<string | null> => {
-    let retval = null
-
-    const auth: types.Auth = await storage.getAuth()
-
-    if (auth !== null) {
-        if (misc.jwtIsValid(auth.access)) {
-            retval = auth.access
-        } else if (misc.jwtIsValid(auth.refresh)) {
-            const response = await apiRequest(refreshUrlPath, POST, {'refresh': auth.refresh})
-
-            if (response.ok) {
-                const refreshJson = await response.json()
-                await storage.setAuth({access: refreshJson.access, refresh: refreshJson.refresh})
-                retval = refreshJson.access
-            } else {
-                console.error(response)
-                throw new Error(`Refreshing access token failed (${response.status})`)
-            }
-        }
+export const get = async (urlPath: string, sendAuthenticated: boolean = false) => {
+    const response = await apiRequest(urlPath, GET, {}, sendAuthenticated)
+    if (response.ok) {
+        return response.json()
+    } else {
+        console.error(response)
+        throw new Error(`${urlPath} ${GET} failed: ${response.status}`)
     }
+}
 
-    return retval
+
+export const authGet = async (urlPath: string) => {
+    return get(urlPath, true)
+}
+
+
+export const post = async (urlPath: string, body: object, sendAuthenticated: boolean = false) => {
+    const response = await apiRequest(urlPath, POST, body, sendAuthenticated)
+    if (response.ok) {
+        return response.json()
+    } else {
+        console.error(response)
+        throw new Error(`${urlPath} ${POST} failed: ${response.status}`)
+    }
+}
+
+
+export const authPost = async (urlPath: string, body: object) => {
+    return post(urlPath, body, true)
+}
+
+
+export const loginRequest = async (body: types.LoginCredentials) => {
+    const responseJson = await post(`/api/v1/auth/token/`, body)
+    await storage.setAuth({access: responseJson.access, refresh: responseJson.refresh})
+    return responseJson
+}
+
+
+export const refreshAccessToken = async (refreshToken: string) => {
+    // FIXME: access token does not get auto refreshed once it expires
+    const responseJson = await post('/api/v1/auth/token/refresh/', {'refresh': refreshToken})
+    await storage.setAuth({access: responseJson.access, refresh: responseJson.refresh})
+    return responseJson
+}
+
+
+export const signupRequest = async (body: types.LoginCredentials) => {
+    await post(`/api/v1/auth/signup/`, body)
+    return await loginRequest(body)
 }
 
 
@@ -81,44 +96,11 @@ export const getIgnoredRedditors = async () => {
 
     if (cachedIgnoredRedditors !== null && cachedIgnoredRedditors.length > 0) {
         return cachedIgnoredRedditors
-    } else {
-        const response = await apiAuthRequest('/api/v1/reddit/redditors/ignored/', GET)
-
-        if (response.ok) {
-            const ignoredRedditors: types.IgnoredRedditor[] = await response.json()
-            lscache.set('ignoredRedditors', ignoredRedditors, process.env.PLASMO_PUBLIC_IGNORED_REDDITOR_CACHE_EXP_MINUTES)
-            return ignoredRedditors
-        } else {
-            console.error(response)
-            throw new Error(`Fetching ignored redditors failed (${response.status})`)
-        }
     }
-}
 
-
-export const loginRequest = async (body: object) => {
-    const response = await apiRequest(`/api/v1/auth/token/`, POST, body)
-
-    if (response.ok) {
-        const responseJson = await response.json()
-        await storage.setAuth({access: responseJson.access, refresh: responseJson.refresh})
-        return responseJson.access
-    } else {
-        console.error(response)
-        throw new Error(`Login failed (${response.status})`)
-    }
-}
-
-
-export const signupRequest = async (body: object) => {
-    const response = await apiRequest(`/api/v1/auth/signup/`, POST, body)
-
-    if (response.ok) {
-        return await loginRequest(body)
-    } else {
-        console.error(response)
-        throw new Error(`Signup failed (${response.status})`)
-    }
+    const ignoredRedditors: types.IgnoredRedditor[] = await authGet('/api/v1/reddit/redditors/ignored/')
+    lscache.set('ignoredRedditors', ignoredRedditors, process.env.PLASMO_PUBLIC_IGNORED_REDDITOR_CACHE_EXP_MINUTES)
+    return ignoredRedditors
 }
 
 
@@ -127,7 +109,7 @@ const difference = <T>(a: Set<T>, b: Set<T>) => new Set([...a].filter(x => !b.ha
 
 
 // This should only be invoked from a background message
-export const processRedditors = async (usernames: string[], ignoredUsernames: Set<string>) => {
+export const processRedditors = async (producerSettings: types.ProducerSettings, usernames: string[], ignoredUsernames: Set<string>) => {
     lscache.setBucket('redditors')
     lscache.flushExpired()
 
@@ -154,33 +136,29 @@ export const processRedditors = async (usernames: string[], ignoredUsernames: Se
     }
 
     if (usernamesToProcess.length > 0) {
-        const response = await apiAuthRequest('/api/v1/reddit/redditors/', POST, {'usernames': usernamesToProcess})
+        const redditors: types.Redditor[] = await authPost('/api/v1/reddit/redditors/', {
+            'producer_settings': producerSettings,
+            'usernames': usernamesToProcess
+        })
 
-        if (response.ok) {
-            const redditors: types.Redditor[] = await response.json()
+        lscache.setBucket('redditors')
+        redditors.map(redditor => lscache.set(redditor.username, redditor, process.env.PLASMO_PUBLIC_REDDITOR_CACHE_EXP_MINUTES))
 
-            lscache.setBucket('redditors')
-            redditors.map(redditor => lscache.set(redditor.username, redditor, process.env.PLASMO_PUBLIC_REDDITOR_CACHE_EXP_MINUTES))
+        const submittedUsernames = new Set(usernamesToProcess)
+        const processedUsernames = new Set(redditors.map(redditor => redditor.username))
+        const pendingUsernames = difference(submittedUsernames, processedUsernames)
 
-            const submittedUsernames = new Set(usernamesToProcess)
-            const processedUsernames = new Set(redditors.map(redditor => redditor.username))
-            const pendingUsernames = difference(submittedUsernames, processedUsernames)
+        lscache.setBucket('pending-redditors')
+        Array.from(pendingUsernames).map(username => lscache.set(username, true, 1))
 
-            lscache.setBucket('pending-redditors')
-            Array.from(pendingUsernames).map(username => lscache.set(username, true, 1))
-
-            return redditors.concat(cachedRedditors)
-        } else {
-            console.error(response)
-        }
-    } else {
-        return cachedRedditors
+        return redditors.concat(cachedRedditors)
     }
+    return cachedRedditors
 }
 
 
 // This should only be invoked from a background message
-export const processThreads = async (urlPaths: string[]) => {
+export const processThreads = async (producerSettings: types.ProducerSettings, urlPaths: string[]) => {
     lscache.setBucket('threads')
     lscache.flushExpired()
 
@@ -205,26 +183,19 @@ export const processThreads = async (urlPaths: string[]) => {
     }
 
     if (urlPathsToProcess.length > 0) {
-        const response = await apiAuthRequest('/api/v1/reddit/threads/', POST, {'paths': urlPathsToProcess})
+        const threads: types.Thread[] = await authPost('/api/v1/reddit/threads/', {'producer_settings': producerSettings, 'paths': urlPathsToProcess})
 
-        if (response.ok) {
-            const threads: types.Thread[] = await response.json()
+        lscache.setBucket('threads')
+        threads.map(thread => lscache.set(thread.path, thread, process.env.PLASMO_PUBLIC_THREAD_CACHE_EXP_MINUTES))
 
-            lscache.setBucket('threads')
-            threads.map(thread => lscache.set(thread.path, thread, process.env.PLASMO_PUBLIC_THREAD_CACHE_EXP_MINUTES))
+        const submittedUrlPaths = new Set(urlPathsToProcess)
+        const processedUrlPaths = new Set(threads.map(thread => thread.path))
+        const pendingUrlPaths = difference(submittedUrlPaths, processedUrlPaths)
 
-            const submittedUrlPaths = new Set(urlPathsToProcess)
-            const processedUrlPaths = new Set(threads.map(thread => thread.path))
-            const pendingUrlPaths = difference(submittedUrlPaths, processedUrlPaths)
+        lscache.setBucket('pending-threads')
+        Array.from(pendingUrlPaths).map(urlPath => lscache.set(urlPath, true, 1))
 
-            lscache.setBucket('pending-threads')
-            Array.from(pendingUrlPaths).map(urlPath => lscache.set(urlPath, true, 1))
-
-            return threads.concat(cachedThreads)
-        } else {
-            console.error(response)
-        }
-    } else {
-        return cachedThreads
+        return threads.concat(cachedThreads)
     }
+    return cachedThreads
 }

@@ -19,6 +19,12 @@ export interface IgnoredRedditor {
 }
 
 
+export interface LoginCredentials {
+    password: string
+    username: string
+}
+
+
 interface ProducedFloat {
     value: number
 }
@@ -36,6 +42,12 @@ interface ProducedText {
 
 interface ProducedTextList {
     value: string[]
+}
+
+
+export interface ProducerSettings {
+    name: string
+    api_key: string
 }
 
 

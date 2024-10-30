@@ -7,15 +7,19 @@ let lastExecution = null
 
 
 export const execute = async () => {
+    // FIXME: do not execute if current tab is not a reddit page
+
     if (lastExecution !== null && Date.now() - lastExecution < 100) {
         return
     }
 
-    if (await storage.getShouldExecuteContentScript()) {
+    if (await storage.shouldExecuteContentScript()) {
         lastExecution = Date.now()
 
+        const producerSettings = await storage.getProducerSettings()
+
         const urlPaths = dom.getThreadUrlPaths()
-        const threads = await backgroundMessage.processThreads(urlPaths)
+        const threads = await backgroundMessage.processThreads(producerSettings, urlPaths)
         const contentFilter = await storage.getContentFilter()
         await dom.annotateThreads(threads, contentFilter)
 
@@ -23,7 +27,7 @@ export const execute = async () => {
         const usernames = Object.keys(usernameElementsMap)
         const ignoredRedditors = await backgroundMessage.getIgnoredRedditors()
         const ignoredUsernames = new Set(ignoredRedditors.map(obj => obj.username))
-        const redditors = await backgroundMessage.processRedditors(usernames, ignoredUsernames)
+        const redditors = await backgroundMessage.processRedditors(producerSettings, usernames, ignoredUsernames)
         await dom.annotateUsernames(redditors, ignoredRedditors, usernameElementsMap, contentFilter)
     }
 }

@@ -1,7 +1,8 @@
 import {Storage} from "@plasmohq/storage"
 
+import * as api from "~util/api"
 import * as backgroundMessage from "~util/messages"
-import * as contents from "~util/contents"
+import * as misc from "~util/misc"
 import type * as types from "~util/types"
 
 
@@ -11,8 +12,8 @@ export const DEFAULT_FILTER = '_defaultFilter'
 export const DISABLE_EXTENSION = '_disableExtension'
 export const HIDE_BAD_SENTIMENT_THREADS = '_hideBadSentimentThreads'
 export const HIDE_IGNORED_REDDITORS = '_hideIgnoredRedditors'
-const SHOULD_EXECUTE_CONTENT_SCRIPTS = '_shouldExecuteContentScript'
-const USER_IS_AUTHENTICATED = '_userIsAuthenticated'
+export const OPENAI_API_KEY = '_unvalidatedOpenaiApiKey'
+const PRODUCER_SETTINGS = '_producerSettings'
 
 
 // The only time `instance` should be accessed outside this file is when `useStorage` hook
@@ -48,18 +49,28 @@ export const init = async () => {
         [DISABLE_EXTENSION]: false,
         [HIDE_BAD_SENTIMENT_THREADS]: false,
         [HIDE_IGNORED_REDDITORS]: false,
-        [SHOULD_EXECUTE_CONTENT_SCRIPTS]: false,  // read-only everywhere except in `Storage.watch` function
-        [USER_IS_AUTHENTICATED]: false,  // read-only everywhere except in `Storage.watch` function
+        [OPENAI_API_KEY]: "",
+        [PRODUCER_SETTINGS]: [],
     })
 }
 
 
 export const getAuth = async (): Promise<types.Auth> => {
-    if (await getUserIsAuthenticated()) {
-        return await _get(AUTH) as types.Auth
-    } else {
+    const auth = await _get(AUTH) as types.Auth
+
+    if (!auth || !auth?.access || !auth?.refresh) {
         return null
     }
+
+    if (misc.jwtIsValid(auth.access)) {
+        return auth
+    }
+
+    if (misc.jwtIsValid(auth.refresh)) {
+        return api.refreshAccessToken(auth.refresh)
+    }
+
+    return null
 }
 
 
@@ -95,22 +106,26 @@ export const getHideIgnoredRedditors = async (): Promise<boolean> => {
 }
 
 
-export const getShouldExecuteContentScript = async (): Promise<boolean> => {
-    return await _get(SHOULD_EXECUTE_CONTENT_SCRIPTS) as boolean
+export const getProducerSettings = async () => {
+    return {
+        settings: [
+            {
+                name: "openai",
+                api_key: await _get(OPENAI_API_KEY) as string
+            }
+        ] as types.ProducerSettings[]
+    }
 }
 
 
-const setShouldExecuteContentScript = async (value: boolean): Promise<boolean> => {
-    return await _set(SHOULD_EXECUTE_CONTENT_SCRIPTS, value) as null
-}
+export const shouldExecuteContentScript = async (): Promise<boolean> => {
+    const auth = await getAuth()
+    const disableExtension = await getDisableExtension()
 
+    const producerSettings = await getProducerSettings()
+    const producerApiKeysExist = producerSettings.settings.every(producerSetting => producerSetting.api_key.length > 0)
 
-export const getUserIsAuthenticated = async (): Promise<boolean> => {
-    return await _get(USER_IS_AUTHENTICATED) as boolean
-}
-
-const setUserIsAuthenticated = async (value: boolean): Promise<boolean> => {
-    return await _set(USER_IS_AUTHENTICATED, value) as null
+    return auth !== null && !disableExtension && producerApiKeysExist
 }
 
 
@@ -119,27 +134,10 @@ instance.watch({
         const auth: types.Auth = storageChange.newValue
 
         // Manifest v2: Use `chrome.action` instead of `chrome.browserAction` for mv3
-        if (!auth || !auth?.access) {
-            setUserIsAuthenticated(false).then()
-            setShouldExecuteContentScript(false).then()
+        if (!auth || !auth?.access || !auth?.refresh) {
             backgroundMessage.setPopupIcon("red", "❕").then()
         } else {
-            setUserIsAuthenticated(true).then()
-            getDisableExtension().then(disableExtension => setShouldExecuteContentScript(!disableExtension).then())
             backgroundMessage.setPopupIcon(null, "").then()
-        }
-    },
-    [DISABLE_EXTENSION]: (storageChange) => {
-        const disableExtension = storageChange.newValue
-
-        getAuth().then(auth => {
-            setShouldExecuteContentScript(auth !== null && !disableExtension).then()
-        })
-    },
-    [SHOULD_EXECUTE_CONTENT_SCRIPTS]: (storageChange) => {
-        // Only call `execute` if _shouldExecuteContentScripts changed from false to true
-        if (!storageChange.oldValue && storageChange.newValue) {
-            contents.execute().then()
         }
     },
 })

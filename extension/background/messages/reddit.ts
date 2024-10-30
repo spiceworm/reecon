@@ -12,14 +12,16 @@ const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
         res.send({message})
     } else if (action === 'processRedditors') {
         const kwargs = req.body.kwargs
+        const producerSettings = kwargs.producerSettings
         const usernames: string[] = kwargs.usernames
         const ignoredUsernames: Set<string> = kwargs.ignoredUsernames
-        const message: types.Redditor[] = await api.processRedditors(usernames, ignoredUsernames)
+        const message: types.Redditor[] = await api.processRedditors(producerSettings, usernames, ignoredUsernames)
         res.send({message})
     } else if (action === 'processThreads') {
         const kwargs = req.body.kwargs
+        const producerSettings = kwargs.producerSettings
         const urlPaths: string[] = kwargs.urlPaths
-        const message: types.Thread[] = await api.processThreads(urlPaths)
+        const message: types.Thread[] = await api.processThreads(producerSettings, urlPaths)
         res.send({message})
     } else {
         console.error(`Unhandled message with action: ${action}`)
