@@ -62,6 +62,7 @@ class RedditorDataService(RedditDataService):
         llm_producer: Producer,
         nlp_contributor: User,
         nlp_producer: Producer,
+        producer_settings: dict,
     ) -> RedditorData | UnprocessableRedditor:
         """
         Convenience method that executes `get_submissions`, `generate_data`, and `create_object` with the necessary
@@ -86,6 +87,7 @@ class RedditorDataService(RedditDataService):
                 inputs=submissions,
                 llm_name=llm_producer.name,
                 nlp_name=nlp_producer.name,
+                producer_settings=producer_settings,
                 prompt=config.REDDITOR_LLM_PROMPT,
             )
             obj: RedditorData = self.create_object(
@@ -149,13 +151,21 @@ class RedditorDataService(RedditDataService):
             ),
         )
 
-    def generate_data(self, *, inputs: List[str], llm_name: str, nlp_name: str, prompt: str) -> GeneratedRedditorData:
+    def generate_data(
+        self, *, inputs: List[str], llm_name: str, nlp_name: str, producer_settings: dict, prompt: str
+    ) -> GeneratedRedditorData:
         """
         Takes the input strings and passes them to the nlp and llm services to generate data based on those inputs.
         The response from each of those is a `GeneratedRedditorData`. The output from both nlp and llm processors
         is then combined into a single `GeneratedRedditorData`.
         """
-        return super().generate_data(inputs=inputs, llm_name=llm_name, nlp_name=nlp_name, prompt=prompt)
+        return super().generate_data(
+            inputs=inputs,
+            llm_name=llm_name,
+            nlp_name=nlp_name,
+            producer_settings=producer_settings,
+            prompt=prompt,
+        )
 
     @retry(
         before_sleep=before_sleep_log(log, logging.DEBUG),

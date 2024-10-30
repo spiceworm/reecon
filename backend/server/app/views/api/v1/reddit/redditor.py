@@ -47,6 +47,7 @@ class RedditorsView(CreateAPIView):
     def create(self, request, *args, **kwargs):
         submit_serializer = self.get_serializer(data=request.data)
         submit_serializer.is_valid(raise_exception=True)
+        producer_settings = submit_serializer.validated_data["producer_settings"]
         usernames = set(submit_serializer.validated_data["usernames"])
         log.debug("Received %s", usernames)
 

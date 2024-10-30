@@ -36,6 +36,7 @@ class ThreadsView(CreateAPIView):
     def create(self, request: Request, *args, **kwargs):
         submit_serializer = self.get_serializer(data=request.data)
         submit_serializer.is_valid(raise_exception=True)
+        producer_settings = submit_serializer.validated_data["producer_settings"]
         url_paths = set(submit_serializer.validated_data["paths"])
         log.debug("Received %s", url_paths)
         thread_urls = [f"https://reddit.com{path}" for path in url_paths]
@@ -74,7 +75,7 @@ class ThreadsView(CreateAPIView):
                     llm_contributor,
                     nlp_contributor,
                     producer_settings,
-                    job_id=f'{subreddit}-{thread_id}',
+                    job_id=f"{subreddit}-{thread_id}",
                 )
         else:
             log.debug("Thread processing is disabled")

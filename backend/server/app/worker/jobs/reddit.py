@@ -19,7 +19,7 @@ __all__ = (
 log = logging.getLogger("app.worker.jobs.reddit")
 
 
-def process_redditor(redditor_username: str, llm_contributor: User, nlp_contributor: User):
+def process_redditor(redditor_username: str, llm_contributor: User, nlp_contributor: User, producer_settings: dict):
     service = RedditorDataService(redditor_username)
     llm_producer = Producer.objects.get(name=config.LLM_NAME)
     nlp_produced = Producer.objects.get(name=config.NLP_NAME)
@@ -28,10 +28,11 @@ def process_redditor(redditor_username: str, llm_contributor: User, nlp_contribu
         llm_producer=llm_producer,
         nlp_contributor=nlp_contributor,
         nlp_producer=nlp_produced,
+        producer_settings=producer_settings,
     )
 
 
-def process_thread(thread_url, llm_contributor: User, nlp_contributor: User):
+def process_thread(thread_url: str, llm_contributor: User, nlp_contributor: User, producer_settings: dict):
     service = ThreadDataService(thread_url)
     llm_producer = Producer.objects.get(name=config.LLM_NAME)
     nlp_produced = Producer.objects.get(name=config.NLP_NAME)
@@ -40,4 +41,5 @@ def process_thread(thread_url, llm_contributor: User, nlp_contributor: User):
         llm_producer=llm_producer,
         nlp_contributor=nlp_contributor,
         nlp_producer=nlp_produced,
+        producer_settings=producer_settings,
     )

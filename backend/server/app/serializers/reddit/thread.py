@@ -4,6 +4,7 @@ from ..producer import (
     ProducedFloatSerializer,
     ProducedTextSerializer,
     ProducedTextListSerializer,
+    ProducerSettingsSerializer,
 )
 from ...models import (
     Thread,
@@ -48,3 +49,4 @@ class ThreadSerializer(serializers.ModelSerializer):
 
 class ThreadUrlPathsSerializer(serializers.Serializer):
     paths = serializers.ListField(child=serializers.CharField())
+    producer_settings = ProducerSettingsSerializer(required=True)

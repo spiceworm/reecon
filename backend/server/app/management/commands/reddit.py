@@ -10,6 +10,7 @@ import os
 from typing import List
 
 from constance import config
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import management
 import tiktoken
@@ -121,6 +122,7 @@ class Command(management.base.BaseCommand):
                         inputs=submissions,
                         llm_name=llm.name,
                         nlp_name=nlp.name,
+                        producer_settings=settings.DEFAULT_PRODUCER_SETTINGS,
                         prompt=config.REDDITOR_LLM_PROMPT,
                     )
                     if options["action"] == "generate-data":
@@ -167,6 +169,7 @@ class Command(management.base.BaseCommand):
                         inputs=submissions,
                         llm_name=llm.name,
                         nlp_name=nlp.name,
+                        producer_settings=settings.DEFAULT_PRODUCER_SETTINGS,
                         prompt=config.THREAD_LLM_PROMPT,
                     )
                     if options["action"] == "generate-data":

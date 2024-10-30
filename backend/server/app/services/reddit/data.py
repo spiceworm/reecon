@@ -85,12 +85,16 @@ class RedditDataService(abc.ABC):
     def create_object(self, *args, **kwargs):
         pass
 
-    def generate_data(self, *, inputs: List[str], llm_name: str, nlp_name: str, prompt: str) -> GeneratedData:
+    def generate_data(
+        self, *, inputs: List[str], llm_name: str, nlp_name: str, producer_settings: dict, prompt: str
+    ) -> GeneratedData:
         """
         See docstring in child class methods.
         """
         nlp_data = self.nlp.generate_data(inputs=inputs, nlp_name=nlp_name)
-        llm_data = self.llm.generate_data(inputs=inputs, llm_name=llm_name, prompt=prompt)
+        llm_data = self.llm.generate_data(
+            inputs=inputs, llm_name=llm_name, producer_settings=producer_settings, prompt=prompt
+        )
         return self.response_format.model_validate({**nlp_data.model_dump(), **llm_data.model_dump()})
 
     @abc.abstractmethod

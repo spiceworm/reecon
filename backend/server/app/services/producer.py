@@ -3,8 +3,7 @@ import logging
 import statistics
 from typing import List
 
-from django.conf import settings
-from openai import OpenAIError
+import openai
 import pydantic
 from tenacity import (
     before_sleep_log,
@@ -44,12 +43,16 @@ class LlmProducerService(ProducerService):
     @retry(
         before_sleep=before_sleep_log(log, logging.DEBUG),
         reraise=True,
-        retry=(retry_if_result(is_missing_expected_generated_data) | retry_if_exception_type(OpenAIError)),
+        retry=(retry_if_result(is_missing_expected_generated_data) | retry_if_exception_type(openai.OpenAIError)),
         stop=stop_after_attempt(10),
         wait=wait_random_exponential(min=1, max=60),
     )
-    def generate_data(self, *, inputs: List[str], llm_name: str, prompt: str) -> pydantic.BaseModel:
-        chat_completion = settings.OPENAI_API.beta.chat.completions.parse(
+    def generate_data(
+        self, *, inputs: List[str], llm_name: str, producer_settings: dict, prompt: str
+    ) -> pydantic.BaseModel:
+        api_key = producer_settings["openai"]["api_key"]
+        api = openai.OpenAI(api_key=api_key)
+        chat_completion = api.beta.chat.completions.parse(
             messages=[
                 {
                     "role": "system",

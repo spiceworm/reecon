@@ -153,6 +153,7 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),
     "EXCEPTION_HANDLER": "rest_framework.views.exception_handler",
+    "NON_FIELD_ERRORS_KEY": "errors",
 }
 
 ACCESS_TOKEN_LIFETIME_UNIT = decouple.config("ACCESS_TOKEN_LIFETIME_UNIT", default="minutes")
@@ -404,7 +405,14 @@ CONSTANCE_CONFIG = collections.OrderedDict(
     }
 )
 
-OPENAI_API = openai.OpenAI(api_key=decouple.config("OPENAI_API_KEY"))
+# The DEFAULT_PRODUCER_SETTINGS should only be used when running management commands.
+# Users provide their own API key in the extension which is then sent to the backend API when processing occurs.
+DEFAULT_PRODUCER_SETTINGS = {
+    "openai": {
+        "name": "openai",
+        "api_key": decouple.config("DEFAULT_OPENAI_API_KEY"),
+    }
+}
 REDDIT_API = praw.Reddit(
     client_id=decouple.config("REDDIT_API_CLIENT_ID"),
     client_secret=decouple.config("REDDIT_API_CLIENT_SECRET"),

@@ -5,6 +5,7 @@ from ..producer import (
     ProducedIntegerSerializer,
     ProducedTextSerializer,
     ProducedTextListSerializer,
+    ProducerSettingsSerializer,
 )
 from ...models import (
     Redditor,
@@ -56,3 +57,4 @@ class RedditorSerializer(serializers.ModelSerializer):
 
 class RedditorUsernameSerializer(serializers.Serializer):
     usernames = serializers.ListField(child=serializers.CharField())
+    producer_settings = ProducerSettingsSerializer(required=True)
