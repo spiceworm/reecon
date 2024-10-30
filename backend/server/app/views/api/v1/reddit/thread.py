@@ -1,4 +1,5 @@
 import logging
+from urllib.parse import urlparse
 
 from constance import config
 from django.contrib.auth.models import User
@@ -18,6 +19,7 @@ from .....serializers import (
     ThreadUrlPathsSerializer,
 )
 from .....util import schema
+from .....worker import jobs
 
 
 __all__ = ("ThreadsView",)
@@ -59,16 +61,23 @@ class ThreadsView(CreateAPIView):
         nlp_contributor = User.objects.get(username="admin")
 
         if config.THREAD_PROCESSING_ENABLED:
-            queue = django_rq.get_queue("default")
             for thread_url in set(thread_urls) - known_urls - fresh_urls - unprocessable_urls:
-                queue.enqueue(
-                    "app.worker.jobs.reddit.process_thread",
+                path_parts = urlparse(thread_url).path.split("/")
+                subreddit, thread_id = path_parts[2], path_parts[4]
+
+                # Using the full thread URL as the job id causes the job to get enqueued but never executed.
+                # Maybe it's because of the length of the job id or symbols that are in the URL?
+
+                django_rq.enqueue(
+                    jobs.process_thread,
                     thread_url,
                     llm_contributor,
                     nlp_contributor,
-                    job_id=thread_url,
-                    result_ttl=0,
+                    producer_settings,
+                    job_id=f'{subreddit}-{thread_id}',
                 )
+        else:
+            log.debug("Thread processing is disabled")
 
         response_serializer = ThreadSerializer(instance=known_threads, many=True)
         headers = self.get_success_headers(response_serializer.data)

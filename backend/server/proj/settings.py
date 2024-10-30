@@ -121,11 +121,17 @@ CACHES = {
     }
 }
 
+RQ = {
+    "DEFAULT_RESULT_TTL": 5000,
+}
+
 RQ_QUEUES = {
     "default": {
         "USE_REDIS_CACHE": "default",
     },
 }
+
+RQ_SHOW_ADMIN_LINK = True
 
 DATABASES = {
     "default": {
@@ -218,6 +224,10 @@ LOGGING = {
             "handlers": ["console"],
             "level": LOG_LEVEL,
             "propagate": False,
+        },
+        "django.template": {
+            # suppress "django.template.base.VariableDoesNotExist" errors thrown by admin pages
+            "level": "WARNING",
         },
         "django.db.backends": {
             "handlers": ["db-file"],

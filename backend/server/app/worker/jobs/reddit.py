@@ -10,6 +10,12 @@ from ...services import (
 )
 
 
+__all__ = (
+    "process_redditor",
+    "process_thread",
+)
+
+
 log = logging.getLogger("app.worker.jobs.reddit")
 
 

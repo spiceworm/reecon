@@ -22,6 +22,7 @@ from .....serializers import (
     RedditorUsernameSerializer,
 )
 from .....util import schema
+from .....worker import jobs
 
 
 __all__ = (
@@ -74,18 +75,19 @@ class RedditorsView(CreateAPIView):
         nlp_contributor = User.objects.get(username="admin")
 
         if config.REDDITOR_PROCESSING_ENABLED:
-            queue = django_rq.get_queue("default")
             for redditor_username in (
                 set(usernames) - known_usernames - fresh_usernames - unprocessable_usernames - ignored_usernames
             ):
-                queue.enqueue(
-                    "app.worker.jobs.reddit.process_redditor",
+                django_rq.enqueue(
+                    jobs.process_redditor,
                     redditor_username,
                     llm_contributor,
                     nlp_contributor,
+                    producer_settings,
                     job_id=redditor_username,
-                    result_ttl=0,
                 )
+        else:
+            log.debug("Redditor processing is disabled")
 
         response_serializer = RedditorSerializer(instance=known_redditors, many=True)
         headers = self.get_success_headers(response_serializer.data)
