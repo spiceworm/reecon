@@ -89,7 +89,6 @@ export const Signup = () => {
                     <div className="vr"></div>
                     <NavLink
                         className={"btn btn-link"}
-                        id={"loginNavButton"}
                         to="/auth/login"
                     >
                         Login

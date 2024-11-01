@@ -1,6 +1,6 @@
+import * as react from "react"
 import {useStorage} from "@plasmohq/storage/dist/hook"
 import {Button, Form, Input, Label} from "reactstrap"
-import {useState} from "react"
 
 import * as base from "~popup/bases"
 import * as storage from "~util/storage"
@@ -20,7 +20,7 @@ export const Settings = () => {
         {instance: storage.instance, key: storage.HIDE_IGNORED_REDDITORS},
         (v: boolean) => v === undefined ? false : v,
     )
-    const [currentContext, setCurrentContext] = useState('default')
+    const [currentContext, setCurrentContext] = react.useState('default')
 
     const handleAllSettingsBtnClick = async (e) => {
         await chrome.tabs.create({url: "/tabs/index.html"})
@@ -37,7 +37,6 @@ export const Settings = () => {
                     <Input
                         className={"form-check-input"}
                         checked={disableExtension}
-                        id="disableExtension"
                         onChange={(e) => setDisableExtension(e.target.checked)}
                         type="checkbox"
                     />
@@ -47,7 +46,6 @@ export const Settings = () => {
                     <Input
                         className={"form-check-input"}
                         checked={hideBadSentimentThreads}
-                        id="hideBadSentimentThreads"
                         onChange={(e) => setHideBadSentimentThreads(e.target.checked)}
                         type="checkbox"
                     />
@@ -57,7 +55,6 @@ export const Settings = () => {
                     <Input
                         className={"form-check-input"}
                         checked={hideIgnoredRedditors}
-                        id="hideIgnoredRedditors"
                         onChange={(e) => setHideIgnoredRedditors(e.target.checked)}
                         type="checkbox"
                     />

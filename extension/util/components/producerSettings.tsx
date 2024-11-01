@@ -18,7 +18,6 @@ const ProducerSettingsApiKeyInput = ({name, apiKeyStorageKey}) => {
                 </InputGroupText>
 
                 <Input
-                    id={name}
                     onChange={(e) => setApiKey(e.target.value)}
                     placeholder={'API Key'}
                     type={keyVisible ? "text" : "password"}
