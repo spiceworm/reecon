@@ -3,7 +3,8 @@ import {NavLink, useNavigate} from "react-router-dom"
 import useSWRImmutable from "swr/immutable"
 import {useStorage} from "@plasmohq/storage/dist/hook"
 import {signal} from "@preact/signals"
-import {Button, Form, Input, Spinner} from "reactstrap"
+import {Button, Form, Input, InputGroup, Spinner} from "reactstrap"
+import {Eye, EyeSlash} from 'react-bootstrap-icons'
 
 import * as api from "~util/api"
 import * as base from "~popup/bases"
@@ -16,6 +17,7 @@ const loginUsername = signal("")
 
 export const Login = () => {
     const [_, setAuth] = useStorage({instance: storage.instance, key: storage.AUTH})
+    const [passwordVisible, setPasswordVisible] = react.useState(false)
     const [loginCredentials, setLoginCredentials] = react.useState(null)
     const navigate = useNavigate()
 
@@ -37,6 +39,8 @@ export const Login = () => {
 
     return (
         <base.Unauthenticated>
+            <p className={"text-center"}>Login</p>
+
             <Form onSubmit={handleSubmit}>
                 <div className={"mb-3"}>
                     <Input
@@ -47,11 +51,20 @@ export const Login = () => {
                     />
                 </div>
                 <div className={"mb-3"}>
-                    <Input
-                        onChange={(e) => loginPassword.value = e.target.value}
-                        placeholder={"Password"}
-                        type="password"
-                    />
+                    <InputGroup>
+                        <Input
+                            onChange={(e) => loginPassword.value = e.target.value}
+                            placeholder={"Password"}
+                            type={passwordVisible ? "text" : "password"}
+                        />
+                        <Button onClick={(e) => {
+                            setPasswordVisible(!passwordVisible)
+                        }}>
+                            {
+                                passwordVisible ? <Eye/> : <EyeSlash/>
+                            }
+                        </Button>
+                    </InputGroup>
                 </div>
                 <div className="hstack gap-3 justify-content-center">
                     <Button color={"primary"} type={"submit"}>Login</Button>
