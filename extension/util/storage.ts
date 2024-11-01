@@ -130,14 +130,14 @@ export const shouldExecuteContentScript = async (): Promise<boolean> => {
 
 
 instance.watch({
-    [AUTH]: (storageChange) => {
+    [AUTH]: async (storageChange) => {
         const auth: types.Auth = storageChange.newValue
 
         // Manifest v2: Use `chrome.action` instead of `chrome.browserAction` for mv3
-        if (!auth || !auth?.access || !auth?.refresh) {
-            backgroundMessage.setPopupIcon("red", "❕").then()
+        if (!auth) {
+            await backgroundMessage.setPopupIcon("red", "❕")
         } else {
-            backgroundMessage.setPopupIcon(null, "").then()
+            await backgroundMessage.setPopupIcon(null, "")
         }
     },
 })
