@@ -12,23 +12,12 @@ const getCurrentContext = async (): Promise<string> => {
 }
 
 
-const setPopupIcon = async (color: string | null, text: string): Promise<null> => {
-    await chrome.browserAction.setBadgeText({text: text})
-    await chrome.browserAction.setBadgeBackgroundColor({color: color})
-    return null
-}
-
-
 const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
     const action: string = req.body.action
 
     if (action === 'getCurrentContext') {
-        return getCurrentContext().then(message => res.send({message}))
-    } else if (action === 'setPopupIcon') {
-        const kwargs = req.body.kwargs
-        const color = kwargs.color
-        const text = kwargs.text
-        return setPopupIcon(color, text).then(message => res.send({message}))
+        const message = await getCurrentContext()
+        res.send(message)
     } else {
         console.error(`Unhandled message with action: ${action}`)
     }

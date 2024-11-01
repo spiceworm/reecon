@@ -135,9 +135,11 @@ instance.watch({
 
         // Manifest v2: Use `chrome.action` instead of `chrome.browserAction` for mv3
         if (!auth) {
-            await backgroundMessage.setPopupIcon("red", "❕")
+            await chrome.browserAction.setBadgeText({text: "❕"})
+            await chrome.browserAction.setBadgeBackgroundColor({color: "red"})
         } else {
-            await backgroundMessage.setPopupIcon(null, "")
+            await chrome.browserAction.setBadgeText({text: ""})
+            await chrome.browserAction.setBadgeBackgroundColor({color: null})
         }
     },
 })
