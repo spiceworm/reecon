@@ -4,6 +4,7 @@ from constance import config
 from django.contrib.auth.models import User
 from django.utils import timezone
 import django_rq
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.generics import (
     CreateAPIView,
@@ -17,11 +18,10 @@ from .....models import (
     UnprocessableRedditor,
 )
 from .....serializers import (
-    IgnoredRedditorSerializer,
-    RedditorSerializer,
-    RedditorUsernameSerializer,
+    IgnoredRedditorRequestSerializer,
+    RedditorRequestSerializer,
+    RedditorResponseSerializer,
 )
-from .....util import schema
 from .....worker import jobs
 
 
@@ -36,13 +36,13 @@ log = logging.getLogger("app.views.api.v1.reddit.redditor")
 
 class IgnoredRedditorsView(ListAPIView):
     queryset = IgnoredRedditor.objects.all()
-    serializer_class = IgnoredRedditorSerializer
+    serializer_class = IgnoredRedditorRequestSerializer
 
 
-@schema.response_schema(serializer=RedditorSerializer(many=True))
+@extend_schema(responses=RedditorResponseSerializer(many=True))
 class RedditorsView(CreateAPIView):
     queryset = Redditor.objects.all()
-    serializer_class = RedditorUsernameSerializer
+    serializer_class = RedditorRequestSerializer
 
     def create(self, request, *args, **kwargs):
         submit_serializer = self.get_serializer(data=request.data)
@@ -90,6 +90,6 @@ class RedditorsView(CreateAPIView):
         else:
             log.debug("Redditor processing is disabled")
 
-        response_serializer = RedditorSerializer(instance=known_redditors, many=True)
+        response_serializer = RedditorResponseSerializer(instance=known_redditors, many=True)
         headers = self.get_success_headers(response_serializer.data)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)

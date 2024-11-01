@@ -3,17 +3,17 @@ from rest_framework import serializers
 
 
 __all__ = (
-    "SignupSerializer",
-    "UserSerializer",
+    "SignupRequestSerializer",
+    "SignupResponseSerializer",
 )
 
 
-class SignupSerializer(serializers.Serializer):
+class SignupRequestSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
     password = serializers.CharField(required=True)
 
 
-class UserSerializer(serializers.ModelSerializer):
+class SignupResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         exclude = ("email", "id", "password")

@@ -4,6 +4,7 @@ from urllib.parse import urlparse
 from constance import config
 from django.contrib.auth.models import User
 from django.utils import timezone
+from drf_spectacular.utils import extend_schema
 import django_rq
 from rest_framework import status
 from rest_framework.generics import CreateAPIView
@@ -15,10 +16,9 @@ from .....models import (
     UnprocessableThread,
 )
 from .....serializers import (
-    ThreadSerializer,
-    ThreadUrlPathsSerializer,
+    ThreadRequestSerializer,
+    ThreadResponseSerializer,
 )
-from .....util import schema
 from .....worker import jobs
 
 
@@ -28,10 +28,10 @@ __all__ = ("ThreadsView",)
 log = logging.getLogger("app.views.api.v1.reddit.thread")
 
 
-@schema.response_schema(serializer=ThreadSerializer(many=True))
+@extend_schema(responses=ThreadResponseSerializer(many=True))
 class ThreadsView(CreateAPIView):
     queryset = Thread.objects.all()
-    serializer_class = ThreadUrlPathsSerializer
+    serializer_class = ThreadRequestSerializer
 
     def create(self, request: Request, *args, **kwargs):
         submit_serializer = self.get_serializer(data=request.data)
@@ -80,6 +80,6 @@ class ThreadsView(CreateAPIView):
         else:
             log.debug("Thread processing is disabled")
 
-        response_serializer = ThreadSerializer(instance=known_threads, many=True)
+        response_serializer = ThreadResponseSerializer(instance=known_threads, many=True)
         headers = self.get_success_headers(response_serializer.data)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)

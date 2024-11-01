@@ -6,7 +6,7 @@ import * as misc from "~util/misc"
 import type * as types from "~util/types"
 
 
-const AUTH = '_auth'
+export const AUTH = '_auth'
 export const CONTENT_FILTERS = '_contentFilters'
 export const DEFAULT_FILTER = '_defaultFilter'
 export const DISABLE_EXTENSION = '_disableExtension'

@@ -7,7 +7,7 @@ const GET = 'GET'
 const POST = 'POST'
 
 
-export const apiRequest = async (urlPath: string, method: string, body: object = {}, sendAuthenticated = false) => {
+const _apiRequest = async (urlPath: string, method: string, body: object = {}, sendAuthenticated = false) => {
     let headers = {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
@@ -35,7 +35,7 @@ export const apiRequest = async (urlPath: string, method: string, body: object =
 
 
 export const get = async (urlPath: string, sendAuthenticated: boolean = false) => {
-    const response = await apiRequest(urlPath, GET, {}, sendAuthenticated)
+    const response = await _apiRequest(urlPath, GET, {}, sendAuthenticated)
     if (response.ok) {
         return response.json()
     } else {
@@ -45,13 +45,13 @@ export const get = async (urlPath: string, sendAuthenticated: boolean = false) =
 }
 
 
-export const authGet = async (urlPath: string) => {
+const authGet = async (urlPath: string) => {
     return get(urlPath, true)
 }
 
 
 export const post = async (urlPath: string, body: object, sendAuthenticated: boolean = false) => {
-    const response = await apiRequest(urlPath, POST, body, sendAuthenticated)
+    const response = await _apiRequest(urlPath, POST, body, sendAuthenticated)
     if (response.ok) {
         return response.json()
     } else {
@@ -61,29 +61,18 @@ export const post = async (urlPath: string, body: object, sendAuthenticated: boo
 }
 
 
-export const authPost = async (urlPath: string, body: object) => {
+const authPost = async (urlPath: string, body: object) => {
     return post(urlPath, body, true)
-}
-
-
-export const loginRequest = async (body: types.LoginCredentials) => {
-    const responseJson = await post(`/api/v1/auth/token/`, body)
-    await storage.setAuth({access: responseJson.access, refresh: responseJson.refresh})
-    return responseJson
 }
 
 
 export const refreshAccessToken = async (refreshToken: string) => {
     // FIXME: access token does not get auto refreshed once it expires
+
+    // FIXME: /api/v1/auth/token/refresh/ on returns access key. It does not include the refresh key again
     const responseJson = await post('/api/v1/auth/token/refresh/', {'refresh': refreshToken})
     await storage.setAuth({access: responseJson.access, refresh: responseJson.refresh})
     return responseJson
-}
-
-
-export const signupRequest = async (body: types.LoginCredentials) => {
-    await post(`/api/v1/auth/signup/`, body)
-    return await loginRequest(body)
 }
 
 

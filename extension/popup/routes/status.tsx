@@ -1,28 +1,39 @@
 import useSWR from "swr"
-import {Spinner, Toast, ToastBody, ToastHeader} from "reactstrap"
+import {Spinner} from "reactstrap"
 
 import * as api from "~util/api"
 import * as base from "~popup/bases"
 
 
 export const Status = () => {
-    const {data, error, isLoading} = useSWR('/api/v1/status', api.getJson)
+    const {data, error, isLoading} = useSWR('/api/v1/status', api.get)
+
+    if (isLoading) {
+        return <Spinner/>
+    }
+    if (error) {
+        return (
+            <base.Authenticated>
+                <p>{error.message}</p>
+            </base.Authenticated>
+        )
+    }
+    if (data) {
+        if (data.messages.length === 0) {
+            return (
+                <base.Authenticated>
+                    <p>No status messages</p>
+                </base.Authenticated>
+            )
+        }
+    }
 
     return (
         <base.Authenticated>
             {
-                isLoading ? <Spinner/> :
-                    error ? <p>{error.message}</p> :
-                        data.messages.map((message: string, idx: number) =>
-                            <Toast key={`toast-${idx}`}>
-                                <ToastHeader key={`toastheader-${idx}`}>
-                                    API Status Message
-                                </ToastHeader>
-                                <ToastBody key={`toastbody-${idx}`}>
-                                    {message}
-                                </ToastBody>
-                            </Toast>
-                        )
+                data.messages.map((message: string, idx: number) =>
+                    <p key={`status-message-${idx}`}>{message}</p>
+                )
             }
         </base.Authenticated>
     )

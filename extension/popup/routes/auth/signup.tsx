@@ -1,28 +1,43 @@
-import {useState} from "react"
-import {Navigate, NavLink} from "react-router-dom"
-import useSWR, {mutate} from "swr"
+import * as react from "react"
+import {NavLink, useNavigate} from "react-router-dom"
+import useSWRImmutable from "swr/immutable"
+import {useStorage} from "@plasmohq/storage/dist/hook"
+import {signal} from "@preact/signals"
 import {Button, Form, Input, Spinner} from "reactstrap"
 
 import * as api from "~util/api"
 import * as base from "~popup/bases"
+import * as storage from "~util/storage"
+
+
+const signupPassword = signal("")
+const signupUsername = signal("")
 
 
 export const Signup = () => {
-    const [credentials, setCredentials] = useState(null)
-    const [username, setUsername] = useState(null)
-    const [password, setPassword] = useState(null)
-    const {data, error, isLoading} = useSWR(credentials ? credentials : null, api.signupRequest)
+    const [_, setAuth] = useStorage({instance: storage.instance, key: storage.AUTH})
+    const [signupCredentials, setSignupCredentials] = react.useState(null)
+    const navigate = useNavigate()
 
-    const handleSubmit = async (e) => {
+    const {data: signupResponse, error: signupError, isLoading: signupIsLoading} = useSWRImmutable(
+        signupCredentials ? ['/api/v1/auth/signup/', signupCredentials] : null,
+        ([urlPath, credentials]) => api.post(urlPath, credentials),
+    )
+    const {error: loginError, isLoading: loginIsLoading} = useSWRImmutable(
+        signupResponse && !signupError && !signupIsLoading ? ['/api/v1/auth/token/', signupCredentials] : null,
+        ([urlPath, credentials]) =>
+        api.post(urlPath, credentials),
+        {
+            onSuccess: async (data, key, config) => {
+                await setAuth({access: data.access, refresh: data.refresh})
+                navigate("/settings", {replace: true})
+            }
+        }
+    )
+
+    const handleSubmit = async (e: react.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-        setCredentials({username: username, password: password})
-    }
-
-    if (data) {
-        // mutating this key will cause `api.ensureAccessToken` in the `Settings` route to get re-evaluated.
-        // This is required so that we do not get redirected back to the login page.
-        mutate('/api/v1/auth/token/refresh/', true).then()
-        return <Navigate to="/" replace={true}/>
+        setSignupCredentials({username: signupUsername.value, password: signupPassword.value})
     }
 
     return (
@@ -30,7 +45,8 @@ export const Signup = () => {
             <Form onSubmit={handleSubmit}>
                 <div className={"mb-3"}>
                     <Input
-                        onChange={(e) => {setUsername(e.target.value)}}
+                        autoFocus={true}
+                        onChange={(e) => signupUsername.value = e.target.value}
                         id="signupUsername"
                         placeholder={"Username"}
                         type="text"
@@ -38,7 +54,7 @@ export const Signup = () => {
                 </div>
                 <div className={"mb-3"}>
                     <Input
-                        onChange={(e) => {setPassword(e.target.value)}}
+                        onChange={(e) => signupPassword.value = e.target.value}
                         id="signupPassword"
                         placeholder={"Password"}
                         type="password"
@@ -46,8 +62,9 @@ export const Signup = () => {
                 </div>
                 <div className="hstack gap-3 justify-content-center">
                     <Button color={"primary"} type={"submit"}>Signup</Button>
-                    {isLoading && <Spinner/>}
-                    {error && <p>{error.message}</p>}
+                    {signupIsLoading || loginIsLoading ? <Spinner/> : null}
+                    {signupError && <p>{signupError.message}</p>}
+                    {loginError && <p>{loginError.message}</p>}
                     <div className="vr"></div>
                     <NavLink
                         className={"btn btn-link"}

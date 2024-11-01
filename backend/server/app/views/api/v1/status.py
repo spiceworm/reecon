@@ -4,7 +4,7 @@ from rest_framework.generics import RetrieveAPIView
 from rest_framework.views import Response
 
 
-from ....serializers import StatusSerializer
+from ....serializers import StatusRequestSerializer
 
 
 __all__ = ("StatusView",)
@@ -12,7 +12,7 @@ __all__ = ("StatusView",)
 
 class StatusView(RetrieveAPIView):
     authentication_classes = ()
-    serializer_class = StatusSerializer
+    serializer_class = StatusRequestSerializer
 
     def get(self, *args, **kwargs):
         data = {

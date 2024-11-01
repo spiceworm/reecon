@@ -1,11 +1,10 @@
 TODO:
 - Track submission count since last redditor/thread processing event. Do not reprocess unless some number of new submissions have been made. Few or no new submissions does not warrant reprocessing unless the processing is done by a new model.
 - Track tokens used to generate each object so you can determine how many tokens are being used as the prompts/generated data changes over time
-- Update threads and users api endpoints to return {threads: [...], unprocessable_threads: [...], pending_threads: [...]}
+- Update threads api endpoint to return {threads: [...], unprocessable_threads: [...], pending_threads: [...]}
+- Update redditors api endpoint to return {redditors: [...], unprocessable_redditors: [...], pending_redditors: [...]}
 - Annotate unprocessable threads in DOM with '❓' emoji
 - (X) Log when tenacity retries requests so you can see how much rate limiting is occurring. Modify rq config to process jobs in smaller batches / slower to avoid rate limiting
-- Fix generated documentation for api endpoints
-- Implement signup/login flow how it is shown in examples at https://github.com/remix-run/react-router/blob/dev/examples/auth/src/App.tsx
 - Errors (such as api key validation errors) returned from the backend API need to be shown to the user somehow
 - Make `producer_settings` a pydantic model so it can be used in type annotations. This is better than `typing.Dict`
 - Store extension auth and producer settings using plasmo's SecureStorage

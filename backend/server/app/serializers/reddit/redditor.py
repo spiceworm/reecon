@@ -14,38 +14,66 @@ from ...models import (
 
 
 __all__ = (
-    "IgnoredRedditorSerializer",
-    "RedditorSerializer",
+    "IgnoredRedditorRequestSerializer",
     "RedditorDataSerializer",
-    "RedditorUsernameSerializer",
+    "RedditorRequestSerializer",
+    "RedditorResponseSerializer",
 )
 
 
-class IgnoredRedditorSerializer(serializers.Serializer):
-    reason = serializers.CharField()
-    username = serializers.CharField(max_length=32)
+class IgnoredRedditorRequestSerializer(serializers.Serializer):
+    reason = serializers.CharField(
+        read_only=True,
+    )
+    username = serializers.CharField(
+        max_length=32,
+        read_only=True,
+    )
 
 
 class RedditorDataSerializer(serializers.ModelSerializer):
-    age = ProducedIntegerSerializer()
-    interests = ProducedTextListSerializer()
-    iq = ProducedIntegerSerializer()
-    sentiment_polarity = ProducedFloatSerializer()
-    summary = ProducedTextSerializer()
+    age = ProducedIntegerSerializer(
+        read_only=True,
+    )
+    interests = ProducedTextListSerializer(
+        read_only=True,
+    )
+    iq = ProducedIntegerSerializer(
+        read_only=True,
+    )
+    sentiment_polarity = ProducedFloatSerializer(
+        read_only=True,
+    )
+    summary = ProducedTextSerializer(
+        read_only=True,
+    )
 
     class Meta:
         model = RedditorData
         exclude = ("id", "redditor")
 
 
-class RedditorSerializer(serializers.ModelSerializer):
-    data = serializers.SerializerMethodField("get_data")
+class RedditorRequestSerializer(serializers.Serializer):
+    usernames = serializers.ListField(
+        child=serializers.CharField(),
+        required=True,
+    )
+    producer_settings = ProducerSettingsSerializer(
+        required=True,
+    )
+
+
+class RedditorResponseSerializer(serializers.ModelSerializer):
+    data = serializers.SerializerMethodField(
+        "get_data",
+        read_only=True,
+    )
 
     class Meta:
         model = Redditor
         exclude = ("id",)
 
-    def get_data(self, redditor: Redditor):
+    def get_data(self, redditor: Redditor) -> dict:
         """
         Even though we are storing all RedditorData entries, we only want to serialize
         the latest one, not all of them.
@@ -53,8 +81,3 @@ class RedditorSerializer(serializers.ModelSerializer):
         data = RedditorData.objects.filter(redditor=redditor).latest("created")
         serializer = RedditorDataSerializer(instance=data)
         return serializer.data
-
-
-class RedditorUsernameSerializer(serializers.Serializer):
-    usernames = serializers.ListField(child=serializers.CharField())
-    producer_settings = ProducerSettingsSerializer(required=True)

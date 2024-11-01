@@ -13,31 +13,42 @@ from ...models import (
 
 
 __all__ = (
-    "ThreadSerializer",
     "ThreadDataSerializer",
-    "ThreadUrlPathsSerializer",
+    "ThreadRequestSerializer",
+    "ThreadResponseSerializer",
 )
 
 
 class ThreadDataSerializer(serializers.ModelSerializer):
-    keywords = ProducedTextListSerializer()
-    sentiment_polarity = ProducedFloatSerializer()
-    summary = ProducedTextSerializer()
+    keywords = ProducedTextListSerializer(
+        read_only=True,
+    )
+    sentiment_polarity = ProducedFloatSerializer(
+        read_only=True,
+    )
+    summary = ProducedTextSerializer(
+        read_only=True,
+    )
 
     class Meta:
         model = ThreadData
         exclude = ("id", "thread")
 
 
-class ThreadSerializer(serializers.ModelSerializer):
-    data = serializers.SerializerMethodField("get_data")
-    path = serializers.CharField()
+class ThreadResponseSerializer(serializers.ModelSerializer):
+    data = serializers.SerializerMethodField(
+        "get_data",
+        read_only=True,
+    )
+    path = serializers.CharField(
+        read_only=True,
+    )
 
     class Meta:
         model = Thread
         exclude = ("id",)
 
-    def get_data(self, thread: Thread):
+    def get_data(self, thread: Thread) -> dict:
         """
         Even though we are storing all ThreadData entries, we only want to serialize
         the latest one, not all of them.
@@ -47,6 +58,6 @@ class ThreadSerializer(serializers.ModelSerializer):
         return serializer.data
 
 
-class ThreadUrlPathsSerializer(serializers.Serializer):
+class ThreadRequestSerializer(serializers.Serializer):
     paths = serializers.ListField(child=serializers.CharField())
-    producer_settings = ProducerSettingsSerializer(required=True)
+    producer_settings = ProducerSettingsSerializer()

@@ -21,8 +21,12 @@ class ContributorSerializer(serializers.ModelSerializer):
 
 
 class ProducedCategorySerializer(serializers.Serializer):
-    description = serializers.CharField()
-    name = serializers.CharField()
+    description = serializers.CharField(
+        read_only=True,
+    )
+    name = serializers.CharField(
+        read_only=True,
+    )
 
     class Meta:
         model = ProducerCategory
@@ -30,10 +34,18 @@ class ProducedCategorySerializer(serializers.Serializer):
 
 
 class ProducerSerializer(serializers.Serializer):
-    context_window = serializers.IntegerField()
-    category = ProducedCategorySerializer()
-    description = serializers.CharField()
-    name = serializers.CharField()
+    context_window = serializers.IntegerField(
+        read_only=True,
+    )
+    category = ProducedCategorySerializer(
+        read_only=True,
+    )
+    description = serializers.CharField(
+        read_only=True,
+    )
+    name = serializers.CharField(
+        read_only=True,
+    )
 
     class Meta:
         model = Producer

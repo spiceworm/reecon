@@ -7,13 +7,20 @@ __all__ = ("ProducerSettingsSerializer",)
 
 
 class ProducerSettingSerializer(serializers.Serializer):
-    name = serializers.CharField()
-    api_key = serializers.CharField()
+    name = serializers.CharField(
+        required=True,
+    )
+    api_key = serializers.CharField(
+        required=True,
+    )
 
 
 class ProducerSettingsSerializer(serializers.Serializer):
     settings = serializers.ListSerializer(
-        child=ProducerSettingSerializer(),
+        child=ProducerSettingSerializer(
+            required=True,
+        ),
+        required=True,
         validators=[validate_producer_settings],
     )
 

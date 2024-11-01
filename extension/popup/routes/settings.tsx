@@ -1,10 +1,7 @@
 import {useStorage} from "@plasmohq/storage/dist/hook"
-import useSWR from "swr"
-import {Button, Form, Input, Label, Spinner} from "reactstrap"
-import {Navigate} from "react-router-dom"
+import {Button, Form, Input, Label} from "reactstrap"
 import {useState} from "react"
 
-import * as api from "~util/api"
 import * as base from "~popup/bases"
 import * as storage from "~util/storage"
 import {ContentFilterTable} from "~util/components/contentFilterTable"
@@ -24,17 +21,6 @@ export const Settings = () => {
         (v: boolean) => v === undefined ? false : v,
     )
     const [currentContext, setCurrentContext] = useState('default')
-    const {data: accessToken, error, isLoading} = useSWR('/api/v1/auth/token/refresh/', api.ensureAccessToken)
-
-    if (isLoading) {
-        return <Spinner/>
-    }
-    if (error) {
-        return <p>{error.message}</p>
-    }
-    if (accessToken === null || accessToken === undefined) {
-        return <Navigate to="/auth/login" replace={true}/>
-    }
 
     const handleAllSettingsBtnClick = async (e) => {
         await chrome.tabs.create({url: "/tabs/index.html"})

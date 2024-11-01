@@ -1,28 +1,38 @@
-import {useState} from "react"
-import {Navigate, NavLink} from "react-router-dom"
-import useSWR, {mutate} from "swr"
+import * as react from "react"
+import {NavLink, useNavigate} from "react-router-dom"
+import useSWRImmutable from "swr/immutable"
+import {useStorage} from "@plasmohq/storage/dist/hook"
+import {signal} from "@preact/signals"
 import {Button, Form, Input, Spinner} from "reactstrap"
 
 import * as api from "~util/api"
 import * as base from "~popup/bases"
+import * as storage from "~util/storage"
+
+
+const loginPassword = signal("")
+const loginUsername = signal("")
 
 
 export const Login = () => {
-    const [credentials, setCredentials] = useState(null)
-    const [username, setUsername] = useState(null)
-    const [password, setPassword] = useState(null)
-    const {data: accessToken, error, isLoading} = useSWR(credentials ? credentials : null, api.loginRequest)
+    const [_, setAuth] = useStorage({instance: storage.instance, key: storage.AUTH})
+    const [loginCredentials, setLoginCredentials] = react.useState(null)
+    const navigate = useNavigate()
 
-    const handleSubmit = async (e) => {
+    const {error, isLoading} = useSWRImmutable(
+        loginCredentials ? ['/api/v1/auth/token/', loginCredentials] : null,
+        ([urlPath, credentials]) => api.post(urlPath, credentials),
+        {
+            onSuccess: async (data, key, config) => {
+                await setAuth({access: data.access, refresh: data.refresh})
+                navigate("/settings", {replace: true})
+            }
+        }
+    )
+
+    const handleSubmit = async (e: react.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-        setCredentials({username: username, password: password})
-    }
-
-    if (accessToken !== null && accessToken !== undefined) {
-        // mutating this key will cause `api.ensureAccessToken` in the `Settings` route to get re-evaluated.
-        // This is required so that we do not get redirected back to the login page.
-        mutate('/api/v1/auth/token/refresh/', true).then()
-        return <Navigate to="/" replace={true}/>
+        setLoginCredentials({username: loginUsername.value, password: loginPassword.value})
     }
 
     return (
@@ -30,16 +40,15 @@ export const Login = () => {
             <Form onSubmit={handleSubmit}>
                 <div className={"mb-3"}>
                     <Input
-                        onChange={(e) => {setUsername(e.target.value)}}
-                        id="loginUsername"
+                        autoFocus={true}
+                        onChange={(e) => loginUsername.value = e.target.value}
                         placeholder={"Username"}
                         type="text"
                     />
                 </div>
                 <div className={"mb-3"}>
                     <Input
-                        onChange={(e) => {setPassword(e.target.value)}}
-                        id="loginPassword"
+                        onChange={(e) => loginPassword.value = e.target.value}
                         placeholder={"Password"}
                         type="password"
                     />
@@ -51,7 +60,6 @@ export const Login = () => {
                     <div className="vr"></div>
                     <NavLink
                         className={"btn btn-link"}
-                        id={"signupNavButton"}
                         to="/auth/signup"
                     >
                         Signup

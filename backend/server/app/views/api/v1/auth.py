@@ -1,24 +1,24 @@
 from django.contrib.auth.models import User
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.generics import CreateAPIView
 from rest_framework.response import Response
 
 from ....exceptions import UserSignupConflictException
 from ....serializers import (
-    SignupSerializer,
-    UserSerializer,
+    SignupRequestSerializer,
+    SignupResponseSerializer,
 )
-from ....util import schema
 
 
 __all__ = ("SignupView",)
 
 
-@schema.response_schema(serializer=UserSerializer)
+@extend_schema(responses=SignupResponseSerializer)
 class SignupView(CreateAPIView):
     authentication_classes = ()
     queryset = User.objects.all()
-    serializer_class = SignupSerializer
+    serializer_class = SignupRequestSerializer
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -34,6 +34,6 @@ class SignupView(CreateAPIView):
             username=data["username"],
             password=data["password"],
         )
-        response_serializer = UserSerializer(instance=user)
+        response_serializer = SignupResponseSerializer(instance=user)
         headers = self.get_success_headers(response_serializer.data)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
