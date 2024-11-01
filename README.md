@@ -5,7 +5,6 @@ TODO:
 - Update redditors api endpoint to return {redditors: [...], unprocessable_redditors: [...], pending_redditors: [...]}
 - Annotate unprocessable threads in DOM with '❓' emoji
 - (X) Log when tenacity retries requests so you can see how much rate limiting is occurring. Modify rq config to process jobs in smaller batches / slower to avoid rate limiting
-- Errors (such as api key validation errors) returned from the backend API need to be shown to the user somehow
 - Make `producer_settings` a pydantic model so it can be used in type annotations. This is better than `typing.Dict`
 - Store extension auth and producer settings using plasmo's SecureStorage
 

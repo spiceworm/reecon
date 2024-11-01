@@ -3,7 +3,7 @@ import {NavLink, useNavigate} from "react-router-dom"
 import useSWRImmutable from "swr/immutable"
 import {useStorage} from "@plasmohq/storage/dist/hook"
 import {signal} from "@preact/signals"
-import {Button, Form, Input, InputGroup, Spinner} from "reactstrap"
+import {Button, Form, Input, InputGroup, Spinner, UncontrolledAlert} from "reactstrap"
 import {Eye, EyeSlash} from 'react-bootstrap-icons'
 
 import * as api from "~util/api"
@@ -27,8 +27,7 @@ export const Signup = () => {
     )
     const {error: loginError, isLoading: loginIsLoading} = useSWRImmutable(
         signupResponse && !signupError && !signupIsLoading ? ['/api/v1/auth/token/', signupCredentials] : null,
-        ([urlPath, credentials]) =>
-        api.post(urlPath, credentials),
+        ([urlPath, credentials]) => api.post(urlPath, credentials),
         {
             onSuccess: async (data, key, config) => {
                 await setAuth({access: data.access, refresh: data.refresh})
@@ -45,6 +44,20 @@ export const Signup = () => {
     return (
         <base.Unauthenticated>
             <p className={"text-center"}>Signup</p>
+
+            {
+                !signupError ? null : (
+                    <UncontrolledAlert color={"danger"}>{JSON.parse(signupError.message).detail}</UncontrolledAlert>
+                )
+            }
+            {
+                !loginError ? null : (
+                    <UncontrolledAlert color={"danger"}>{JSON.parse(loginError.message).detail}</UncontrolledAlert>
+                )
+            }
+            {
+                signupIsLoading || loginIsLoading ? <Spinner/> : null
+            }
 
             <Form onSubmit={handleSubmit}>
                 <div className={"mb-3"}>
@@ -73,9 +86,6 @@ export const Signup = () => {
                 </div>
                 <div className="hstack gap-3 justify-content-center">
                     <Button color={"primary"} type={"submit"}>Signup</Button>
-                    {signupIsLoading || loginIsLoading ? <Spinner/> : null}
-                    {signupError && <p>{signupError.message}</p>}
-                    {loginError && <p>{loginError.message}</p>}
                     <div className="vr"></div>
                     <NavLink
                         className={"btn btn-link"}

@@ -3,7 +3,7 @@ import {NavLink, useNavigate} from "react-router-dom"
 import useSWRImmutable from "swr/immutable"
 import {useStorage} from "@plasmohq/storage/dist/hook"
 import {signal} from "@preact/signals"
-import {Button, Form, Input, InputGroup, Spinner} from "reactstrap"
+import {Button, Form, Input, InputGroup, Spinner, UncontrolledAlert} from "reactstrap"
 import {Eye, EyeSlash} from 'react-bootstrap-icons'
 
 import * as api from "~util/api"
@@ -41,6 +41,13 @@ export const Login = () => {
         <base.Unauthenticated>
             <p className={"text-center"}>Login</p>
 
+            {
+                error ? <UncontrolledAlert color={"danger"}>{JSON.parse(error.message).detail}</UncontrolledAlert> : null
+            }
+            {
+                isLoading ? <Spinner/> : null
+            }
+
             <Form onSubmit={handleSubmit}>
                 <div className={"mb-3"}>
                     <Input
@@ -68,8 +75,6 @@ export const Login = () => {
                 </div>
                 <div className="hstack gap-3 justify-content-center">
                     <Button color={"primary"} type={"submit"}>Login</Button>
-                    {isLoading && <Spinner/>}
-                    {error && <p>{error.message}</p>}
                     <div className="vr"></div>
                     <NavLink
                         className={"btn btn-link"}

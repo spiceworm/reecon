@@ -3,6 +3,7 @@ import lscache from "lscache"
 import * as storage from "~util/storage"
 import type * as types from "~util/types"
 
+
 const GET = 'GET'
 const POST = 'POST'
 
@@ -30,18 +31,19 @@ const _apiRequest = async (urlPath: string, method: string, body: object = {}, s
         options['body'] = JSON.stringify(body)
     }
 
-    return fetch(`${process.env.PLASMO_PUBLIC_BASE_URL}${urlPath}`, options)
-}
+    const response = await fetch(`${process.env.PLASMO_PUBLIC_BASE_URL}${urlPath}`, options)
 
-
-export const get = async (urlPath: string, sendAuthenticated: boolean = false) => {
-    const response = await _apiRequest(urlPath, GET, {}, sendAuthenticated)
     if (response.ok) {
         return response.json()
     } else {
         console.error(response)
-        throw new Error(`${urlPath} ${GET} failed: ${response.status}`)
+        throw new Error(JSON.stringify(await response.json()))
     }
+}
+
+
+export const get = async (urlPath: string, sendAuthenticated: boolean = false) => {
+    return _apiRequest(urlPath, GET, {}, sendAuthenticated)
 }
 
 
@@ -51,13 +53,7 @@ const authGet = async (urlPath: string) => {
 
 
 export const post = async (urlPath: string, body: object, sendAuthenticated: boolean = false) => {
-    const response = await _apiRequest(urlPath, POST, body, sendAuthenticated)
-    if (response.ok) {
-        return response.json()
-    } else {
-        console.error(response)
-        throw new Error(`${urlPath} ${POST} failed: ${response.status}`)
-    }
+    return _apiRequest(urlPath, POST, body, sendAuthenticated)
 }
 
 
