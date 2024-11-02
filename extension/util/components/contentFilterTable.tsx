@@ -137,12 +137,12 @@ const columns = [
 
 export const ContentFilterTable = () => {
     const [data, setData] = useStorage<types.ContentFilter[]>(
-        {instance: storage.instance, key: storage.CONTENT_FILTERS},
+        {instance: storage.localStorage, key: storage.CONTENT_FILTERS},
         (v: types.ContentFilter[]) => v === undefined ? [] as types.ContentFilter[] : v,
     )
 
     const [defaultFilter, setDefaultFilter] = useStorage<types.ContentFilter>(
-        {instance: storage.instance, key: storage.DEFAULT_FILTER},
+        {instance: storage.localStorage, key: storage.DEFAULT_FILTER},
         (v: types.ContentFilter) => v === undefined ? {} as types.ContentFilter : v,
     )
 

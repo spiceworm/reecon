@@ -16,7 +16,7 @@ const loginUsername = signal("")
 
 
 export const Login = () => {
-    const [_, setAuth] = useStorage({instance: storage.instance, key: storage.AUTH})
+    const [_, setAuth] = useStorage({instance: storage.localStorage, key: storage.AUTH})
     const [passwordVisible, setPasswordVisible] = react.useState(false)
     const [loginCredentials, setLoginCredentials] = react.useState(null)
     const navigate = useNavigate()

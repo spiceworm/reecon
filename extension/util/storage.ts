@@ -15,19 +15,19 @@ export const HIDE_IGNORED_REDDITORS = '_hideIgnoredRedditors'
 export const OPENAI_API_KEY = '_unvalidatedOpenaiApiKey'
 
 
-// The only time `instance` should be accessed outside this file is when `useStorage` hook needs to point to it.
-export const instance = new Storage({
+// The only time `localStorage` should be accessed outside this file is when `useStorage` hook needs to point to it.
+export const localStorage = new Storage({
     area: 'local',
 })
 
 
 const _get = async (key: string): Promise<any> => {
-    return await instance.get(key) as any
+    return await localStorage.get(key) as any
 }
 
 
 const _set = async (key: string, value: any): Promise<void> => {
-    await instance.set(key, value)
+    await localStorage.set(key, value)
 }
 
 
@@ -41,7 +41,7 @@ export const defaultContentFilter: types.ContentFilter = {
 
 
 export const init = async (): Promise<void> => {
-    await instance.setMany({
+    await localStorage.setMany({
         [AUTH]: null,
         [ACTIVE_CONTENT_FILTER]: defaultContentFilter,
         [CONTENT_FILTERS]: [defaultContentFilter],
@@ -148,7 +148,7 @@ export const shouldExecuteContentScript = async (): Promise<boolean> => {
 }
 
 
-instance.watch({
+localStorage.watch({
     [AUTH]: async (storageChange) => {
         const auth: types.Auth = storageChange.newValue
 

@@ -5,7 +5,7 @@ import * as storage from "~util/storage"
 
 
 export const RequireAuthentication = ({children}) => {
-    const [auth, _] = useStorage({instance: storage.instance, key: storage.AUTH})
+    const [auth, _] = useStorage({instance: storage.localStorage, key: storage.AUTH})
 
     // Storage still loading value
     if (auth === undefined) {

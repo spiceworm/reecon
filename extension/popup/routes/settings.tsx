@@ -8,19 +8,19 @@ import type * as types from "~util/types"
 
 export const Settings = () => {
     const [activeContentFilter, _] = useStorage(
-        {instance: storage.instance, key: storage.ACTIVE_CONTENT_FILTER},
+        {instance: storage.localStorage, key: storage.ACTIVE_CONTENT_FILTER},
         (v: types.ContentFilter) => v === undefined ? storage.defaultContentFilter : v,
     )
     const [disableExtension, setDisableExtension] = useStorage(
-        {instance: storage.instance, key: storage.DISABLE_EXTENSION},
+        {instance: storage.localStorage, key: storage.DISABLE_EXTENSION},
         (v: boolean) => v === undefined ? false : v,
     )
     const [hideBadSentimentThreads, setHideBadSentimentThreads] = useStorage(
-        {instance: storage.instance, key: storage.HIDE_BAD_SENTIMENT_THREADS},
+        {instance: storage.localStorage, key: storage.HIDE_BAD_SENTIMENT_THREADS},
         (v: boolean) => v === undefined ? false : v,
     )
     const [hideIgnoredRedditors, setHideIgnoredRedditors] = useStorage(
-        {instance: storage.instance, key: storage.HIDE_IGNORED_REDDITORS},
+        {instance: storage.localStorage, key: storage.HIDE_IGNORED_REDDITORS},
         (v: boolean) => v === undefined ? false : v,
     )
 

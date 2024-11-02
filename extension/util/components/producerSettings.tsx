@@ -9,7 +9,7 @@ import * as storage from "~util/storage"
 
 const ProducerSettingsApiKeyInput = ({name, apiKeyStorageKey}) => {
     const [keyVisible, setKeyVisible] = useState(false)
-    const [apiKey, setApiKey] = useStorage({instance: storage.instance, key: apiKeyStorageKey}, (v: string) => v === undefined ? "" : v)
+    const [apiKey, setApiKey] = useStorage({instance: storage.localStorage, key: apiKeyStorageKey}, (v: string) => v === undefined ? "" : v)
 
     return (
             <InputGroup key={name}>

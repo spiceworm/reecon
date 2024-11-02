@@ -16,7 +16,7 @@ const signupUsername = signal("")
 
 
 export const Signup = () => {
-    const [_, setAuth] = useStorage({instance: storage.instance, key: storage.AUTH})
+    const [_, setAuth] = useStorage({instance: storage.localStorage, key: storage.AUTH})
     const [passwordVisible, setPasswordVisible] = react.useState(false)
     const [signupCredentials, setSignupCredentials] = react.useState(null)
     const navigate = useNavigate()
