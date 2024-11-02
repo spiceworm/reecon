@@ -9,6 +9,12 @@ import git
 config = dotenv_values(".env")
 
 
+def confirm_command(command):
+    print(command)
+    user_input = input("[N/y]: ")
+    return user_input.lower() == "y"
+
+
 def get_latest_tag():
     repo = git.Repo("..")
     return sorted(repo.tags, key=lambda tag: tag.name)[-1]
@@ -35,11 +41,16 @@ def main(args):
     registry_url = f"{config['REGISTRY_URL']}/{config['CONTAINER_REPO']}"
     image_url = f"{registry_url}/{config['APP_NAME']}/server:{args.tag}"
 
+    push_cmd = ["docker", "push", image_url]
+
     if args.push:
-        subprocess.check_call(["docker", "push", image_url])
+        if confirm_command(' '.join(push_cmd)):
+            subprocess.check_call(push_cmd)
     else:
         subprocess.check_call(["docker", "compose", "build"])
-        subprocess.check_call(["docker", "push", image_url])
+
+        if confirm_command(' '.join(push_cmd)):
+            subprocess.check_call(push_cmd)
 
 
 if __name__ == "__main__":
