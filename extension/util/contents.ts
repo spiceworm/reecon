@@ -7,8 +7,6 @@ let lastExecution = null
 
 
 export const execute = async () => {
-    // FIXME: do not execute if current tab is not a reddit page
-
     if (lastExecution !== null && Date.now() - lastExecution < 100) {
         return
     }

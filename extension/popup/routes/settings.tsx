@@ -1,10 +1,9 @@
 import {useStorage} from "@plasmohq/storage/dist/hook"
-import {Button, Form, Input, Label} from "reactstrap"
+import {Button, Form, Input, Label, Table} from "reactstrap"
 
 import * as base from "~popup/bases"
 import * as storage from "~util/storage"
 import type * as types from "~util/types"
-import {ContentFilterTable} from "~util/components/contentFilterTable"
 
 
 export const Settings = () => {
@@ -28,11 +27,6 @@ export const Settings = () => {
     const handleAllSettingsBtnClick = async (e) => {
         await chrome.tabs.create({url: "/tabs/index.html"})
     }
-
-    // FIXME: when the current context settings table loads in the popup, the context name input should be
-    //   read-only for all contexts. It is currently only read-only when the Default context loads because
-    //   it is always read only. I'm starting to think that the tanstack table shown in the popup should
-    //   not be shown in the popup and all context settings shows should just be read only inputs.
 
     return (
         <base.Authenticated>
@@ -66,23 +60,35 @@ export const Settings = () => {
                 </div>
             </Form>
 
-            <ContentFilterTable
-                columnFilters={[{
-                    id: 'context',
-                    value: activeContentFilter.context
-                }]}
-                columnVisibility={{
-                    context: true,
-                    age: true,
-                    iq: true,
-                    sentiment: true,
-                    action: false,
-                }}
-                footerVisible={false}
-            />
+            <Table bordered>
+                <thead>
+                <tr>
+                    <th>Context</th>
+                    <th>Age</th>
+                    <th>IQ</th>
+                    <th>Sentiment</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <th scope={"row"}>
+                        {activeContentFilter.context}
+                    </th>
+                    <td>
+                        {activeContentFilter.age}
+                    </td>
+                    <td>
+                        {activeContentFilter.iq}
+                    </td>
+                    <td>
+                        {activeContentFilter.sentiment}
+                    </td>
+                </tr>
+                </tbody>
+            </Table>
 
             <div className={"d-flex justify-content-center"}>
-                <Button color={"primary"} onClick={handleAllSettingsBtnClick} type={"button"}>All Settings</Button>
+            <Button color={"primary"} onClick={handleAllSettingsBtnClick} type={"button"}>All Settings</Button>
             </div>
         </base.Authenticated>
     )

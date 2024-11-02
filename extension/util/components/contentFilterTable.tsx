@@ -29,7 +29,9 @@ const Cell = ({getValue, row, column, table}) => {
     const isSpecialCell = column.columnDef.accessorKey === "context" && row.original.filterType === "default"
 
     useEffect(() => {
-        setValue(cellValue)
+        if (cellValue !== value) {
+            setValue(cellValue)
+        }
     }, [cellValue])
 
     const onBlur = () => {
@@ -130,19 +132,10 @@ const columns = [
         id: "action",
         cell: ActionCell,
     })
-];
+]
 
 
-const defaultColumnVisibility = {
-    context: true,
-    age: true,
-    iq: true,
-    sentiment: true,
-    action: true,
-}
-
-
-export const ContentFilterTable = ({columnVisibility = defaultColumnVisibility, columnFilters = [], footerVisible = true}) => {
+export const ContentFilterTable = () => {
     const [data, setData] = useStorage<types.ContentFilter[]>(
         {instance: storage.instance, key: storage.CONTENT_FILTERS},
         (v: types.ContentFilter[]) => v === undefined ? [] as types.ContentFilter[] : v,
@@ -158,11 +151,8 @@ export const ContentFilterTable = ({columnVisibility = defaultColumnVisibility, 
         columns,
         getCoreRowModel: getCoreRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
-        initialState: {
-            columnFilters: columnFilters,
-        },
         meta: {
-            addRow: () => {
+            addRow: async () => {
                 const newContentFilter: types.ContentFilter = {
                     age: defaultFilter.age,
                     context: "",
@@ -170,25 +160,21 @@ export const ContentFilterTable = ({columnVisibility = defaultColumnVisibility, 
                     iq: defaultFilter.iq,
                     sentiment: defaultFilter.sentiment,
                 };
-                setData([...data, newContentFilter]).then()
+                await setData([...data, newContentFilter])
             },
-            removeRow: (rowIndex: number) => {
+            removeRow: async (rowIndex: number) => {
                 data.splice(rowIndex, 1)
-                setData([...data]).then()
+                await setData([...data])
             },
-            updateData: (rowIndex: number, columnId: string, value: string) => {
+            updateData: async (rowIndex: number, columnId: string, value: string) => {
                 if (rowIndex === 0) {
                     defaultFilter[columnId] = value
-                    setDefaultFilter(defaultFilter).then()
+                    await setDefaultFilter(defaultFilter)
                 }
 
                 data[rowIndex][columnId] = value
-                setData([...data]).then()
+                await setData([...data])
             },
-        },
-        state: {
-            columnFilters,
-            columnVisibility,
         }
     });
 
@@ -229,13 +215,11 @@ export const ContentFilterTable = ({columnVisibility = defaultColumnVisibility, 
             }
             </tbody>
             <tfoot>
-            {
-                footerVisible ? <tr key={"tr-footer"}>
+                <tr key={"tr-footer"}>
                     <th colSpan={table.getCenterLeafColumns().length}>
                         <FooterCell table={table}/>
                     </th>
-                </tr> : null
-            }
+                </tr>
             </tfoot>
         </Table>
     );
