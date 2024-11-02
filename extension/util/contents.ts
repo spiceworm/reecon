@@ -20,7 +20,7 @@ export const execute = async () => {
 
         const urlPaths = dom.getThreadUrlPaths()
         const threads = await backgroundMessage.processThreads(producerSettings, urlPaths)
-        const contentFilter = await storage.getContentFilter()
+        const contentFilter = await storage.getActiveContentFilter()
         await dom.annotateThreads(threads, contentFilter)
 
         const usernameElementsMap = dom.getUsernameElementsMap()

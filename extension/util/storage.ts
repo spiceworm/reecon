@@ -1,11 +1,11 @@
 import {Storage} from "@plasmohq/storage"
 
 import * as api from "~util/api"
-import * as backgroundMessage from "~util/messages"
 import * as misc from "~util/misc"
 import type * as types from "~util/types"
 
 
+export const ACTIVE_CONTENT_FILTER = '_activeContentFilter'
 export const AUTH = '_auth'
 export const CONTENT_FILTERS = '_contentFilters'
 export const DEFAULT_FILTER = '_defaultFilter'
@@ -13,49 +13,48 @@ export const DISABLE_EXTENSION = '_disableExtension'
 export const HIDE_BAD_SENTIMENT_THREADS = '_hideBadSentimentThreads'
 export const HIDE_IGNORED_REDDITORS = '_hideIgnoredRedditors'
 export const OPENAI_API_KEY = '_unvalidatedOpenaiApiKey'
-const PRODUCER_SETTINGS = '_producerSettings'
 
 
-// The only time `instance` should be accessed outside this file is when `useStorage` hook
-// needs to point to it.
+// The only time `instance` should be accessed outside this file is when `useStorage` hook needs to point to it.
 export const instance = new Storage({
     area: 'local',
 })
 
 
-const _get = async (key: string) => {
+const _get = async (key: string): Promise<any> => {
     return await instance.get(key) as any
 }
 
 
-const _set = async (key: string, value: any) => {
-    return await instance.set(key, value)
+const _set = async (key: string, value: any): Promise<void> => {
+    await instance.set(key, value)
 }
 
 
-export const init = async () => {
-    const defaultContentFilter: types.ContentFilter = {
-        age: 0,
-        context: 'Default',
-        iq: 0,
-        sentiment: 0.05,
-        filterType: 'default',
-    }
+export const defaultContentFilter: types.ContentFilter = {
+    age: 0,
+    context: 'Default',
+    iq: 0,
+    sentiment: 0.05,
+    filterType: 'default',
+}
 
+
+export const init = async (): Promise<void> => {
     await instance.setMany({
         [AUTH]: null,
+        [ACTIVE_CONTENT_FILTER]: defaultContentFilter,
         [CONTENT_FILTERS]: [defaultContentFilter],
         [DEFAULT_FILTER]: defaultContentFilter,
         [DISABLE_EXTENSION]: false,
         [HIDE_BAD_SENTIMENT_THREADS]: false,
         [HIDE_IGNORED_REDDITORS]: false,
         [OPENAI_API_KEY]: "",
-        [PRODUCER_SETTINGS]: [],
     })
 }
 
 
-export const getAuth = async (): Promise<types.Auth> => {
+export const getAuth = async (): Promise<types.Auth | null> => {
     const auth = await _get(AUTH) as types.Auth
 
     if (!auth || !auth?.access || !auth?.refresh) {
@@ -67,27 +66,47 @@ export const getAuth = async (): Promise<types.Auth> => {
     }
 
     if (misc.jwtIsValid(auth.refresh)) {
-        return api.refreshAccessToken(auth.refresh)
+        return await api.refreshAccessToken(auth.refresh)
     }
 
     return null
 }
 
 
-export const setAuth = async (auth: types.Auth): Promise<null> => {
-    return await _set(AUTH, auth) as null
+export const setAuth = async (auth: types.Auth): Promise<void> => {
+    await _set(AUTH, auth)
 }
 
 
-export const getContentFilter = async () => {
-    const context: string = await backgroundMessage.getCurrentContext()
+export const getActiveContentFilter = async (): Promise<types.ContentFilter> => {
+    return await _get(ACTIVE_CONTENT_FILTER)
+}
+
+
+export const setActiveContext = async (url: string): Promise<void> => {
+    const _url = new URL(url)
+
+    let newContext: string = defaultContentFilter.context
+
+    if (_url.hostname.endsWith('reddit.com')) {
+        // `context` will be the subreddit name if we are viewing a sub or an empty string if viewing home
+        newContext = _url.pathname.split('/r/').at(-1).split('/')[0]
+        newContext = newContext === '' ? defaultContentFilter.context : newContext
+    }
+
+    let matchingContextFilterFound = false
 
     for (const contentFilter of await _get(CONTENT_FILTERS) as types.ContentFilter[]) {
-        if (contentFilter.context === context) {
-            return contentFilter
+        if (contentFilter.context === newContext) {
+            await _set(ACTIVE_CONTENT_FILTER, contentFilter)
+            matchingContextFilterFound = true
+            break
         }
     }
-    return await _get(DEFAULT_FILTER) as types.ContentFilter
+
+    if (!matchingContextFilterFound) {
+        await _set(ACTIVE_CONTENT_FILTER, defaultContentFilter)
+    }
 }
 
 

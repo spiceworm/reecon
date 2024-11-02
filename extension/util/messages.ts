@@ -3,17 +3,6 @@ import {sendToBackground} from "@plasmohq/messaging"
 import type * as types from "~util/types"
 
 
-export const getCurrentContext = async () => {
-    const resp = await sendToBackground({
-        name: "misc",
-        body: {
-            action: 'getCurrentContext'
-        },
-    })
-    return resp.message as string
-}
-
-
 export const getIgnoredRedditors = async () => {
     const resp = await sendToBackground({
         name: "reddit",
