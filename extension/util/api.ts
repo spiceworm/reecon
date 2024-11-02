@@ -8,7 +8,7 @@ const GET = 'GET'
 const POST = 'POST'
 
 
-const _apiRequest = async (urlPath: string, method: string, body: object = {}, sendAuthenticated = false) => {
+const _apiRequest = async (urlPath: string, method: string, body: object = {}, sendAuthenticated = false): Promise<any> => {
     let headers = {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
@@ -42,38 +42,38 @@ const _apiRequest = async (urlPath: string, method: string, body: object = {}, s
 }
 
 
-export const get = async (urlPath: string, sendAuthenticated: boolean = false) => {
+export const get = async (urlPath: string, sendAuthenticated: boolean = false): Promise<any> => {
     return _apiRequest(urlPath, GET, {}, sendAuthenticated)
 }
 
 
-const authGet = async (urlPath: string) => {
+const authGet = async (urlPath: string): Promise<any> => {
     return get(urlPath, true)
 }
 
 
-export const post = async (urlPath: string, body: object, sendAuthenticated: boolean = false) => {
+export const post = async (urlPath: string, body: object, sendAuthenticated: boolean = false): Promise<any> => {
     return _apiRequest(urlPath, POST, body, sendAuthenticated)
 }
 
 
-const authPost = async (urlPath: string, body: object) => {
+const authPost = async (urlPath: string, body: object): Promise<any> => {
     return post(urlPath, body, true)
 }
 
 
-export const refreshAccessToken = async (refreshToken: string) => {
+export const refreshAccessToken = async (refreshToken: string): Promise<any> => {
     // FIXME: access token does not get auto refreshed once it expires
 
     // FIXME: /api/v1/auth/token/refresh/ on returns access key. It does not include the refresh key again
-    const responseJson = await post('/api/v1/auth/token/refresh/', {'refresh': refreshToken})
+    const responseJson: types.Auth = await post('/api/v1/auth/token/refresh/', {'refresh': refreshToken})
     await storage.setAuth({access: responseJson.access, refresh: responseJson.refresh})
     return responseJson
 }
 
 
 // This should only be invoked from a background message
-export const getIgnoredRedditors = async () => {
+export const getIgnoredRedditors = async (): Promise<types.IgnoredRedditor[]> => {
     lscache.setBucket('api-data')
     lscache.flushExpired()
 
@@ -94,7 +94,7 @@ const difference = <T>(a: Set<T>, b: Set<T>) => new Set([...a].filter(x => !b.ha
 
 
 // This should only be invoked from a background message
-export const processRedditors = async (producerSettings: types.ProducerSettings, usernames: string[], ignoredUsernames: Set<string>) => {
+export const processRedditors = async (producerSettings: types.ProducerSettings, usernames: string[], ignoredUsernames: Set<string>): Promise<types.Redditor[]> => {
     lscache.setBucket('redditors')
     lscache.flushExpired()
 
@@ -143,7 +143,7 @@ export const processRedditors = async (producerSettings: types.ProducerSettings,
 
 
 // This should only be invoked from a background message
-export const processThreads = async (producerSettings: types.ProducerSettings, urlPaths: string[]) => {
+export const processThreads = async (producerSettings: types.ProducerSettings, urlPaths: string[]): Promise<types.Thread[]> => {
     lscache.setBucket('threads')
     lscache.flushExpired()
 
