@@ -45,12 +45,14 @@
       "https://*/*"
     ],
     "permissions": [
+      "storage",
       "scripting",
       "tabs",
       "webRequest"
     ],
     "web_accessible_resources": [
       {
+        "matches": [],
         "resources": [
           "tabs/options.html"
         ]

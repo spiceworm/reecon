@@ -43,7 +43,3 @@ export const processThreads = async (producerSettings: object, urlPaths: string[
     })
     return resp.message as types.Thread[]
 }
-
-
-    return resp.message as types.Thread[]
-}

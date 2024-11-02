@@ -152,13 +152,12 @@ localStorage.watch({
     [AUTH]: async (storageChange) => {
         const auth: types.Auth = storageChange.newValue
 
-        // Manifest v2: Use `chrome.action` instead of `chrome.browserAction` for mv3
         if (!auth) {
-            await chrome.browserAction.setBadgeText({text: "❕"})
-            await chrome.browserAction.setBadgeBackgroundColor({color: "red"})
+            await chrome.action.setBadgeText({text: "❕"})
+            await chrome.action.setBadgeBackgroundColor({color: "red"})
         } else {
-            await chrome.browserAction.setBadgeText({text: ""})
-            await chrome.browserAction.setBadgeBackgroundColor({color: null})
+            await chrome.action.setBadgeText({text: ""})
+            await chrome.action.setBadgeBackgroundColor({color: null})
         }
     },
 })
