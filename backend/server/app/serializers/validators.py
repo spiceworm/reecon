@@ -12,7 +12,7 @@ def _validate_openai_api_key(api_key: str):
     try:
         client.models.list()
     except openai.AuthenticationError:
-        raise serializers.ValidationError('OpenAI API key is invalid.')
+        raise serializers.ValidationError("OpenAI API key is invalid.")
 
 
 def _validate_api_key(producer_name: str, producer_api_key: str):

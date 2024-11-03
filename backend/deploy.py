@@ -44,12 +44,12 @@ def main(args):
     push_cmd = ["docker", "push", image_url]
 
     if args.push:
-        if confirm_command(' '.join(push_cmd)):
+        if confirm_command(" ".join(push_cmd)):
             subprocess.check_call(push_cmd)
     else:
         subprocess.check_call(["docker", "compose", "build"])
 
-        if confirm_command(' '.join(push_cmd)):
+        if confirm_command(" ".join(push_cmd)):
             subprocess.check_call(push_cmd)
 
 
