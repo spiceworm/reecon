@@ -141,12 +141,14 @@ localStorage.watch({
   [AUTH]: async (storageChange) => {
     const auth: types.Auth = storageChange.newValue
 
-    if (!auth) {
-      await chrome.action.setBadgeText({ text: "❕" })
-      await chrome.action.setBadgeBackgroundColor({ color: "red" })
-    } else {
-      await chrome.action.setBadgeText({ text: "" })
-      await chrome.action.setBadgeBackgroundColor({ color: null })
+    if (chrome.action !== undefined) {
+      if (!auth) {
+        await chrome.action.setBadgeText({ text: "❕" })
+        await chrome.action.setBadgeBackgroundColor({ color: "red" })
+      } else {
+        await chrome.action.setBadgeText({ text: "" })
+        await chrome.action.setBadgeBackgroundColor({ color: null })
+      }
     }
   }
 })
