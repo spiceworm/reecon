@@ -22,10 +22,10 @@ cd reecon/extension
 nvm install 21
 nvm use 21
 pnpm install
-pnpm dev --target=firefox-mv3
+pnpm build --target=firefox-mv3  # `pnpm dev` is problematic after loading the extension into the browser so use `pnpm build`
 ```
 - In firefox, go to about:debugging#/runtime/this-firefox
-- Click "Load Temporary Add-..." and select reecon/build/firefox-mv3-dev/manifest.json
+- Click "Load Temporary Add-..." and select reecon/build/firefox-mv3-prod/manifest.json
 
 ## Start backend development server
 ```bash
