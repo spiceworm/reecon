@@ -55,9 +55,6 @@ export const Signup = () => {
                     <UncontrolledAlert color={"danger"}>{JSON.parse(loginError.message).detail}</UncontrolledAlert>
                 )
             }
-            {
-                signupIsLoading || loginIsLoading ? <Spinner/> : null
-            }
 
             <Form onSubmit={handleSubmit}>
                 <div className={"mb-3"}>
@@ -85,7 +82,20 @@ export const Signup = () => {
                     </InputGroup>
                 </div>
                 <div className="hstack gap-3 justify-content-center">
-                    <Button color={"primary"} type={"submit"}>Signup</Button>
+                    <Button
+                        color={"primary"}
+                        disabled={signupIsLoading || loginIsLoading}
+                        type={"submit"}
+                    >
+                        {
+                            !signupIsLoading && !loginIsLoading ? 'Signup' : (
+                                <>
+                                    <Spinner size={"sm"}/>
+                                    <span>{' '}Loading</span>
+                                </>
+                            )
+                        }
+                    </Button>
                     <div className="vr"></div>
                     <NavLink
                         className={"btn btn-link"}
