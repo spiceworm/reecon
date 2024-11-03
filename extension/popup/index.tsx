@@ -1,6 +1,6 @@
 import "bootstrap/dist/css/bootstrap.min.css"
 
-import { MemoryRouter, Route, Routes } from "react-router-dom"
+import { MemoryRouter, Navigate, Route, Routes } from "react-router-dom"
 
 import { Login } from "~popup/routes/auth/login"
 import { Signup } from "~popup/routes/auth/signup"
@@ -13,12 +13,8 @@ function IndexPopup() {
     <MemoryRouter>
       <Routes>
         <Route
-          path="/"
-          element={
-            <RequireAuthentication>
-              <Settings />
-            </RequireAuthentication>
-          }
+          path={"/"}
+          element={<Navigate to={"/settings"} replace={true} />}
         />
         <Route
           path="/settings"
