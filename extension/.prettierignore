@@ -1,0 +1,8 @@
+.env*
+.github
+.plasmo
+assets
+build
+node_modules
+package.json
+pnpm-lock.yaml
