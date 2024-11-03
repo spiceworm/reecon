@@ -115,11 +115,12 @@ export const getHideIgnoredRedditors = async (): Promise<boolean> => {
 }
 
 export const getProducerSettings = async () => {
+  const openAiApiKey = (await _get(OPENAI_API_KEY)) as string
   return {
     settings: [
       {
         name: "openai",
-        api_key: (await _get(OPENAI_API_KEY)) as string
+        api_key: openAiApiKey
       }
     ] as types.ProducerSettings[]
   }
