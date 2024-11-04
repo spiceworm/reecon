@@ -15,16 +15,32 @@ class StatusView(RetrieveAPIView):
     serializer_class = StatusRequestSerializer
 
     def get(self, *args, **kwargs):
+        messages = [
+            {
+                "active": bool(config.API_V1_STATUS_MESSAGE),
+                "category": "info",
+                "message": config.API_V1_STATUS_MESSAGE,
+                "name": "apiStatusMessage",
+                "source": "api",
+            },
+            {
+                "active": not config.REDDITOR_PROCESSING_ENABLED,
+                "category": "info",
+                "message": config.REDDITOR_PROCESSING_DISABLED_MESSAGE,
+                "name": "redditorProcessingDisabled",
+                "source": "api",
+            },
+            {
+                "active": not config.THREAD_PROCESSING_ENABLED,
+                "category": "info",
+                "message": config.THREAD_PROCESSING_DISABLED_MESSAGE,
+                "name": "threadProcessingDisabled",
+                "source": "api",
+            }
+        ]
+
         data = {
-            "messages": [
-                message
-                for message in [
-                    config.API_V1_STATUS_MESSAGE,
-                    (config.REDDITOR_PROCESSING_DISABLED_MESSAGE if not config.REDDITOR_PROCESSING_ENABLED else None),
-                    (config.THREAD_PROCESSING_DISABLED_MESSAGE if not config.THREAD_PROCESSING_ENABLED else None),
-                ]
-                if message
-            ],
+            "messages": [message for message in messages if message["active"]],
             "status": "ok",
         }
         serializer = self.get_serializer(data=data)
