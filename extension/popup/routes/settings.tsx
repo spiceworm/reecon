@@ -3,6 +3,7 @@ import { Button, Form, Input, Label, Table } from "reactstrap"
 import { useStorage } from "@plasmohq/storage/dist/hook"
 
 import * as base from "~popup/bases"
+import { ContentFilterTable } from "~util/components/contentFilterTable"
 import * as constants from "~util/constants"
 import * as storage from "~util/storage"
 import type * as types from "~util/types"
@@ -69,24 +70,22 @@ export const Settings = () => {
         </div>
       </Form>
 
-      <Table bordered>
-        <thead>
-          <tr>
-            <th>Context</th>
-            <th>Age</th>
-            <th>IQ</th>
-            <th>Sentiment</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <th scope={"row"}>{activeContentFilter.context}</th>
-            <td>{activeContentFilter.age}</td>
-            <td>{activeContentFilter.iq}</td>
-            <td>{activeContentFilter.sentiment}</td>
-          </tr>
-        </tbody>
-      </Table>
+      <ContentFilterTable
+        columnFilters={[
+          {
+            id: "context",
+            value: activeContentFilter.context
+          }
+        ]}
+        columnVisibility={{
+          context: true,
+          age: true,
+          iq: true,
+          sentiment: true,
+          action: false
+        }}
+        footerVisible={false}
+      />
 
       <div className={"d-flex justify-content-center"}>
         <Button

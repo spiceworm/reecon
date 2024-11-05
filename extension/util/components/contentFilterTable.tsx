@@ -143,7 +143,20 @@ const columns = [
   })
 ]
 
-export const ContentFilterTable = () => {
+const defaultColumnFilters = []
+const defaultColumnVisibility = {
+  context: true,
+  age: true,
+  iq: true,
+  sentiment: true,
+  action: true
+}
+
+export const ContentFilterTable = ({
+  columnVisibility = defaultColumnVisibility,
+  columnFilters = defaultColumnFilters,
+  footerVisible = true
+}) => {
   const [data, setData] = useStorage<types.ContentFilter[]>(
     { instance: storage.localStorage, key: constants.CONTENT_FILTERS },
     (v: types.ContentFilter[]) =>
@@ -161,6 +174,9 @@ export const ContentFilterTable = () => {
     columns,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    initialState: {
+      columnFilters: columnFilters
+    },
     meta: {
       addRow: async () => {
         const newContentFilter: types.ContentFilter = {
@@ -185,6 +201,10 @@ export const ContentFilterTable = () => {
         data[rowIndex][columnId] = value
         await setData([...data])
       }
+    },
+    state: {
+      columnFilters,
+      columnVisibility
     }
   })
 
@@ -224,11 +244,13 @@ export const ContentFilterTable = () => {
         })}
       </tbody>
       <tfoot>
-        <tr key={"tr-footer"}>
-          <th colSpan={table.getCenterLeafColumns().length}>
-            <FooterCell table={table} />
-          </th>
-        </tr>
+        {footerVisible ? (
+          <tr key={"tr-footer"}>
+            <th colSpan={table.getCenterLeafColumns().length}>
+              <FooterCell table={table} />
+            </th>
+          </tr>
+        ) : null}
       </tfoot>
     </Table>
   )
