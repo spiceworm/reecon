@@ -11,10 +11,10 @@ import type * as types from "~util/types"
 
 export const Status = () => {
   const {
-    data: apiStatus,
+    data: apiStatusMessages,
     error,
     isLoading
-  } = useSWR("/api/v1/status", api.get)
+  } = useSWR("/api/v1/status/messages/", api.authGet)
 
   const [localStatusMessages] = useStorage(
     { instance: storage.localStorage, key: constants.LOCAL_STATUS_MESSAGES },
@@ -39,9 +39,7 @@ export const Status = () => {
   let messages: types.StatusMessage[] = localStatusMessages
     .filter((message) => message.active)
     .concat(
-      apiStatus.messages.filter(
-        (message: types.StatusMessage) => message.active
-      )
+      apiStatusMessages.filter((message: types.StatusMessage) => message.active)
     )
 
   return (

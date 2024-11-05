@@ -17,6 +17,7 @@ from .views.api import v1
 
 v1_endpoints = [
     path("status/", v1.StatusView.as_view(), name="status"),
+    path("status/messages/", v1.StatusMessagesView.as_view(), name="status-messages"),
     path(
         "reddit/redditors/ignored/",
         v1.reddit.IgnoredRedditorsView.as_view(),

@@ -56,7 +56,7 @@ export const get = async (
   return _apiRequest(urlPath, GET, {}, sendAuthenticated)
 }
 
-const authGet = async (urlPath: string): Promise<any> => {
+export const authGet = async (urlPath: string): Promise<any> => {
   return get(urlPath, true)
 }
 
