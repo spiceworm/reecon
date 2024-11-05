@@ -1,17 +1,9 @@
 import { Storage } from "@plasmohq/storage"
 
 import * as api from "~util/api"
+import * as constants from "~util/constants"
 import * as misc from "~util/misc"
 import type * as types from "~util/types"
-
-export const ACTIVE_CONTENT_FILTER = "_activeContentFilter"
-export const AUTH = "_auth"
-export const CONTENT_FILTERS = "_contentFilters"
-export const DEFAULT_FILTER = "_defaultFilter"
-export const DISABLE_EXTENSION = "_disableExtension"
-export const HIDE_BAD_SENTIMENT_THREADS = "_hideBadSentimentThreads"
-export const HIDE_IGNORED_REDDITORS = "_hideIgnoredRedditors"
-export const OPENAI_API_KEY = "_unvalidatedOpenaiApiKey"
 
 // The only time `localStorage` should be accessed outside this file is when `useStorage` hook needs to point to it.
 export const localStorage = new Storage({
@@ -26,29 +18,21 @@ const _set = async (key: string, value: any): Promise<void> => {
   await localStorage.set(key, value)
 }
 
-export const defaultContentFilter: types.ContentFilter = {
-  age: 0,
-  context: "Default",
-  iq: 0,
-  sentiment: 0.05,
-  filterType: "default"
-}
-
 export const init = async (): Promise<void> => {
   await localStorage.setMany({
-    [AUTH]: null,
-    [ACTIVE_CONTENT_FILTER]: defaultContentFilter,
-    [CONTENT_FILTERS]: [defaultContentFilter],
-    [DEFAULT_FILTER]: defaultContentFilter,
-    [DISABLE_EXTENSION]: false,
-    [HIDE_BAD_SENTIMENT_THREADS]: false,
-    [HIDE_IGNORED_REDDITORS]: false,
-    [OPENAI_API_KEY]: ""
+    [constants.ACTIVE_CONTENT_FILTER]: constants.defaultContentFilter,
+    [constants.AUTH]: null,
+    [constants.CONTENT_FILTERS]: [constants.defaultContentFilter],
+    [constants.DEFAULT_FILTER]: constants.defaultContentFilter,
+    [constants.DISABLE_EXTENSION]: false,
+    [constants.HIDE_BAD_SENTIMENT_THREADS]: false,
+    [constants.HIDE_IGNORED_REDDITORS]: false,
+    [constants.OPENAI_API_KEY]: ""
   })
 }
 
 export const getAuth = async (): Promise<types.Auth | null> => {
-  const auth = (await _get(AUTH)) as types.Auth
+  const auth = (await _get(constants.AUTH)) as types.Auth
 
   if (!auth || !auth?.access || !auth?.refresh) {
     return null
@@ -66,56 +50,57 @@ export const getAuth = async (): Promise<types.Auth | null> => {
 }
 
 export const setAuth = async (auth: types.Auth): Promise<void> => {
-  await _set(AUTH, auth)
+  await _set(constants.AUTH, auth)
 }
 
 export const getActiveContentFilter =
   async (): Promise<types.ContentFilter> => {
-    return await _get(ACTIVE_CONTENT_FILTER)
+    return await _get(constants.ACTIVE_CONTENT_FILTER)
   }
 
 export const setActiveContext = async (url: string): Promise<void> => {
   const _url = new URL(url)
 
-  let newContext: string = defaultContentFilter.context
+  let newContext: string = constants.defaultContentFilter.context
 
   if (_url.hostname.endsWith("reddit.com")) {
     // `context` will be the subreddit name if we are viewing a sub or an empty string if viewing home
     newContext = _url.pathname.split("/r/").at(-1).split("/")[0]
-    newContext = newContext === "" ? defaultContentFilter.context : newContext
+    newContext =
+      newContext === "" ? constants.defaultContentFilter.context : newContext
   }
 
   let matchingContextFilterFound = false
 
   for (const contentFilter of (await _get(
-    CONTENT_FILTERS
+    constants.CONTENT_FILTERS
   )) as types.ContentFilter[]) {
     if (contentFilter.context === newContext) {
-      await _set(ACTIVE_CONTENT_FILTER, contentFilter)
+      await _set(constants.ACTIVE_CONTENT_FILTER, contentFilter)
       matchingContextFilterFound = true
       break
     }
   }
 
   if (!matchingContextFilterFound) {
-    await _set(ACTIVE_CONTENT_FILTER, defaultContentFilter)
+    await _set(constants.ACTIVE_CONTENT_FILTER, constants.defaultContentFilter)
   }
 }
 
 export const getDisableExtension = async (): Promise<boolean> => {
-  return (await _get(DISABLE_EXTENSION)) as boolean
+  return (await _get(constants.DISABLE_EXTENSION)) as boolean
 }
 
 export const getHideBadSentimentThreads = async (): Promise<boolean> => {
-  return (await _get(HIDE_BAD_SENTIMENT_THREADS)) as boolean
+  return (await _get(constants.HIDE_BAD_SENTIMENT_THREADS)) as boolean
 }
 
 export const getHideIgnoredRedditors = async (): Promise<boolean> => {
-  return (await _get(HIDE_IGNORED_REDDITORS)) as boolean
+  return (await _get(constants.HIDE_IGNORED_REDDITORS)) as boolean
 }
 
 export const getProducerSettings = async () => {
-  const openAiApiKey = (await _get(OPENAI_API_KEY)) as string
+  const openAiApiKey = (await _get(constants.OPENAI_API_KEY)) as string
   return {
     settings: [
       {
@@ -139,11 +124,11 @@ export const shouldExecuteContentScript = async (): Promise<boolean> => {
 }
 
 localStorage.watch({
-  [AUTH]: async (storageChange) => {
-    const auth: types.Auth = storageChange.newValue
+  [constants.AUTH]: async (storageChange) => {
+    const { oldValue, newValue } = storageChange
 
     if (chrome.action !== undefined) {
-      if (!auth) {
+      if (!newValue) {
         await chrome.action.setBadgeText({ text: "❕" })
         await chrome.action.setBadgeBackgroundColor({ color: "red" })
       } else {
@@ -151,5 +136,5 @@ localStorage.watch({
         await chrome.action.setBadgeBackgroundColor({ color: null })
       }
     }
-  }
+  },
 })

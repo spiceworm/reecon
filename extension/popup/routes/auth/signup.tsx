@@ -16,6 +16,7 @@ import { useStorage } from "@plasmohq/storage/dist/hook"
 
 import * as base from "~popup/bases"
 import * as api from "~util/api"
+import * as constants from "~util/constants"
 import * as storage from "~util/storage"
 
 const signupPassword = signal("")
@@ -24,7 +25,7 @@ const signupUsername = signal("")
 export const Signup = () => {
   const [_, setAuth] = useStorage({
     instance: storage.localStorage,
-    key: storage.AUTH
+    key: constants.AUTH
   })
   const [passwordVisible, setPasswordVisible] = react.useState(false)
   const [signupCredentials, setSignupCredentials] = react.useState(null)

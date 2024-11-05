@@ -15,6 +15,7 @@ import { Button, Input, InputGroup, Table } from "reactstrap"
 
 import { useStorage } from "@plasmohq/storage/dist/hook"
 
+import * as constants from "~util/constants"
 import * as storage from "~util/storage"
 import type * as types from "~util/types"
 
@@ -144,13 +145,13 @@ const columns = [
 
 export const ContentFilterTable = () => {
   const [data, setData] = useStorage<types.ContentFilter[]>(
-    { instance: storage.localStorage, key: storage.CONTENT_FILTERS },
+    { instance: storage.localStorage, key: constants.CONTENT_FILTERS },
     (v: types.ContentFilter[]) =>
       v === undefined ? ([] as types.ContentFilter[]) : v
   )
 
   const [defaultFilter, setDefaultFilter] = useStorage<types.ContentFilter>(
-    { instance: storage.localStorage, key: storage.DEFAULT_FILTER },
+    { instance: storage.localStorage, key: constants.DEFAULT_FILTER },
     (v: types.ContentFilter) =>
       v === undefined ? ({} as types.ContentFilter) : v
   )

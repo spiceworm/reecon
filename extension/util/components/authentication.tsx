@@ -2,12 +2,13 @@ import { Navigate } from "react-router-dom"
 
 import { useStorage } from "@plasmohq/storage/dist/hook"
 
+import * as constants from "~util/constants"
 import * as storage from "~util/storage"
 
 export const RequireAuthentication = ({ children }) => {
-  const [auth, _] = useStorage({
+  const [auth] = useStorage({
     instance: storage.localStorage,
-    key: storage.AUTH
+    key: constants.AUTH
   })
 
   // Storage still loading value
@@ -17,7 +18,7 @@ export const RequireAuthentication = ({ children }) => {
 
   // Value loaded from storage but user is not logged in
   if (auth === null) {
-    return <Navigate to="/auth/login" replace />
+    return <Navigate to="/auth/login" replace={true} />
   }
 
   return children

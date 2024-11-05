@@ -3,25 +3,29 @@ import { Button, Form, Input, Label, Table } from "reactstrap"
 import { useStorage } from "@plasmohq/storage/dist/hook"
 
 import * as base from "~popup/bases"
+import * as constants from "~util/constants"
 import * as storage from "~util/storage"
 import type * as types from "~util/types"
 
 export const Settings = () => {
-  const [activeContentFilter, _] = useStorage(
-    { instance: storage.localStorage, key: storage.ACTIVE_CONTENT_FILTER },
+  const [activeContentFilter] = useStorage(
+    { instance: storage.localStorage, key: constants.ACTIVE_CONTENT_FILTER },
     (v: types.ContentFilter) =>
-      v === undefined ? storage.defaultContentFilter : v
+      v === undefined ? constants.defaultContentFilter : v
   )
   const [disableExtension, setDisableExtension] = useStorage(
-    { instance: storage.localStorage, key: storage.DISABLE_EXTENSION },
+    { instance: storage.localStorage, key: constants.DISABLE_EXTENSION },
     (v: boolean) => (v === undefined ? false : v)
   )
   const [hideBadSentimentThreads, setHideBadSentimentThreads] = useStorage(
-    { instance: storage.localStorage, key: storage.HIDE_BAD_SENTIMENT_THREADS },
+    {
+      instance: storage.localStorage,
+      key: constants.HIDE_BAD_SENTIMENT_THREADS
+    },
     (v: boolean) => (v === undefined ? false : v)
   )
   const [hideIgnoredRedditors, setHideIgnoredRedditors] = useStorage(
-    { instance: storage.localStorage, key: storage.HIDE_IGNORED_REDDITORS },
+    { instance: storage.localStorage, key: constants.HIDE_IGNORED_REDDITORS },
     (v: boolean) => (v === undefined ? false : v)
   )
 

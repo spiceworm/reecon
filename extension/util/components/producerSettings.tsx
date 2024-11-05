@@ -6,6 +6,7 @@ import { Button, Input, InputGroup, InputGroupText } from "reactstrap"
 
 import { useStorage } from "@plasmohq/storage/dist/hook"
 
+import * as constants from "~util/constants"
 import * as storage from "~util/storage"
 
 const ProducerSettingsApiKeyInput = ({ name, apiKeyStorageKey }) => {
@@ -40,7 +41,7 @@ export const ProducerSettingsInputs = () => {
   const producerSettings = [
     {
       name: "OpenAI",
-      apiKeyStorageKey: storage.OPENAI_API_KEY
+      apiKeyStorageKey: constants.OPENAI_API_KEY
     }
   ]
 
