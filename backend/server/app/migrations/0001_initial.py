@@ -18,10 +18,31 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="IgnoredRedditor",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("created", models.DateTimeField(auto_now=True, help_text="Date and time of creation.")),
-                ("reason", models.TextField(help_text="The reason the entity is ignored.")),
-                ("username", models.CharField(help_text="The username of the redditor.", max_length=32, unique=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "created",
+                    models.DateTimeField(auto_now=True, help_text="Date and time of creation."),
+                ),
+                (
+                    "reason",
+                    models.TextField(help_text="The reason the entity is ignored."),
+                ),
+                (
+                    "username",
+                    models.CharField(
+                        help_text="The username of the redditor.",
+                        max_length=32,
+                        unique=True,
+                    ),
+                ),
             ],
             options={
                 "abstract": False,
@@ -30,8 +51,19 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="Producer",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("created", models.DateTimeField(auto_now=True, help_text="Date and time of creation.")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "created",
+                    models.DateTimeField(auto_now=True, help_text="Date and time of creation."),
+                ),
                 ("description", models.TextField(help_text="Additional description.")),
                 (
                     "context_window",
@@ -43,7 +75,9 @@ class Migration(migrations.Migration):
                 (
                     "name",
                     models.CharField(
-                        help_text="The name of the entity used to produce data.", max_length=255, unique=True
+                        help_text="The name of the entity used to produce data.",
+                        max_length=255,
+                        unique=True,
                     ),
                 ),
             ],
@@ -54,10 +88,28 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="ProducerCategory",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("created", models.DateTimeField(auto_now=True, help_text="Date and time of creation.")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "created",
+                    models.DateTimeField(auto_now=True, help_text="Date and time of creation."),
+                ),
                 ("description", models.TextField(help_text="Additional description.")),
-                ("name", models.CharField(help_text="The name of the producer category.", max_length=255, unique=True)),
+                (
+                    "name",
+                    models.CharField(
+                        help_text="The name of the producer category.",
+                        max_length=255,
+                        unique=True,
+                    ),
+                ),
             ],
             options={
                 "abstract": False,
@@ -66,13 +118,34 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="Redditor",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("created", models.DateTimeField(auto_now=True, help_text="Date and time of creation.")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "created",
+                    models.DateTimeField(auto_now=True, help_text="Date and time of creation."),
+                ),
                 (
                     "last_processed",
-                    models.DateTimeField(auto_now=True, help_text="Date and time when the entity was last processed."),
+                    models.DateTimeField(
+                        auto_now=True,
+                        help_text="Date and time when the entity was last processed.",
+                    ),
                 ),
-                ("username", models.CharField(help_text="The username of the redditor.", max_length=32, unique=True)),
+                (
+                    "username",
+                    models.CharField(
+                        help_text="The username of the redditor.",
+                        max_length=32,
+                        unique=True,
+                    ),
+                ),
             ],
             options={
                 "abstract": False,
@@ -81,11 +154,25 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="Thread",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("created", models.DateTimeField(auto_now=True, help_text="Date and time of creation.")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "created",
+                    models.DateTimeField(auto_now=True, help_text="Date and time of creation."),
+                ),
                 (
                     "last_processed",
-                    models.DateTimeField(auto_now=True, help_text="Date and time when the entity was last processed."),
+                    models.DateTimeField(
+                        auto_now=True,
+                        help_text="Date and time when the entity was last processed.",
+                    ),
                 ),
                 ("url", models.URLField(help_text="URL.", unique=True)),
             ],
@@ -96,10 +183,31 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="UnprocessableRedditor",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("created", models.DateTimeField(auto_now=True, help_text="Date and time of creation.")),
-                ("username", models.CharField(help_text="The username of the redditor.", max_length=32, unique=True)),
-                ("reason", models.TextField(help_text="The reason the entity cannot be processed.")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "created",
+                    models.DateTimeField(auto_now=True, help_text="Date and time of creation."),
+                ),
+                (
+                    "username",
+                    models.CharField(
+                        help_text="The username of the redditor.",
+                        max_length=32,
+                        unique=True,
+                    ),
+                ),
+                (
+                    "reason",
+                    models.TextField(help_text="The reason the entity cannot be processed."),
+                ),
             ],
             options={
                 "abstract": False,
@@ -108,10 +216,24 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="UnprocessableThread",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("created", models.DateTimeField(auto_now=True, help_text="Date and time of creation.")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "created",
+                    models.DateTimeField(auto_now=True, help_text="Date and time of creation."),
+                ),
                 ("url", models.URLField(help_text="URL.", unique=True)),
-                ("reason", models.TextField(help_text="The reason the entity cannot be processed.")),
+                (
+                    "reason",
+                    models.TextField(help_text="The reason the entity cannot be processed."),
+                ),
             ],
             options={
                 "abstract": False,
@@ -120,8 +242,19 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="ProducedTextList",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("created", models.DateTimeField(auto_now=True, help_text="Date and time of creation.")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "created",
+                    models.DateTimeField(auto_now=True, help_text="Date and time of creation."),
+                ),
                 (
                     "value",
                     django.contrib.postgres.fields.ArrayField(
@@ -157,9 +290,23 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="ProducedText",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("created", models.DateTimeField(auto_now=True, help_text="Date and time of creation.")),
-                ("value", models.TextField(help_text="The value of the produced text.")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "created",
+                    models.DateTimeField(auto_now=True, help_text="Date and time of creation."),
+                ),
+                (
+                    "value",
+                    models.TextField(help_text="The value of the produced text."),
+                ),
                 (
                     "contributor",
                     models.ForeignKey(
@@ -186,9 +333,23 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="ProducedInteger",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("created", models.DateTimeField(auto_now=True, help_text="Date and time of creation.")),
-                ("value", models.IntegerField(help_text="The value of the produced integer.")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "created",
+                    models.DateTimeField(auto_now=True, help_text="Date and time of creation."),
+                ),
+                (
+                    "value",
+                    models.IntegerField(help_text="The value of the produced integer."),
+                ),
                 (
                     "contributor",
                     models.ForeignKey(
@@ -215,9 +376,23 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="ProducedFloat",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("created", models.DateTimeField(auto_now=True, help_text="Date and time of creation.")),
-                ("value", models.FloatField(help_text="The value of the produced float.")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "created",
+                    models.DateTimeField(auto_now=True, help_text="Date and time of creation."),
+                ),
+                (
+                    "value",
+                    models.FloatField(help_text="The value of the produced float."),
+                ),
                 (
                     "contributor",
                     models.ForeignKey(
@@ -244,9 +419,23 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="ProducedBinary",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("created", models.DateTimeField(auto_now=True, help_text="Date and time of creation.")),
-                ("value", models.BinaryField(help_text="The value of the produced binary.")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "created",
+                    models.DateTimeField(auto_now=True, help_text="Date and time of creation."),
+                ),
+                (
+                    "value",
+                    models.BinaryField(help_text="The value of the produced binary."),
+                ),
                 (
                     "contributor",
                     models.ForeignKey(
@@ -283,8 +472,19 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="RedditorData",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("created", models.DateTimeField(auto_now=True, help_text="Date and time of creation.")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "created",
+                    models.DateTimeField(auto_now=True, help_text="Date and time of creation."),
+                ),
                 (
                     "age",
                     models.OneToOneField(
@@ -347,8 +547,19 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="ThreadData",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("created", models.DateTimeField(auto_now=True, help_text="Date and time of creation.")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "created",
+                    models.DateTimeField(auto_now=True, help_text="Date and time of creation."),
+                ),
                 (
                     "keywords",
                     models.OneToOneField(

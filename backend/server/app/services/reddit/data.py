@@ -93,7 +93,10 @@ class RedditDataService(abc.ABC):
         """
         nlp_data = self.nlp.generate_data(inputs=inputs, nlp_name=nlp_name)
         llm_data = self.llm.generate_data(
-            inputs=inputs, llm_name=llm_name, producer_settings=producer_settings, prompt=prompt
+            inputs=inputs,
+            llm_name=llm_name,
+            producer_settings=producer_settings,
+            prompt=prompt,
         )
         return self.response_format.model_validate({**nlp_data.model_dump(), **llm_data.model_dump()})
 

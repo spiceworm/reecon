@@ -152,7 +152,13 @@ class RedditorDataService(RedditDataService):
         )
 
     def generate_data(
-        self, *, inputs: List[str], llm_name: str, nlp_name: str, producer_settings: dict, prompt: str
+        self,
+        *,
+        inputs: List[str],
+        llm_name: str,
+        nlp_name: str,
+        producer_settings: dict,
+        prompt: str,
     ) -> GeneratedRedditorData:
         """
         Takes the input strings and passes them to the nlp and llm services to generate data based on those inputs.
