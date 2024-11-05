@@ -17,3 +17,29 @@ export const defaultContentFilter: types.ContentFilter = {
   sentiment: 0.05,
   filterType: "default"
 }
+
+export const localStatusMessages: types.StatusMessage[] = [
+  {
+    active: false,
+    category: "warning",
+    message: "Extension is disabled. Processing will not occur.",
+    name: "extensionDisabled",
+    source: "extension"
+  },
+  {
+    active: false,
+    category: "warning",
+    message:
+      "Authentication credentials are missing. Close extension and reauthenticate to add them.",
+    name: "missingAuth",
+    source: "extension"
+  },
+  {
+    active: false,
+    category: "warning",
+    message:
+      "Missing OpenAI API key. Processing will not occur until user's key is added to settings page.",
+    name: "missingOpenAiApiKey",
+    source: "extension"
+  }
+]

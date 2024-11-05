@@ -57,6 +57,14 @@ interface RedditorData {
   summary: ProducedText
 }
 
+export interface StatusMessage {
+  active: boolean
+  category: string
+  message: string
+  name: string
+  source: string
+}
+
 export interface Thread {
   created: Date
   data: ThreadData

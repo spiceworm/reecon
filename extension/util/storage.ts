@@ -27,6 +27,7 @@ export const init = async (): Promise<void> => {
     [constants.DISABLE_EXTENSION]: false,
     [constants.HIDE_BAD_SENTIMENT_THREADS]: false,
     [constants.HIDE_IGNORED_REDDITORS]: false,
+    [constants.LOCAL_STATUS_MESSAGES]: constants.localStatusMessages,
     [constants.OPENAI_API_KEY]: ""
   })
 }
@@ -111,6 +112,23 @@ export const getProducerSettings = async () => {
   }
 }
 
+const setLocalStatusMessage = async (
+  messageName: string,
+  active: boolean
+): Promise<void> => {
+  let messages: types.StatusMessage[] = await _get(
+    constants.LOCAL_STATUS_MESSAGES
+  )
+
+  for (let message of messages) {
+    if (message.name === messageName) {
+      message.active = active
+    }
+  }
+
+  await _set(constants.LOCAL_STATUS_MESSAGES, messages)
+}
+
 export const shouldExecuteContentScript = async (): Promise<boolean> => {
   const auth = await getAuth()
   const disableExtension = await getDisableExtension()
@@ -127,6 +145,8 @@ localStorage.watch({
   [constants.AUTH]: async (storageChange) => {
     const { oldValue, newValue } = storageChange
 
+    await setLocalStatusMessage("missingAuth", !newValue)
+
     if (chrome.action !== undefined) {
       if (!newValue) {
         await chrome.action.setBadgeText({ text: "❕" })
@@ -137,4 +157,14 @@ localStorage.watch({
       }
     }
   },
+  [constants.DISABLE_EXTENSION]: async (storageChange) => {
+    const { oldValue, newValue } = storageChange
+
+    await setLocalStatusMessage("extensionDisabled", newValue)
+  },
+  [constants.OPENAI_API_KEY]: async (storageChange) => {
+    const { oldValue, newValue } = storageChange
+
+    await setLocalStatusMessage("missingOpenAiApiKey", newValue.length === 0)
+  }
 })
