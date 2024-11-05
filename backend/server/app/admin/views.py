@@ -6,6 +6,7 @@ from ..models import (
     Producer,
     ProducerCategory,
     Redditor,
+    StatusMessage,
     Thread,
     UnprocessableRedditor,
     UnprocessableThread,
@@ -16,6 +17,7 @@ __all__ = (
     "ProducerAdmin",
     "ProducerCategoryAdmin",
     "RedditorAdmin",
+    "StatusMessageAdmin",
     "ThreadAdmin",
     "UnprocessableRedditorAdmin",
     "UnprocessableThreadAdmin",
@@ -48,6 +50,23 @@ class ProducerCategoryAdmin(admin.ModelAdmin):
 @admin.register(Redditor)
 class RedditorAdmin(admin.ModelAdmin):
     list_display = get_list_display(Redditor)
+
+
+@admin.register(StatusMessage)
+class StatusMessageAdmin(admin.ModelAdmin):
+    list_display = get_list_display(StatusMessage)
+
+    def get_readonly_fields(self, request, obj: StatusMessage | None = None):
+        # Do not show the "active_is_computed" checkbox in the admin UI. This field is only set for hardcoded
+        # `StatusMessages` objects when they are created if `StatusMessage.active` is dynamically set in signals.py.
+        readonly_fields = ["active_is_computed"]
+
+        # Do not show the "active" checkbox in the admin UI for `StatusMessage` objects if the `active` field is
+        # dynamically set in signals.py by by signals triggered by Constance config changes.
+        if obj and obj.active_is_computed:
+            readonly_fields.append("active")
+
+        return readonly_fields
 
 
 @admin.register(Thread)

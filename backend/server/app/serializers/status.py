@@ -1,9 +1,11 @@
 from rest_framework import serializers
 
+from ..models import StatusMessage
+
 
 __all__ = (
     "StatusRequestSerializer",
-    "StatusMessagesRequestSerializer",
+    "StatusMessageRequestSerializer",
 )
 
 
@@ -11,9 +13,10 @@ class StatusRequestSerializer(serializers.Serializer):
     status = serializers.CharField(max_length=32, required=True)
 
 
-class StatusMessagesRequestSerializer(serializers.Serializer):
-    active = serializers.BooleanField(required=True)
-    category = serializers.CharField(required=True)
-    message = serializers.CharField(required=True)
-    name = serializers.CharField(required=True)
-    source = serializers.CharField(required=True)
+class StatusMessageRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StatusMessage
+        exclude = (
+            "active_is_computed",
+            "id",
+        )

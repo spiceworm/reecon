@@ -313,18 +313,10 @@ CONSTANCE_CONFIG = collections.OrderedDict(
             "Enabled processing of reddit redditors.",
             "checkbox",
         ),
-        "REDDITOR_PROCESSING_DISABLED_MESSAGE": (
-            "Redditor processing disabled for all users",
-            "Status message returned when REDDITOR_PROCESSING_ENABLED=False",
-        ),
         "THREAD_PROCESSING_ENABLED": (
             False,
             "Enabled processing of reddit threads.",
             "checkbox",
-        ),
-        "THREAD_PROCESSING_DISABLED_MESSAGE": (
-            "Thread processing disabled for all users",
-            "Status message returned when THREAD_PROCESSING_ENABLED=False",
         ),
         "LLM_NAME": (
             "gpt-4o-mini-2024-07-18",
@@ -397,10 +389,6 @@ CONSTANCE_CONFIG = collections.OrderedDict(
             "Defines how long `UnprocessableThread` entries will remain in the database before being deleted. After "
             "deletion, previously unprocessable paths will be reattempted if included in an API request.",
             timedelta,
-        ),
-        "API_V1_STATUS_MESSAGE": (
-            "",
-            "A custom message that will be included in the response from /api/v1/status/messages/",
         ),
     }
 )

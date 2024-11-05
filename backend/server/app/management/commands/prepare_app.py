@@ -20,6 +20,7 @@ from ...models import (
     IgnoredRedditor,
     Producer,
     ProducerCategory,
+    StatusMessage,
 )
 
 
@@ -96,6 +97,37 @@ def create_hardcoded_producers():
         )
 
 
+def create_hardcoded_status_messages():
+    for active_is_computed, name, category, message in [
+        (
+            True,
+            "redditorProcessingDisabled",
+            "warning",
+            "Redditor processing disabled for all users",
+        ),
+        (
+            True,
+            "threadProcessingDisabled",
+            "warning",
+            "Thread processing disabled for all users",
+        ),
+    ]:
+        StatusMessage.objects.update_or_create(
+            name=name,
+            defaults={
+                "active_is_computed": active_is_computed,
+                "category": category,
+                "message": message,
+            },
+            create_defaults={
+                "active_is_computed": active_is_computed,
+                "category": category,
+                "message": message,
+                "name": name,
+            },
+        )
+
+
 def create_hardcoded_users():
     if not User.objects.filter(username="admin").exists():
         User.objects.create_user(
@@ -139,3 +171,4 @@ class Command(management.base.BaseCommand):
             create_hardcoded_ignored_redditors()
             create_hardcoded_producer_categories()
             create_hardcoded_producers()
+            create_hardcoded_status_messages()
