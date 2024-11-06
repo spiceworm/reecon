@@ -21,14 +21,16 @@ const _set = async (key: string, value: any): Promise<void> => {
 export const init = async (): Promise<void> => {
     await localStorage.setMany({
         [constants.ACTIVE_CONTENT_FILTER]: constants.defaultContentFilter,
+        [constants.API_STATUS_MESSAGES]: [],
         [constants.AUTH]: null,
         [constants.CONTENT_FILTERS]: [constants.defaultContentFilter],
         [constants.DEFAULT_FILTER]: constants.defaultContentFilter,
         [constants.DISABLE_EXTENSION]: false,
+        [constants.EXTENSION_STATUS_MESSAGES]: constants.extensionStatusMessages,
         [constants.HIDE_BAD_SENTIMENT_THREADS]: false,
         [constants.HIDE_IGNORED_REDDITORS]: false,
-        [constants.LOCAL_STATUS_MESSAGES]: constants.localStatusMessages,
         [constants.OPENAI_API_KEY]: "",
+        [constants.STATUS_MESSAGES]: []
     })
 }
 
@@ -48,6 +50,10 @@ export const getAuth = async (): Promise<types.Auth | null> => {
     }
 
     return null
+}
+
+export const setApiStatusMessages = async (messages: types.StatusMessage[]) => {
+    await _set(constants.API_STATUS_MESSAGES, messages)
 }
 
 export const setAuth = async (auth: types.Auth): Promise<void> => {
@@ -84,8 +90,16 @@ export const setActiveContext = async (url: string): Promise<void> => {
     }
 }
 
+const getApiStatusMessages = async () => {
+    return (await _get(constants.API_STATUS_MESSAGES)) as Promise<types.StatusMessage[]>
+}
+
 export const getDisableExtension = async (): Promise<boolean> => {
     return (await _get(constants.DISABLE_EXTENSION)) as boolean
+}
+
+const getExtensionStatusMessages = async () => {
+    return (await _get(constants.EXTENSION_STATUS_MESSAGES)) as Promise<types.StatusMessage[]>
 }
 
 export const getHideBadSentimentThreads = async (): Promise<boolean> => {
@@ -108,16 +122,24 @@ export const getProducerSettings = async () => {
     }
 }
 
-export const setLocalStatusMessage = async (messageName: string, active: boolean, messageText: string = null): Promise<void> => {
-    let messages: types.StatusMessage[] = await _get(constants.EXTENSION_STATUS_MESSAGES)
+export const setExtensionStatusMessage = async (messageName: string, active: boolean, messageText: string = ""): Promise<void> => {
+    let extensionStatusMessages: types.StatusMessage[] = await _get(constants.EXTENSION_STATUS_MESSAGES)
 
-    for (let message of messages) {
+    for (let message of extensionStatusMessages) {
         if (message.name === messageName) {
             message.active = active
+
+            if (messageText.length > 0) {
+                message.message = messageText
+            }
         }
     }
 
-    await _set(constants.EXTENSION_STATUS_MESSAGES, messages)
+    await _set(constants.EXTENSION_STATUS_MESSAGES, extensionStatusMessages)
+}
+
+const setStatusMessages = async (messages: types.StatusMessage[]) => {
+    await _set(constants.STATUS_MESSAGES, messages)
 }
 
 export const shouldExecuteContentScript = async (): Promise<boolean> => {
@@ -131,10 +153,15 @@ export const shouldExecuteContentScript = async (): Promise<boolean> => {
 }
 
 localStorage.watch({
+    [constants.API_STATUS_MESSAGES]: async (storageChange) => {
+        const { oldValue, newValue } = storageChange
+
+        await setStatusMessages(newValue.concat(await getExtensionStatusMessages()).filter((message: types.StatusMessage) => message.active))
+    },
     [constants.AUTH]: async (storageChange) => {
         const { oldValue, newValue } = storageChange
 
-        await setLocalStatusMessage("missingAuth", !newValue)
+        await setExtensionStatusMessage("missingAuth", !newValue)
 
         if (chrome.action !== undefined) {
             if (!newValue) {
@@ -149,11 +176,16 @@ localStorage.watch({
     [constants.DISABLE_EXTENSION]: async (storageChange) => {
         const { oldValue, newValue } = storageChange
 
-        await setLocalStatusMessage("extensionDisabled", newValue)
+        await setExtensionStatusMessage("extensionDisabled", newValue)
+    },
+    [constants.EXTENSION_STATUS_MESSAGES]: async (storageChange) => {
+        const { oldValue, newValue } = storageChange
+
+        await setStatusMessages(newValue.concat(await getApiStatusMessages()).filter((message: types.StatusMessage) => message.active))
     },
     [constants.OPENAI_API_KEY]: async (storageChange) => {
         const { oldValue, newValue } = storageChange
 
-        await setLocalStatusMessage("missingOpenAiApiKey", newValue.length === 0)
+        await setExtensionStatusMessage("missingOpenAiApiKey", newValue.length === 0)
     }
 })

@@ -32,10 +32,13 @@ const _apiRequest = async (urlPath: string, method: string, body: object = {}, s
     const response = await fetch(`${process.env.PLASMO_PUBLIC_BASE_URL}${urlPath}`, options)
 
     if (response.ok) {
+        await storage.setExtensionStatusMessage("apiRequestError", false)
         return response.json()
     } else {
         console.error(response)
-        throw new Error(JSON.stringify(await response.json()))
+        const errorJson = await response.json()
+        await storage.setExtensionStatusMessage("apiRequestError", true, `Error returned from API: ${errorJson.detail}`)
+        throw new Error(JSON.stringify(errorJson))
     }
 }
 
@@ -184,4 +187,14 @@ export const processThreads = async (producerSettings: types.ProducerSettings, u
         return threads.concat(cachedThreads)
     }
     return cachedThreads
+}
+
+export const updateApiStatusMessages = async (): Promise<void> => {
+    try {
+        const apiStatusMessages = await authGet("/api/v1/status/messages/")
+        await storage.setApiStatusMessages(apiStatusMessages)
+    } catch (error) {
+        await storage.setApiStatusMessages([])
+        throw error
+    }
 }
