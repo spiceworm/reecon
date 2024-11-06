@@ -34,6 +34,14 @@ export const init = async (): Promise<void> => {
     })
 }
 
+export const getActiveContentFilter = async (): Promise<types.ContentFilter> => {
+    return (await _get(constants.ACTIVE_CONTENT_FILTER)) as Promise<types.ContentFilter>
+}
+
+const getApiStatusMessages = async (): Promise<types.StatusMessage[]> => {
+    return (await _get(constants.API_STATUS_MESSAGES)) as Promise<types.StatusMessage[]>
+}
+
 export const getAuth = async (): Promise<types.Auth | null> => {
     const auth = (await _get(constants.AUTH)) as types.Auth
 
@@ -52,16 +60,32 @@ export const getAuth = async (): Promise<types.Auth | null> => {
     return null
 }
 
-export const setApiStatusMessages = async (messages: types.StatusMessage[]) => {
-    await _set(constants.API_STATUS_MESSAGES, messages)
+export const getDisableExtension = async (): Promise<boolean> => {
+    return (await _get(constants.DISABLE_EXTENSION)) as boolean
 }
 
-export const setAuth = async (auth: types.Auth): Promise<void> => {
-    await _set(constants.AUTH, auth)
+const getExtensionStatusMessages = async (): Promise<types.StatusMessage[]> => {
+    return (await _get(constants.EXTENSION_STATUS_MESSAGES)) as Promise<types.StatusMessage[]>
 }
 
-export const getActiveContentFilter = async (): Promise<types.ContentFilter> => {
-    return await _get(constants.ACTIVE_CONTENT_FILTER)
+export const getHideBadSentimentThreads = async (): Promise<boolean> => {
+    return (await _get(constants.HIDE_BAD_SENTIMENT_THREADS)) as boolean
+}
+
+export const getHideIgnoredRedditors = async (): Promise<boolean> => {
+    return (await _get(constants.HIDE_IGNORED_REDDITORS)) as boolean
+}
+
+export const getProducerSettings = async () => {
+    const openAiApiKey = (await _get(constants.OPENAI_API_KEY)) as string
+    return {
+        settings: [
+            {
+                name: "openai",
+                api_key: openAiApiKey
+            }
+        ] as types.ProducerSettings[]
+    }
 }
 
 export const setActiveContext = async (url: string): Promise<void> => {
@@ -90,36 +114,12 @@ export const setActiveContext = async (url: string): Promise<void> => {
     }
 }
 
-const getApiStatusMessages = async () => {
-    return (await _get(constants.API_STATUS_MESSAGES)) as Promise<types.StatusMessage[]>
+export const setApiStatusMessages = async (messages: types.StatusMessage[]): Promise<void> => {
+    await _set(constants.API_STATUS_MESSAGES, messages)
 }
 
-export const getDisableExtension = async (): Promise<boolean> => {
-    return (await _get(constants.DISABLE_EXTENSION)) as boolean
-}
-
-const getExtensionStatusMessages = async () => {
-    return (await _get(constants.EXTENSION_STATUS_MESSAGES)) as Promise<types.StatusMessage[]>
-}
-
-export const getHideBadSentimentThreads = async (): Promise<boolean> => {
-    return (await _get(constants.HIDE_BAD_SENTIMENT_THREADS)) as boolean
-}
-
-export const getHideIgnoredRedditors = async (): Promise<boolean> => {
-    return (await _get(constants.HIDE_IGNORED_REDDITORS)) as boolean
-}
-
-export const getProducerSettings = async () => {
-    const openAiApiKey = (await _get(constants.OPENAI_API_KEY)) as string
-    return {
-        settings: [
-            {
-                name: "openai",
-                api_key: openAiApiKey
-            }
-        ] as types.ProducerSettings[]
-    }
+export const setAuth = async (auth: types.Auth): Promise<void> => {
+    await _set(constants.AUTH, auth)
 }
 
 export const setExtensionStatusMessage = async (messageName: string, active: boolean, messageText: string = ""): Promise<void> => {
@@ -138,7 +138,7 @@ export const setExtensionStatusMessage = async (messageName: string, active: boo
     await _set(constants.EXTENSION_STATUS_MESSAGES, extensionStatusMessages)
 }
 
-const setStatusMessages = async (messages: types.StatusMessage[]) => {
+const setStatusMessages = async (messages: types.StatusMessage[]): Promise<void> => {
     await _set(constants.STATUS_MESSAGES, messages)
 }
 
