@@ -10,52 +10,44 @@ import * as constants from "~util/constants"
 import * as storage from "~util/storage"
 
 const ProducerSettingsApiKeyInput = ({ name, apiKeyStorageKey }) => {
-  const [keyVisible, setKeyVisible] = useState(false)
-  const [apiKey, setApiKey] = useStorage(
-    { instance: storage.localStorage, key: apiKeyStorageKey },
-    (v: string) => (v === undefined ? "" : v)
-  )
+    const [keyVisible, setKeyVisible] = useState(false)
+    const [apiKey, setApiKey] = useStorage({ instance: storage.localStorage, key: apiKeyStorageKey }, (v: string) => (v === undefined ? "" : v))
 
-  return (
-    <InputGroup key={name}>
-      <InputGroupText>{name}</InputGroupText>
+    return (
+        <InputGroup key={name}>
+            <InputGroupText>{name}</InputGroupText>
 
-      <Input
-        onChange={(e) => setApiKey(e.target.value)}
-        placeholder={"API Key"}
-        type={keyVisible ? "text" : "password"}
-        value={apiKey}
-      />
+            <Input onChange={(e) => setApiKey(e.target.value)} placeholder={"API Key"} type={keyVisible ? "text" : "password"} value={apiKey} />
 
-      <Button
-        onClick={(e) => {
-          setKeyVisible(!keyVisible)
-        }}>
-        {keyVisible ? <Eye /> : <EyeSlash />}
-      </Button>
-    </InputGroup>
-  )
+            <Button
+                onClick={(e) => {
+                    setKeyVisible(!keyVisible)
+                }}>
+                {keyVisible ? <Eye /> : <EyeSlash />}
+            </Button>
+        </InputGroup>
+    )
 }
 
 export const ProducerSettingsInputs = () => {
-  const producerSettings = [
-    {
-      name: "OpenAI",
-      apiKeyStorageKey: constants.OPENAI_API_KEY
-    }
-  ]
+    const producerSettings = [
+        {
+            name: "OpenAI",
+            apiKeyStorageKey: constants.OPENAI_API_KEY
+        }
+    ]
 
-  return (
-    <>
-      {producerSettings.map((producerSetting) => {
-        return (
-          <ProducerSettingsApiKeyInput
-            key={producerSetting.name}
-            name={producerSetting.name}
-            apiKeyStorageKey={producerSetting.apiKeyStorageKey}
-          />
-        )
-      })}
-    </>
-  )
+    return (
+        <>
+            {producerSettings.map((producerSetting) => {
+                return (
+                    <ProducerSettingsApiKeyInput
+                        key={producerSetting.name}
+                        name={producerSetting.name}
+                        apiKeyStorageKey={producerSetting.apiKeyStorageKey}
+                    />
+                )
+            })}
+        </>
+    )
 }

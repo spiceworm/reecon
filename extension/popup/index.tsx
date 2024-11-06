@@ -9,35 +9,32 @@ import { Status } from "~popup/routes/status"
 import { RequireAuthentication } from "~util/components/authentication"
 
 function IndexPopup() {
-  return (
-    <MemoryRouter>
-      <Routes>
-        <Route
-          path={"/"}
-          element={<Navigate to={"/settings"} replace={true} />}
-        />
-        <Route
-          path="/settings"
-          element={
-            <RequireAuthentication>
-              <Settings />
-            </RequireAuthentication>
-          }
-        />
-        <Route
-          path="/status"
-          element={
-            <RequireAuthentication>
-              <Status />
-            </RequireAuthentication>
-          }
-        />
+    return (
+        <MemoryRouter>
+            <Routes>
+                <Route path={"/"} element={<Navigate to={"/settings"} replace={true} />} />
+                <Route
+                    path="/settings"
+                    element={
+                        <RequireAuthentication>
+                            <Settings />
+                        </RequireAuthentication>
+                    }
+                />
+                <Route
+                    path="/status"
+                    element={
+                        <RequireAuthentication>
+                            <Status />
+                        </RequireAuthentication>
+                    }
+                />
 
-        <Route path="/auth/login" element={<Login />} />
-        <Route path="/auth/signup" element={<Signup />} />
-      </Routes>
-    </MemoryRouter>
-  )
+                <Route path="/auth/login" element={<Login />} />
+                <Route path="/auth/signup" element={<Signup />} />
+            </Routes>
+        </MemoryRouter>
+    )
 }
 
 export default IndexPopup
