@@ -1,5 +1,3 @@
-import "bootstrap/dist/css/bootstrap.min.css"
-
 // https://muhimasri.com/blogs/react-editable-table/
 // https://muhimasri.com/blogs/add-remove-react-table-rows/
 import { createColumnHelper, flexRender, getCoreRowModel, getFilteredRowModel, useReactTable } from "@tanstack/react-table"

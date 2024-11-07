@@ -1,3 +1,5 @@
+import "bootstrap/dist/css/bootstrap.min.css"
+
 import { ContentFilterTable } from "~util/components/contentFilterTable"
 import { ProducerSettingsInputs } from "~util/components/producerSettings"
 
