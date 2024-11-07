@@ -16,12 +16,6 @@ export interface IgnoredRedditor {
     reason: string
 }
 
-// TODO: is this being used anywhere (should it be used somewhere it's not?)
-export interface LoginCredentials {
-    password: string
-    username: string
-}
-
 interface ProducedFloat {
     value: number
 }

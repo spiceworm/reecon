@@ -28,7 +28,6 @@ export const init = async (): Promise<void> => {
         [constants.DISABLE_EXTENSION]: false,
         [constants.EXTENSION_STATUS_MESSAGES]: constants.extensionStatusMessages,
         [constants.HIDE_BAD_SENTIMENT_THREADS]: false,
-        [constants.HIDE_IGNORED_REDDITORS]: false,
         [constants.OPENAI_API_KEY]: "",
         [constants.STATUS_MESSAGES]: []
     })
@@ -70,10 +69,6 @@ const getExtensionStatusMessages = async (): Promise<types.StatusMessage[]> => {
 
 export const getHideBadSentimentThreads = async (): Promise<boolean> => {
     return (await _get(constants.HIDE_BAD_SENTIMENT_THREADS)) as boolean
-}
-
-export const getHideIgnoredRedditors = async (): Promise<boolean> => {
-    return (await _get(constants.HIDE_IGNORED_REDDITORS)) as boolean
 }
 
 export const getProducerSettings = async () => {

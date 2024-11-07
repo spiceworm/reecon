@@ -83,8 +83,6 @@ export const annotateUsernames = async (
             for (let linkElement of usernameElementsMap[username]) {
                 linkElement.parentElement.insertAdjacentElement("beforeend", ignoredRedditorDataSpan)
             }
-
-            // TODO: Hide/collapse ignored redditors if `storage.getHideIgnoredRedditors()` is true
         }
     }
 }

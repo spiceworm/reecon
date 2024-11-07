@@ -8,7 +8,6 @@ export const DEFAULT_FILTER = "_defaultFilter"
 export const DISABLE_EXTENSION = "_disableExtension"
 export const EXTENSION_STATUS_MESSAGES = "_extensionStatusMessages"
 export const HIDE_BAD_SENTIMENT_THREADS = "_hideBadSentimentThreads"
-export const HIDE_IGNORED_REDDITORS = "_hideIgnoredRedditors"
 export const OPENAI_API_KEY = "_unvalidatedOpenaiApiKey"
 export const STATUS_MESSAGES = "_statusMessages"
 

@@ -22,10 +22,6 @@ export const Settings = () => {
         },
         (v: boolean) => (v === undefined ? false : v)
     )
-    const [hideIgnoredRedditors, setHideIgnoredRedditors] = useStorage(
-        { instance: storage.localStorage, key: constants.HIDE_IGNORED_REDDITORS },
-        (v: boolean) => (v === undefined ? false : v)
-    )
 
     const handleAllSettingsBtnClick = async (e) => {
         await chrome.tabs.create({ url: "/tabs/index.html" })
@@ -51,15 +47,6 @@ export const Settings = () => {
                         type="checkbox"
                     />
                     <Label for={"hideBadSentimentThreads"}>Hide threads with bad sentiment</Label>
-                </div>
-                <div className={"form-check"}>
-                    <Input
-                        className={"form-check-input"}
-                        checked={hideIgnoredRedditors}
-                        onChange={(e) => setHideIgnoredRedditors(e.target.checked)}
-                        type="checkbox"
-                    />
-                    <Label for={"hideIgnoredRedditors"}>Hide comments from ignored redditors</Label>
                 </div>
             </Form>
 
