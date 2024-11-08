@@ -81,7 +81,7 @@ class RedditorsView(CreateAPIView):
                     llm_contributor,
                     nlp_contributor,
                     producer_settings,
-                    job_id=redditor_username,
+                    job_id=f"redditor-{redditor_username}",
                 )
         else:
             log.debug("Redditor processing is disabled")

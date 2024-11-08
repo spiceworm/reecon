@@ -75,7 +75,7 @@ class ThreadsView(CreateAPIView):
                     llm_contributor,
                     nlp_contributor,
                     producer_settings,
-                    job_id=f"{subreddit}-{thread_id}",
+                    job_id=f"thread-{subreddit}-{thread_id}",
                 )
         else:
             log.debug("Thread processing is disabled")
