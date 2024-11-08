@@ -14,14 +14,49 @@ from ...models import (
 
 
 __all__ = (
-    "IgnoredRedditorRequestSerializer",
     "RedditorDataSerializer",
     "RedditorRequestSerializer",
     "RedditorResponseSerializer",
 )
 
 
-class IgnoredRedditorRequestSerializer(serializers.Serializer):
+class IgnoredRedditorSerializer(serializers.Serializer):
+    reason = serializers.CharField(
+        read_only=True,
+    )
+    username = serializers.CharField(
+        max_length=32,
+        read_only=True,
+    )
+
+
+class PendingRedditorSerializer(serializers.Serializer):
+    username = serializers.CharField(
+        read_only=True,
+    )
+
+
+class ProcessedRedditorSerializer(serializers.ModelSerializer):
+    data = serializers.SerializerMethodField(
+        "get_data",
+        read_only=True,
+    )
+
+    class Meta:
+        model = Redditor
+        exclude = ("id",)
+
+    def get_data(self, redditor: Redditor) -> dict:
+        """
+        Even though we are storing all RedditorData entries, we only want to serialize
+        the latest one, not all of them.
+        """
+        data = RedditorData.objects.filter(redditor=redditor).latest("created")
+        serializer = RedditorDataSerializer(instance=data)
+        return serializer.data
+
+
+class UnprocessableRedditorSerializer(serializers.Serializer):
     reason = serializers.CharField(
         read_only=True,
     )
@@ -63,21 +98,8 @@ class RedditorRequestSerializer(serializers.Serializer):
     )
 
 
-class RedditorResponseSerializer(serializers.ModelSerializer):
-    data = serializers.SerializerMethodField(
-        "get_data",
-        read_only=True,
-    )
-
-    class Meta:
-        model = Redditor
-        exclude = ("id",)
-
-    def get_data(self, redditor: Redditor) -> dict:
-        """
-        Even though we are storing all RedditorData entries, we only want to serialize
-        the latest one, not all of them.
-        """
-        data = RedditorData.objects.filter(redditor=redditor).latest("created")
-        serializer = RedditorDataSerializer(instance=data)
-        return serializer.data
+class RedditorResponseSerializer(serializers.Serializer):
+    ignored = IgnoredRedditorSerializer(many=True)
+    pending = PendingRedditorSerializer(many=True)
+    processed = ProcessedRedditorSerializer(many=True)
+    unprocessable = UnprocessableRedditorSerializer(many=True)

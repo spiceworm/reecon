@@ -6,10 +6,7 @@ from django.utils import timezone
 import django_rq
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
-from rest_framework.generics import (
-    CreateAPIView,
-    ListAPIView,
-)
+from rest_framework.generics import CreateAPIView
 from rest_framework.response import Response
 
 from .....models import (
@@ -18,7 +15,6 @@ from .....models import (
     UnprocessableRedditor,
 )
 from .....serializers import (
-    IgnoredRedditorRequestSerializer,
     RedditorRequestSerializer,
     RedditorResponseSerializer,
 )
@@ -26,7 +22,6 @@ from .....worker import jobs
 
 
 __all__ = (
-    "IgnoredRedditorsView",
     "RedditorsView",
 )
 
@@ -34,12 +29,7 @@ __all__ = (
 log = logging.getLogger("app.views.api.v1.reddit.redditor")
 
 
-class IgnoredRedditorsView(ListAPIView):
-    queryset = IgnoredRedditor.objects.all()
-    serializer_class = IgnoredRedditorRequestSerializer
-
-
-@extend_schema(responses=RedditorResponseSerializer(many=True))
+@extend_schema(responses=RedditorResponseSerializer())
 class RedditorsView(CreateAPIView):
     queryset = Redditor.objects.all()
     serializer_class = RedditorRequestSerializer
@@ -65,20 +55,24 @@ class RedditorsView(CreateAPIView):
 
         # Delete unprocessable redditors that are expired and can attempt to be processed again.
         # TODO: Should deletion of expired objects be handled by a separate process that runs on a schedule?
-        UnprocessableRedditor.objects.filter(
-            created__lte=timezone.now() - config.UNPROCESSABLE_REDDITOR_EXP_TD
-        ).delete()
-        unprocessable_usernames = {redditor.username for redditor in UnprocessableRedditor.objects.only("username")}
+        UnprocessableRedditor.objects.filter(created__lte=timezone.now() - config.UNPROCESSABLE_REDDITOR_EXP_TD).delete()
+
+        unprocessable_redditors = UnprocessableRedditor.objects.filter(username__in=usernames)
+        unprocessable_usernames = {redditor.username for redditor in unprocessable_redditors}
+
         # TODO: clients should have a list of ignored usernames so they never get submit for processing
-        ignored_usernames = set(IgnoredRedditor.objects.values_list("username", flat=True))
+        ignored_redditors = IgnoredRedditor.objects.filter(username__in=usernames)
+        ignored_usernames = set(ignored_redditors.values_list("username", flat=True))
+
+        pending_usernames = set(usernames) - known_usernames - fresh_usernames - unprocessable_usernames - ignored_usernames
+        pending_redditors = []
 
         llm_contributor = request.user
         nlp_contributor = User.objects.get(username="admin")
 
         if config.REDDITOR_PROCESSING_ENABLED:
-            for redditor_username in (
-                set(usernames) - known_usernames - fresh_usernames - unprocessable_usernames - ignored_usernames
-            ):
+            for redditor_username in pending_usernames:
+                pending_redditors.append({"username": redditor_username})
                 django_rq.enqueue(
                     jobs.process_redditor,
                     redditor_username,
@@ -90,6 +84,13 @@ class RedditorsView(CreateAPIView):
         else:
             log.debug("Redditor processing is disabled")
 
-        response_serializer = RedditorResponseSerializer(instance=known_redditors, many=True)
+        data = {
+            "ignored": ignored_redditors,
+            "pending": pending_redditors,
+            "processed": known_redditors,
+            "unprocessable": unprocessable_redditors,
+        }
+
+        response_serializer = RedditorResponseSerializer(instance=data)
         headers = self.get_success_headers(response_serializer.data)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
