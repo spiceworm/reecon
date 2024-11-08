@@ -58,19 +58,6 @@ const authPost = async (urlPath: string, body: object): Promise<any> => {
     return post(urlPath, body, true)
 }
 
-export const refreshAccessToken = async (refreshToken: string): Promise<any> => {
-    // FIXME: access token does not get auto refreshed once it expires
-
-    const responseJson: types.AuthTokenRefreshResponse = await post("/api/v1/auth/token/refresh/", {
-        refresh: refreshToken
-    })
-    await storage.setAuth({
-        access: responseJson.access,
-        refresh: refreshToken
-    })
-    return responseJson
-}
-
 // This should only be invoked from a background message
 export const getIgnoredRedditors = async (): Promise<types.IgnoredRedditor[]> => {
     lscache.setBucket("api-data")

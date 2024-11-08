@@ -42,9 +42,10 @@ const getApiStatusMessages = async (): Promise<types.StatusMessage[]> => {
 }
 
 export const getAuth = async (): Promise<types.Auth | null> => {
-    const auth = (await _get(constants.AUTH)) as types.Auth
+    const auth: types.Auth = await _get(constants.AUTH)
 
     if (!auth || !auth?.access || !auth?.refresh) {
+        await setAuth(null)
         return null
     }
 
@@ -53,9 +54,13 @@ export const getAuth = async (): Promise<types.Auth | null> => {
     }
 
     if (misc.jwtIsValid(auth.refresh)) {
-        return await api.refreshAccessToken(auth.refresh)
+        const response: types.AuthTokenRefreshResponse = await api.post("/api/v1/auth/token/refresh/", { refresh: auth.refresh })
+        const refreshedAuth: types.Auth = { access: response.access, refresh: auth.refresh }
+        await setAuth(refreshedAuth)
+        return refreshedAuth
     }
 
+    await setAuth(null)
     return null
 }
 
