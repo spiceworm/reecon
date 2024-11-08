@@ -9,6 +9,7 @@ from ..producer import (
 from ...models import (
     Thread,
     ThreadData,
+    UnprocessableThread,
 )
 
 
@@ -19,23 +20,16 @@ __all__ = (
 )
 
 
-class ThreadDataSerializer(serializers.ModelSerializer):
-    keywords = ProducedTextListSerializer(
+class PendingThreadSerializer(serializers.Serializer):
+    path = serializers.CharField(
         read_only=True,
     )
-    sentiment_polarity = ProducedFloatSerializer(
-        read_only=True,
-    )
-    summary = ProducedTextSerializer(
+    url = serializers.URLField(
         read_only=True,
     )
 
-    class Meta:
-        model = ThreadData
-        exclude = ("id", "thread")
 
-
-class ThreadResponseSerializer(serializers.ModelSerializer):
+class ProcessedThreadSerializer(serializers.ModelSerializer):
     data = serializers.SerializerMethodField(
         "get_data",
         read_only=True,
@@ -58,6 +52,38 @@ class ThreadResponseSerializer(serializers.ModelSerializer):
         return serializer.data
 
 
+class UnprocessableThreadSerializer(serializers.ModelSerializer):
+    path = serializers.CharField(
+        read_only=True,
+    )
+
+    class Meta:
+        model = UnprocessableThread
+        exclude = ("id",)
+
+
+class ThreadDataSerializer(serializers.ModelSerializer):
+    keywords = ProducedTextListSerializer(
+        read_only=True,
+    )
+    sentiment_polarity = ProducedFloatSerializer(
+        read_only=True,
+    )
+    summary = ProducedTextSerializer(
+        read_only=True,
+    )
+
+    class Meta:
+        model = ThreadData
+        exclude = ("id", "thread")
+
+
 class ThreadRequestSerializer(serializers.Serializer):
     paths = serializers.ListField(child=serializers.CharField())
     producer_settings = ProducerSettingsSerializer()
+
+
+class ThreadResponseSerializer(serializers.Serializer):
+    pending = PendingThreadSerializer(many=True)
+    processed = ProcessedThreadSerializer(many=True)
+    unprocessable = UnprocessableThreadSerializer(many=True)

@@ -56,14 +56,22 @@ class ThreadsView(CreateAPIView):
         # Delete unprocessable threads that are expired and can attempt to be processed again.
         # TODO: Should deletion of expired objects be handled by a separate process that runs on a schedule?
         UnprocessableThread.objects.filter(created__lte=timezone.now() - config.UNPROCESSABLE_THREAD_EXP_TD).delete()
-        unprocessable_urls = set(UnprocessableThread.objects.values_list("url", flat=True))
+
+        unprocessable_threads = UnprocessableThread.objects.filter(url__in=thread_urls)
+        unprocessable_urls = {thread.url for thread in unprocessable_threads}
+
+        pending_urls = set(thread_urls) - known_urls - fresh_urls - unprocessable_urls
+        pending_threads = []
 
         llm_contributor = request.user
         nlp_contributor = User.objects.get(username="admin")
 
         if config.THREAD_PROCESSING_ENABLED:
-            for thread_url in set(thread_urls) - known_urls - fresh_urls - unprocessable_urls:
-                path_parts = urlparse(thread_url).path.split("/")
+            for thread_url in pending_urls:
+                thread_path = urlparse(thread_url).path
+                pending_threads.append({"path": thread_path, "url": thread_url})
+
+                path_parts = thread_path.split("/")
                 subreddit, thread_id = path_parts[2], path_parts[4]
 
                 # Using the full thread URL as the job id causes the job to get enqueued but never executed.
@@ -80,6 +88,12 @@ class ThreadsView(CreateAPIView):
         else:
             log.debug("Thread processing is disabled")
 
-        response_serializer = ThreadResponseSerializer(instance=known_threads, many=True)
+        data = {
+            "pending": pending_threads,
+            "processed": known_threads,
+            "unprocessable": unprocessable_threads,
+        }
+
+        response_serializer = ThreadResponseSerializer(instance=data)
         headers = self.get_success_headers(response_serializer.data)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
