@@ -21,9 +21,7 @@ from .....serializers import (
 from .....worker import jobs
 
 
-__all__ = (
-    "RedditorsView",
-)
+__all__ = ("RedditorsView",)
 
 
 log = logging.getLogger("app.views.api.v1.reddit.redditor")
@@ -55,7 +53,9 @@ class RedditorsView(CreateAPIView):
 
         # Delete unprocessable redditors that are expired and can attempt to be processed again.
         # TODO: Should deletion of expired objects be handled by a separate process that runs on a schedule?
-        UnprocessableRedditor.objects.filter(created__lte=timezone.now() - config.UNPROCESSABLE_REDDITOR_EXP_TD).delete()
+        UnprocessableRedditor.objects.filter(
+            created__lte=timezone.now() - config.UNPROCESSABLE_REDDITOR_EXP_TD
+        ).delete()
 
         unprocessable_redditors = UnprocessableRedditor.objects.filter(username__in=usernames)
         unprocessable_usernames = {redditor.username for redditor in unprocessable_redditors}
@@ -64,7 +64,9 @@ class RedditorsView(CreateAPIView):
         ignored_redditors = IgnoredRedditor.objects.filter(username__in=usernames)
         ignored_usernames = set(ignored_redditors.values_list("username", flat=True))
 
-        pending_usernames = set(usernames) - known_usernames - fresh_usernames - unprocessable_usernames - ignored_usernames
+        pending_usernames = (
+            set(usernames) - known_usernames - fresh_usernames - unprocessable_usernames - ignored_usernames
+        )
         pending_redditors = []
 
         llm_contributor = request.user

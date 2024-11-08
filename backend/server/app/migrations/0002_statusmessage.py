@@ -13,7 +13,15 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="StatusMessage",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 (
                     "active",
                     models.BooleanField(
@@ -31,7 +39,11 @@ class Migration(migrations.Migration):
                 (
                     "category",
                     models.CharField(
-                        choices=[("danger", "danger"), ("info", "info"), ("warning", "warning")],
+                        choices=[
+                            ("danger", "danger"),
+                            ("info", "info"),
+                            ("warning", "warning"),
+                        ],
                         help_text="Corresponds to how the message is rendered in the extension Status tab.",
                     ),
                 ),
@@ -41,7 +53,13 @@ class Migration(migrations.Migration):
                         help_text="Information that should be conveyed to users in the extension Status tab."
                     ),
                 ),
-                ("name", models.CharField(help_text="Descriptive name for the `StatusMessage`.", unique=True)),
+                (
+                    "name",
+                    models.CharField(
+                        help_text="Descriptive name for the `StatusMessage`.",
+                        unique=True,
+                    ),
+                ),
                 (
                     "source",
                     models.CharField(
