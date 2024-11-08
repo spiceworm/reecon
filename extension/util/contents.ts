@@ -10,20 +10,30 @@ export const execute = async () => {
     }
 
     if (await storage.shouldExecuteContentScript()) {
+        // TODO: show visual queue in the browser that the content script got executed
         lastExecution = Date.now()
 
         const producerSettings = await storage.getProducerSettings()
 
         const urlPaths = dom.getThreadUrlPaths()
-        const threads = await backgroundMessage.processThreads(producerSettings, urlPaths)
+        const processThreadsResponse = await backgroundMessage.processThreads(producerSettings, urlPaths)
         const contentFilter = await storage.getActiveContentFilter()
-        await dom.annotateThreads(threads, contentFilter)
+
+        await Promise.all([
+            dom.annotatePendingThreads(processThreadsResponse.pending, contentFilter),
+            dom.annotateProcessedThreads(processThreadsResponse.processed, contentFilter),
+            dom.annotateUnprocessableThreads(processThreadsResponse.unprocessable, contentFilter)
+        ])
 
         const usernameElementsMap = dom.getUsernameElementsMap()
         const usernames = Object.keys(usernameElementsMap)
-        const ignoredRedditors = await backgroundMessage.getIgnoredRedditors()
-        const ignoredUsernames = new Set(ignoredRedditors.map((obj) => obj.username))
-        const redditors = await backgroundMessage.processRedditors(producerSettings, usernames, ignoredUsernames)
-        await dom.annotateUsernames(redditors, ignoredRedditors, usernameElementsMap, contentFilter)
+        const processRedditorsResponse = await backgroundMessage.processRedditors(producerSettings, usernames)
+
+        await Promise.all([
+            dom.annotateIgnoredRedditors(processRedditorsResponse.ignored, usernameElementsMap, contentFilter),
+            dom.annotatePendingRedditors(processRedditorsResponse.pending, usernameElementsMap, contentFilter),
+            dom.annotateProcessedRedditors(processRedditorsResponse.processed, usernameElementsMap, contentFilter),
+            dom.annotateUnprocessableRedditors(processRedditorsResponse.unprocessable, usernameElementsMap, contentFilter)
+        ])
     }
 }

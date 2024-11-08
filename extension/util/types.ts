@@ -20,6 +20,15 @@ export interface IgnoredRedditor {
     reason: string
 }
 
+export interface PendingRedditor {
+    username: string
+}
+
+export interface PendingThread {
+    path: string
+    url: string
+}
+
 interface ProducedFloat {
     value: number
 }
@@ -39,6 +48,19 @@ interface ProducedTextList {
 export interface ProducerSettings {
     name: string
     api_key: string
+}
+
+export interface ProcessRedditorsResponse {
+    ignored: IgnoredRedditor[]
+    pending: PendingRedditor[]
+    processed: Redditor[]
+    unprocessable: UnprocessableRedditor[]
+}
+
+export interface ProcessThreadsResponse {
+    pending: PendingThread[]
+    processed: Thread[]
+    unprocessable: UnprocessableThread[]
 }
 
 export interface Redditor {
@@ -76,4 +98,15 @@ interface ThreadData {
     keywords: ProducedTextList
     sentiment_polarity: ProducedFloat
     summary: ProducedText
+}
+
+export interface UnprocessableRedditor {
+    username: string
+    reason: string
+}
+
+export interface UnprocessableThread {
+    path: string
+    reason: string
+    url: string
 }

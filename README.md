@@ -94,11 +94,6 @@ REDIS_SSL=True / False
 ```
 
 TODO:
-- Track submission count since last redditor/thread processing event. Do not reprocess unless some number of new submissions have been made. Few or no new submissions does not warrant reprocessing unless the processing is done by a new model.
-- Track tokens used to generate each object so you can determine how many tokens are being used as the prompts/generated data changes over time
-- Update threads api endpoint to return {threads: [...], unprocessable_threads: [...], pending_threads: [...]}
-- Update redditors api endpoint to return {redditors: [...], unprocessable_redditors: [...], pending_redditors: [...]}
-- Annotate unprocessable threads in DOM with '❓' emoji
 - Make `producer_settings` a pydantic model so it can be used in type annotations. This is better than `typing.Dict`
 - Store extension auth and producer settings using plasmo's SecureStorage
 
