@@ -3,6 +3,10 @@ export interface Auth {
     refresh: string
 }
 
+export interface AuthTokenRefreshResponse {
+    access: string
+}
+
 export interface ContentFilter {
     age: number
     context: string

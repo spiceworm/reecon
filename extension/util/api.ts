@@ -61,13 +61,12 @@ const authPost = async (urlPath: string, body: object): Promise<any> => {
 export const refreshAccessToken = async (refreshToken: string): Promise<any> => {
     // FIXME: access token does not get auto refreshed once it expires
 
-    // FIXME: /api/v1/auth/token/refresh/ on returns access key. It does not include the refresh key again
-    const responseJson: types.Auth = await post("/api/v1/auth/token/refresh/", {
+    const responseJson: types.AuthTokenRefreshResponse = await post("/api/v1/auth/token/refresh/", {
         refresh: refreshToken
     })
     await storage.setAuth({
         access: responseJson.access,
-        refresh: responseJson.refresh
+        refresh: refreshToken
     })
     return responseJson
 }
