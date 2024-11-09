@@ -4,7 +4,7 @@ services:
   server:
     image: "${REGISTRY_URL}/${CONTAINER_REPO}/${APP_NAME}/server:${VERSION}"
     build:
-      context: "."
+      context: "./server"
     environment:
       ADMIN_PASSWORD: "${ADMIN_PASSWORD}"
       APP_NAME: "${APP_NAME}"

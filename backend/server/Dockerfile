@@ -26,13 +26,13 @@ RUN pip install --upgrade pip \
         gunicorn
 
 # Install python dependencies and NLTK data files
-COPY ./server/requirements.txt /tmp/
+COPY ./requirements.txt /tmp/
 RUN pip install -r /tmp/requirements.txt \
     && rm /tmp/requirements.txt \
     && python -m textblob.download_corpora \
     && python -m nltk.downloader punkt_tab
 
-COPY ./server /server
+COPY . /server
 
 # Remove the default nginx config so ours can use the `default_server` setting in the `listen` directive
 # and also set `server_name _;` so nginx will respond if we query by domain name or IP address.
