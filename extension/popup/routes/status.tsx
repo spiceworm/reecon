@@ -14,20 +14,18 @@ export const Status = () => {
 
     return (
         <base.Authenticated>
-            <div className={"d-flex justify-content-center"}>
-                {statusMessages.length === 0 ? (
-                    <Alert color={"light"}>No status messages</Alert>
-                ) : (
-                    statusMessages.map((message, idx: number) => (
-                        <div className={"p-1"}>
-                            <Toast key={`status-message-${idx}`}>
-                                <ToastHeader icon={message.category}>Source: {message.source}</ToastHeader>
-                                <ToastBody>{message.message}</ToastBody>
-                            </Toast>
-                        </div>
-                    ))
-                )}
-            </div>
+            {statusMessages.length === 0 ? (
+                <Alert color={"light"}>No status messages</Alert>
+            ) : (
+                statusMessages.map((message, idx: number) => (
+                    <div className={"p-1"}>
+                        <Toast key={`status-message-${idx}`}>
+                            <ToastHeader icon={message.category}>Source: {message.source}</ToastHeader>
+                            <ToastBody>{message.message}</ToastBody>
+                        </Toast>
+                    </div>
+                ))
+            )}
         </base.Authenticated>
     )
 }
