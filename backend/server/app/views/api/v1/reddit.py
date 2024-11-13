@@ -69,7 +69,9 @@ class RedditorsView(CreateAPIView):
         pending_redditors = []
 
         llm_contributor = request.user
+        llm_producer = models.Producer.objects.get(name=config.LLM_NAME)
         nlp_contributor = User.objects.get(username="admin")
+        nlp_producer = models.Producer.objects.get(name=config.NLP_NAME)
 
         if config.REDDITOR_PROCESSING_ENABLED:
             for redditor_username in pending_usernames:
@@ -78,7 +80,9 @@ class RedditorsView(CreateAPIView):
                     worker.process_redditor,
                     redditor_username,
                     llm_contributor,
+                    llm_producer,
                     nlp_contributor,
+                    nlp_producer,
                     producer_settings,
                     job_id=f"redditor-{redditor_username}",
                 )
@@ -133,7 +137,9 @@ class ThreadsView(CreateAPIView):
         pending_threads = []
 
         llm_contributor = request.user
+        llm_producer = models.Producer.objects.get(name=config.LLM_NAME)
         nlp_contributor = User.objects.get(username="admin")
+        nlp_producer = models.Producer.objects.get(name=config.NLP_NAME)
 
         if config.THREAD_PROCESSING_ENABLED:
             for thread_url in pending_urls:
@@ -150,7 +156,9 @@ class ThreadsView(CreateAPIView):
                     worker.process_thread,
                     thread_url,
                     llm_contributor,
+                    llm_producer,
                     nlp_contributor,
+                    nlp_producer,
                     producer_settings,
                     job_id=f"thread-{subreddit}-{thread_id}",
                 )

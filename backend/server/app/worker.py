@@ -1,6 +1,5 @@
 import logging
 
-from constance import config
 from django.contrib.auth.models import User
 
 from . import (
@@ -18,10 +17,14 @@ __all__ = (
 log = logging.getLogger("app.worker.jobs.reddit")
 
 
-def process_redditor(redditor_username: str, llm_contributor: User, nlp_contributor: User, producer_settings: dict):
-    llm_producer = models.Producer.objects.get(name=config.LLM_NAME)
-    nlp_producer = models.Producer.objects.get(name=config.NLP_NAME)
-
+def process_redditor(
+    redditor_username: str,
+    llm_contributor: User,
+    llm_producer: models.Producer,
+    nlp_contributor: User,
+    nlp_producer: models.Producer,
+    producer_settings: dict,
+):
     service = services.RedditorDataService(
         username=redditor_username,
         llm_contributor=llm_contributor,
@@ -32,10 +35,14 @@ def process_redditor(redditor_username: str, llm_contributor: User, nlp_contribu
     return service.create(producer_settings=producer_settings)
 
 
-def process_thread(thread_url: str, llm_contributor: User, nlp_contributor: User, producer_settings: dict):
-    llm_producer = models.Producer.objects.get(name=config.LLM_NAME)
-    nlp_producer = models.Producer.objects.get(name=config.NLP_NAME)
-
+def process_thread(
+    thread_url: str,
+    llm_contributor: User,
+    llm_producer: models.Producer,
+    nlp_contributor: User,
+    nlp_producer: models.Producer,
+    producer_settings: dict,
+):
     service = services.ThreadDataService(
         url=thread_url,
         llm_contributor=llm_contributor,
