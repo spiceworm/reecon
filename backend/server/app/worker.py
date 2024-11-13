@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 
 from . import (
     models,
+    schemas,
     services,
 )
 
@@ -24,6 +25,7 @@ def process_redditor(
     nlp_contributor: User,
     nlp_producer: models.Producer,
     producer_settings: dict,
+    env: schemas.WorkerEnv,
 ):
     service = services.RedditorDataService(
         username=redditor_username,
@@ -31,6 +33,7 @@ def process_redditor(
         llm_producer=llm_producer,
         nlp_contributor=nlp_contributor,
         nlp_producer=nlp_producer,
+        env=env,
     )
     return service.create(producer_settings=producer_settings)
 
@@ -42,6 +45,7 @@ def process_thread(
     nlp_contributor: User,
     nlp_producer: models.Producer,
     producer_settings: dict,
+    env: schemas.WorkerEnv,
 ):
     service = services.ThreadDataService(
         url=thread_url,
@@ -49,5 +53,6 @@ def process_thread(
         llm_producer=llm_producer,
         nlp_contributor=nlp_contributor,
         nlp_producer=nlp_producer,
+        env=env,
     )
     return service.create(producer_settings=producer_settings)

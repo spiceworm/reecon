@@ -13,6 +13,7 @@ from rest_framework.response import Response
 
 from .... import (
     models,
+    schemas,
     serializers,
     worker,
 )
@@ -72,6 +73,7 @@ class RedditorsView(CreateAPIView):
         llm_producer = models.Producer.objects.get(name=config.LLM_NAME)
         nlp_contributor = User.objects.get(username="admin")
         nlp_producer = models.Producer.objects.get(name=config.NLP_NAME)
+        env = schemas.get_worker_env()
 
         if config.REDDITOR_PROCESSING_ENABLED:
             for redditor_username in pending_usernames:
@@ -84,6 +86,7 @@ class RedditorsView(CreateAPIView):
                     nlp_contributor,
                     nlp_producer,
                     producer_settings,
+                    env,
                     job_id=f"redditor-{redditor_username}",
                 )
         else:
@@ -140,6 +143,7 @@ class ThreadsView(CreateAPIView):
         llm_producer = models.Producer.objects.get(name=config.LLM_NAME)
         nlp_contributor = User.objects.get(username="admin")
         nlp_producer = models.Producer.objects.get(name=config.NLP_NAME)
+        env = get_worker_env()
 
         if config.THREAD_PROCESSING_ENABLED:
             for thread_url in pending_urls:
@@ -160,6 +164,7 @@ class ThreadsView(CreateAPIView):
                     nlp_contributor,
                     nlp_producer,
                     producer_settings,
+                    env,
                     job_id=f"thread-{subreddit}-{thread_id}",
                 )
         else:

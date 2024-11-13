@@ -89,6 +89,7 @@ class Command(management.base.BaseCommand):
         llm_producer = models.Producer.objects.get(name=options["llm"])
         nlp_producer = models.Producer.objects.get(name=options["nlp"])
         admin = User.objects.get(username="admin")
+        env = schemas.get_worker_env()
 
         encoding = tiktoken.encoding_for_model(llm_producer.name)
 
@@ -100,6 +101,7 @@ class Command(management.base.BaseCommand):
                 llm_producer=llm_producer,
                 nlp_contributor=admin,
                 nlp_producer=nlp_producer,
+                env=env,
             )
 
             try:
@@ -145,6 +147,7 @@ class Command(management.base.BaseCommand):
                 llm_producer=llm_producer,
                 nlp_contributor=admin,
                 nlp_producer=nlp_producer,
+                env=env,
             )
 
             try:

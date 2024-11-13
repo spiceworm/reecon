@@ -5,10 +5,9 @@ from typing import (
     Set,
 )
 
-from constance import config
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils import timezone
+import praw
 from praw.models import (
     Comment,
     MoreComments,
@@ -55,11 +54,22 @@ class RedditDataService(abc.ABC):
         llm_producer: models.Producer,
         nlp_contributor: User,
         nlp_producer: models.Producer,
+        env: schemas.WorkerEnv,
     ):
         self.llm_contributor = llm_contributor
         self.llm_producer = llm_producer
         self.nlp_contributor = nlp_contributor
         self.nlp_producer = nlp_producer
+        self.env = env
+
+        self.reddit_client = praw.Reddit(
+            client_id=self.env.reddit.api.client_id,
+            client_secret=self.env.reddit.api.client_secret,
+            password=self.env.reddit.api.password,
+            ratelimit_seconds=self.env.reddit.api.ratelimit_seconds,
+            user_agent=self.env.reddit.api.user_agent,
+            username=self.env.reddit.api.username,
+        )
 
     @abc.abstractmethod
     def create(self, *args, **kwargs):
@@ -119,8 +129,8 @@ class RedditDataService(abc.ABC):
         # Do not process submissions that are either too short or too long.
         if any(
             [
-                len(retval) < config.SUBMISSION_FILTER_MIN_LENGTH,
-                len(retval) > config.SUBMISSION_FILTER_MAX_LENGTH,
+                len(retval) < self.env.reddit.submission.min_length,
+                len(retval) > self.env.reddit.submission.max_length,
             ]
         ):
             retval = ""
@@ -156,12 +166,14 @@ class RedditorDataService(RedditDataService):
         llm_producer: models.Producer,
         nlp_contributor: User,
         nlp_producer: models.Producer,
+        env: schemas.WorkerEnv,
     ):
         super().__init__(
             llm_contributor=llm_contributor,
             llm_producer=llm_producer,
             nlp_contributor=nlp_contributor,
             nlp_producer=nlp_producer,
+            env=env,
         )
         self.username = username
 
@@ -188,7 +200,7 @@ class RedditorDataService(RedditDataService):
             generated_data: schemas.GeneratedRedditorData = self.generate_data(
                 inputs=submissions,
                 producer_settings=producer_settings,
-                prompt=config.REDDITOR_LLM_PROMPT,
+                prompt=self.env.redditor.llm.prompt,
             )
             obj: models.RedditorData = self.create_object(generated_data=generated_data)
         return obj
@@ -246,10 +258,10 @@ class RedditorDataService(RedditDataService):
     )
     def get_submissions(self) -> List[str]:
         submissions: Set[str] = set()
-        praw_redditor: PrawRedditor = settings.REDDIT_API.redditor(name=self.username)
+        praw_redditor: PrawRedditor = self.reddit_client.redditor(name=self.username)
 
         context_window = self.llm_producer.context_window
-        max_input_tokens = context_window * config.LLM_MAX_CONTEXT_WINDOW_FOR_INPUTS
+        max_input_tokens = context_window * self.env.redditor.llm.max_context_window_for_inputs
         encoding = tiktoken.encoding_for_model(self.llm_producer.name)
 
         # Get the body of threads submitted by the user.
@@ -276,10 +288,10 @@ class RedditorDataService(RedditDataService):
                 else:
                     break
 
-        if len(submissions) < config.REDDITOR_MIN_SUBMISSIONS:
+        if len(submissions) < self.env.redditor.submission.min_submissions:
             raise exceptions.UnprocessableRedditorError(
                 self.username,
-                f"Less than {config.REDDITOR_MIN_SUBMISSIONS} submissions available for processing "
+                f"Less than {self.env.redditor.submission.min_submissions} submissions available for processing "
                 f"(found {len(submissions)})",
             )
 
@@ -299,12 +311,14 @@ class ThreadDataService(RedditDataService):
         llm_producer: models.Producer,
         nlp_contributor: User,
         nlp_producer: models.Producer,
+        env: schemas.WorkerEnv,
     ):
         super().__init__(
             llm_contributor=llm_contributor,
             llm_producer=llm_producer,
             nlp_contributor=nlp_contributor,
             nlp_producer=nlp_producer,
+            env=env,
         )
         self.url = url
 
@@ -331,7 +345,7 @@ class ThreadDataService(RedditDataService):
             generated_data: schemas.GeneratedThreadData = self.generate_data(
                 inputs=submissions,
                 producer_settings=producer_settings,
-                prompt=config.THREAD_LLM_PROMPT,
+                prompt=self.env.thread.llm.prompt,
             )
             obj: models.ThreadData = self.create_object(generated_data=generated_data)
         return obj
@@ -380,10 +394,10 @@ class ThreadDataService(RedditDataService):
     def get_submissions(self) -> List[str]:
         submissions: Set[str] = set()
         ignored_usernames = set(models.IgnoredRedditor.objects.values_list("username", flat=True))
-        praw_submission: Submission = settings.REDDIT_API.submission(url=self.url)
+        praw_submission: Submission = self.reddit_client.submission(url=self.url)
 
         context_window = self.llm_producer.context_window
-        max_input_tokens = context_window * config.LLM_MAX_CONTEXT_WINDOW_FOR_INPUTS
+        max_input_tokens = context_window * self.env.thread.llm.max_context_window_for_inputs
         encoding = tiktoken.encoding_for_model(self.llm_producer.name)
 
         # Get the thread selftext
@@ -407,10 +421,10 @@ class ThreadDataService(RedditDataService):
                     else:
                         break
 
-        if len(submissions) < config.THREAD_MIN_SUBMISSIONS:
+        if len(submissions) < self.env.thread.submission.min_submissions:
             raise exceptions.UnprocessableThreadError(
                 self.url,
-                f"Less than {config.THREAD_MIN_SUBMISSIONS} submissions available for processing "
+                f"Less than {self.env.thread.submission.min_submissions} submissions available for processing "
                 f"(found {len(submissions)})",
             )
 

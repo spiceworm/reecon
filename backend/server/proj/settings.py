@@ -15,8 +15,6 @@ from datetime import timedelta
 from pathlib import Path
 
 import decouple
-import openai
-import praw
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -401,11 +399,10 @@ DEFAULT_PRODUCER_SETTINGS = {
         "api_key": decouple.config("DEFAULT_OPENAI_API_KEY"),
     }
 }
-REDDIT_API = praw.Reddit(
-    client_id=decouple.config("REDDIT_API_CLIENT_ID"),
-    client_secret=decouple.config("REDDIT_API_CLIENT_SECRET"),
-    password=decouple.config("REDDIT_API_PASSWORD"),
-    ratelimit_seconds=300,
-    user_agent=decouple.config("REDDIT_API_USER_AGENT"),
-    username=decouple.config("REDDIT_API_USERNAME"),
-)
+
+REDDIT_API_CLIENT_ID = decouple.config("REDDIT_API_CLIENT_ID")
+REDDIT_API_CLIENT_SECRET = decouple.config("REDDIT_API_CLIENT_SECRET")
+REDDIT_API_PASSWORD = decouple.config("REDDIT_API_PASSWORD")
+REDDIT_API_RATELIMIT_SECONDS = decouple.config("REDDIT_API_RATELIMIT_SECONDS", cast=int, default=300)
+REDDIT_API_USER_AGENT = decouple.config("REDDIT_API_USER_AGENT")
+REDDIT_API_USERNAME = decouple.config("REDDIT_API_USERNAME")
