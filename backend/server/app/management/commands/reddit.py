@@ -15,22 +15,11 @@ from django.contrib.auth.models import User
 from django.core import management
 import tiktoken
 
-from ...exceptions import (
-    UnprocessableRedditorError,
-    UnprocessableThreadError,
-)
-from ...models import (
-    Producer,
-    RedditorData,
-    ThreadData,
-    UnprocessableRedditor,
-    UnprocessableThread,
-)
-from ...services import (
-    GeneratedRedditorData,
-    GeneratedThreadData,
-    RedditorDataService,
-    ThreadDataService,
+from ... import (
+    exceptions,
+    models,
+    schemas,
+    services,
 )
 
 
@@ -53,13 +42,13 @@ class Command(management.base.BaseCommand):
             thread_sp.add_argument("--debug", action="store_true", help="Set log level to DEBUG.")
             thread_sp.add_argument(
                 "--llm",
-                choices=Producer.objects.filter(category__name="LLM").values_list("name", flat=True),
+                choices=models.Producer.objects.filter(category__name="LLM").values_list("name", flat=True),
                 default=config.LLM_NAME,
                 help="LLM choice to use when generating data.",
             )
             thread_sp.add_argument(
                 "--nlp",
-                choices=Producer.objects.filter(category__name="NLP").values_list("name", flat=True),
+                choices=models.Producer.objects.filter(category__name="NLP").values_list("name", flat=True),
                 default=config.NLP_NAME,
                 help="NLP choice to use when generating data.",
             )
@@ -69,13 +58,13 @@ class Command(management.base.BaseCommand):
             redditor_sp.add_argument("--debug", action="store_true", help="Set log level to DEBUG.")
             redditor_sp.add_argument(
                 "--llm",
-                choices=Producer.objects.filter(category__name="LLM").values_list("name", flat=True),
+                choices=models.Producer.objects.filter(category__name="LLM").values_list("name", flat=True),
                 default=config.LLM_NAME,
                 help="LLM choice to use when generating data.",
             )
             redditor_sp.add_argument(
                 "--nlp",
-                choices=Producer.objects.filter(category__name="NLP").values_list("name", flat=True),
+                choices=models.Producer.objects.filter(category__name="NLP").values_list("name", flat=True),
                 default=config.NLP_NAME,
                 help="NLP choice to use when generating data.",
             )
@@ -97,18 +86,24 @@ class Command(management.base.BaseCommand):
         else:
             log.setLevel("INFO")
 
-        llm = Producer.objects.get(name=options["llm"])
-        nlp = Producer.objects.get(name=options["nlp"])
+        llm_producer = models.Producer.objects.get(name=options["llm"])
+        nlp_producer = models.Producer.objects.get(name=options["nlp"])
         admin = User.objects.get(username="admin")
 
-        encoding = tiktoken.encoding_for_model(llm.name)
+        encoding = tiktoken.encoding_for_model(llm_producer.name)
 
         if options["entity"] == "redditor":
             username = options["username"]
-            service = RedditorDataService(username)
+            service = services.RedditorDataService(
+                username=username,
+                llm_contributor=admin,
+                llm_producer=llm_producer,
+                nlp_contributor=admin,
+                nlp_producer=nlp_producer,
+            )
 
             try:
-                submissions: List[str] = service.get_submissions(llm_producer=llm)
+                submissions: List[str] = service.get_submissions()
                 if options["action"] == "get-submissions":
                     self.echos(submissions)
                     log.debug(
@@ -118,18 +113,16 @@ class Command(management.base.BaseCommand):
                         service.username,
                     )
                 else:
-                    generated_data: GeneratedRedditorData = service.generate_data(
+                    generated_data: schemas.GeneratedRedditorData = service.generate_data(
                         inputs=submissions,
-                        llm_name=llm.name,
-                        nlp_name=nlp.name,
                         producer_settings=settings.DEFAULT_PRODUCER_SETTINGS,
                         prompt=config.REDDITOR_LLM_PROMPT,
                     )
                     if options["action"] == "generate-data":
                         self.echo(generated_data.model_dump_json())
-            except UnprocessableRedditorError as e:
+            except exceptions.UnprocessableRedditorError as e:
                 log.exception("Unable to process %s", username)
-                obj, _ = UnprocessableRedditor.objects.update_or_create(
+                obj, _ = models.UnprocessableRedditor.objects.update_or_create(
                     username=e.username,
                     defaults={
                         "reason": e.reason,
@@ -142,20 +135,20 @@ class Command(management.base.BaseCommand):
             else:
                 if options["action"] == "create-object":
                     log.debug("Generated data = %s", generated_data.model_dump())
-                    obj: RedditorData = service.create_object(
-                        generated_data=generated_data,
-                        llm_contributor=admin,
-                        llm_producer=llm,
-                        nlp_contributor=admin,
-                        nlp_producer=nlp,
-                    )
+                    obj: models.RedditorData = service.create_object(generated_data=generated_data)
 
         else:
             url = options["url"]
-            service = ThreadDataService(url)
+            service = services.ThreadDataService(
+                url=url,
+                llm_contributor=admin,
+                llm_producer=llm_producer,
+                nlp_contributor=admin,
+                nlp_producer=nlp_producer,
+            )
 
             try:
-                submissions: List[str] = service.get_submissions(llm_producer=llm)
+                submissions: List[str] = service.get_submissions()
                 if options["action"] == "get-submissions":
                     self.echos(submissions)
                     log.debug(
@@ -165,18 +158,16 @@ class Command(management.base.BaseCommand):
                         service.url,
                     )
                 else:
-                    generated_data: GeneratedThreadData = service.generate_data(
+                    generated_data: schemas.GeneratedThreadData = service.generate_data(
                         inputs=submissions,
-                        llm_name=llm.name,
-                        nlp_name=nlp.name,
                         producer_settings=settings.DEFAULT_PRODUCER_SETTINGS,
                         prompt=config.THREAD_LLM_PROMPT,
                     )
                     if options["action"] == "generate-data":
                         self.echo(generated_data.model_dump_json())
-            except UnprocessableThreadError as e:
+            except exceptions.UnprocessableThreadError as e:
                 log.exception("Unable to process %s", url)
-                obj, _ = UnprocessableThread.objects.update_or_create(
+                obj, _ = models.UnprocessableThread.objects.update_or_create(
                     url=e.url,
                     defaults={
                         "reason": e.reason,
@@ -189,10 +180,4 @@ class Command(management.base.BaseCommand):
             else:
                 if options["action"] == "create-object":
                     log.debug("Generated data = %s", generated_data.model_dump())
-                    obj: ThreadData = service.create_object(
-                        generated_data=generated_data,
-                        llm_contributor=admin,
-                        llm_producer=llm,
-                        nlp_contributor=admin,
-                        nlp_producer=nlp,
-                    )
+                    obj: models.ThreadData = service.create_object(generated_data=generated_data)
