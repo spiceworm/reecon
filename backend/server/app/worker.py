@@ -3,7 +3,7 @@ import logging
 from constance import config
 from django.contrib.auth.models import User
 
-from ... import (
+from . import (
     models,
     services,
 )
