@@ -1,16 +1,17 @@
 from rest_framework import serializers
 
+from reecon.models import (
+    Redditor,
+    RedditorData,
+    UnprocessableRedditor,
+)
+
 from ..producer import (
     ProducedFloatSerializer,
     ProducedIntegerSerializer,
     ProducedTextSerializer,
     ProducedTextListSerializer,
     ProducerSettingsSerializer,
-)
-from ...models import (
-    Redditor,
-    RedditorData,
-    UnprocessableRedditor,
 )
 
 

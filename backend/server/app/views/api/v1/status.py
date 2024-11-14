@@ -5,8 +5,8 @@ from rest_framework.generics import (
 )
 from rest_framework.views import Response
 
+from reecon.models import StatusMessage
 
-from ....models import StatusMessage
 from ....serializers import StatusMessageRequestSerializer, StatusRequestSerializer
 
 

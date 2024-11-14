@@ -1,10 +1,24 @@
 name: "reecon-backend"
 
 services:
+  # This is the base image that all other services are built off of
+  reecon:
+    image: "reecon:${VERSION}"
+    build:
+      args:
+        VERSION: "${VERSION}"
+      context: "./reecon"
+    environment:
+      VERSION: "${VERSION}"
+
   server:
     image: "${REGISTRY_URL}/${CONTAINER_REPO}/${APP_NAME}/server:${VERSION}"
     build:
+      args:
+        VERSION: "${VERSION}"
       context: "./server"
+    depends_on:
+      - reecon
     environment:
       ADMIN_PASSWORD: "${ADMIN_PASSWORD}"
       APP_NAME: "${APP_NAME}"
@@ -30,8 +44,35 @@ services:
     volumes:
       - "./server:/server"
 
+  worker:
+    image: "${REGISTRY_URL}/${CONTAINER_REPO}/${APP_NAME}/worker:${VERSION}"
+    build:
+      args:
+        VERSION: "${VERSION}"
+      context: "./worker"
+    depends_on:
+      - reecon
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      DEBUG: "${DEBUG}"
+      LOG_LEVEL: "${LOG_LEVEL}"
+      POSTGRES_DB: "${POSTGRES_DB}"
+      POSTGRES_HOST: "${POSTGRES_HOST}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_PORT: "${POSTGRES_PORT}"
+      POSTGRES_SSL: "${POSTGRES_SSL}"
+      POSTGRES_USER: "${POSTGRES_USER}"
+      REDIS_HOST: "${REDIS_HOST}"
+      SECRET_KEY: "${SECRET_KEY}"
+      VERSION: "${VERSION}"
+    volumes:
+      - "./worker:/worker"
+
   db:
-    image: "postgres:16.3-bookworm"
+    # match digitalocean "postgresql" db version
+    image: "postgres:16.4-bookworm"
     environment:
       POSTGRES_DB: "${POSTGRES_DB}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
@@ -44,7 +85,8 @@ services:
           - "db"
 
   redis:
-    image: "redis:7.4.0-bookworm"
+    # match digitalocean "caching" db version
+    image: "redis:7.2.6-bookworm"
     hostname: "redis"
     volumes:
       - "/data/${APP_NAME}/redis:/data"

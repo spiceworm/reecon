@@ -1,16 +1,16 @@
 from rest_framework import serializers
 
-
-from .producer import (
-    ContributorSerializer,
-    ProducerSerializer,
-)
-from ...models import (
+from reecon.models import (
     ProducedBinary,
     ProducedFloat,
     ProducedInteger,
     ProducedText,
     ProducedTextList,
+)
+
+from .producer import (
+    ContributorSerializer,
+    ProducerSerializer,
 )
 
 

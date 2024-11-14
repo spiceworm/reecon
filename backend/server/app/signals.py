@@ -3,7 +3,7 @@ import logging
 from constance.signals import config_updated
 from django.dispatch import receiver
 
-from .models import StatusMessage
+from reecon.models import StatusMessage
 
 
 log = logging.getLogger("app.signals")

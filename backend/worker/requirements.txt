@@ -1,0 +1,3 @@
+# Worker dependencies are installed in reecon package.
+# They cannot be installed soley in the worker image because the depedencies are needed to run `manage.py reddit`
+# commands defined in reecon package.

@@ -1,4 +1,4 @@
-from . import AppError
+from . import ReeconError
 
 
 __all__ = (
@@ -9,7 +9,7 @@ __all__ = (
 )
 
 
-class RedditError(AppError):
+class RedditError(ReeconError):
     pass
 
 

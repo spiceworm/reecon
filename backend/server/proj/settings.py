@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "drf_spectacular_sidecar",
     "django_rq",
     "constance",
+    "reecon.apps.ReeconConfig",
     "app",
 ]
 
@@ -270,14 +271,14 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 def get_llm_choices():
     # Importing a model cannot happen at the top of the file.
-    from app.models import Producer
+    from reecon.models import Producer
 
     return ((name, name) for name in Producer.objects.filter(category__name="LLM").values_list("name", flat=True))
 
 
 def get_nlp_choices():
     # Importing a model cannot happen at the top of the file.
-    from app.models import Producer
+    from reecon.models import Producer
 
     return ((name, name) for name in Producer.objects.filter(category__name="NLP").values_list("name", flat=True))
 

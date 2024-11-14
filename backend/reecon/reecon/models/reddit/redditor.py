@@ -1,4 +1,6 @@
+from django.contrib.auth.models import User
 from django.db import models
+from django.utils.text import Truncator
 
 from ..abstracts import (
     Created,
@@ -37,8 +39,16 @@ class Redditor(Created, LastProcessed, RedditorUsername):
     Stores a single redditor entry.
     """
 
+    submitter = models.ForeignKey(
+        User,
+        null=False,
+        on_delete=models.CASCADE,
+        related_name="submitted_redditors",
+        help_text="The user who submit the redditor for processing.",
+    )
+
     def __str__(self):
-        return f"{self.__class__.__name__}(username={self.username})"
+        return f"{self.__class__.__name__}(username={self.username}, submitter={self.submitter.username})"
 
 
 class RedditorData(Created):
@@ -50,21 +60,21 @@ class RedditorData(Created):
         ProducedInteger,
         null=False,
         on_delete=models.CASCADE,
-        related_name="redditor_age_data",
+        related_name="age_redditor_data",
         help_text="The inferred age of the redditor based on their submissions.",
     )
     interests = models.OneToOneField(
         ProducedTextList,
         null=False,
         on_delete=models.CASCADE,
-        related_name="redditor_interests_data",
+        related_name="interests_redditor_data",
         help_text="The inferred interests of the redditor based on their submissions.",
     )
     iq = models.OneToOneField(
         ProducedInteger,
         null=False,
         on_delete=models.CASCADE,
-        related_name="redditor_iq_data",
+        related_name="iq_redditor_data",
         help_text="The inferred IQ of the redditor based on their submissions.",
     )
     redditor = models.ForeignKey(
@@ -78,21 +88,22 @@ class RedditorData(Created):
         ProducedFloat,
         null=False,
         on_delete=models.CASCADE,
-        related_name="redditor_sentiment_polarity_data",
+        related_name="sentiment_polarity_redditor_data",
         help_text="The inferred sentiment polarity of the redditor based on their submissions.",
     )
     summary = models.OneToOneField(
         ProducedText,
         null=False,
         on_delete=models.CASCADE,
-        related_name="redditor_summary_data",
+        related_name="summary_redditor_data",
         help_text="An inferred summary of the redditor based on their submissions.",
     )
 
     def __str__(self):
         return (
             f"{self.__class__.__name__}(age={self.age.value}, iq={self.iq.value}, interests={self.interests.value}, "
-            f"redditor={self.redditor.username}, sentiment_polarity={self.sentiment_polarity.value}, summary=...)"
+            f"redditor={self.redditor.username}, sentiment_polarity={self.sentiment_polarity.value}, "
+            f"summary={Truncator(self.summary.value).chars(100)})"
         )
 
 
@@ -102,5 +113,13 @@ class UnprocessableRedditor(Created, RedditorUsername, UnprocessableReason):
     comment / thread submissions available for processing.
     """
 
+    submitter = models.ForeignKey(
+        User,
+        null=False,
+        on_delete=models.CASCADE,
+        related_name="submitted_unprocessable_redditors",
+        help_text="The user who submit the unprocessable redditor for processing.",
+    )
+
     def __str__(self):
-        return f"{self.__class__.__name__}(username={self.username})"
+        return f"{self.__class__.__name__}(username={self.username}, submitter={self.submitter.username})"

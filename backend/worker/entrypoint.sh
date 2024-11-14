@@ -3,7 +3,7 @@
 # Do not use `set -e` here because this script will stop running if an `until` command fails when
 # it should try multiple times.
 
-mkdir -p /var/log/supervisor/{gunicorn,nginx,rq-worker}
+mkdir -p /var/log/supervisor/rq-worker
 
 db_counter=0
 until pg_isready --dbname="${POSTGRES_DB}" --host="${POSTGRES_HOST}" --port="${POSTGRES_PORT}" --username="${POSTGRES_USER}";
@@ -20,7 +20,5 @@ do
   echo "Waiting for redis to accept connections: attempt ${redis_counter}" | tee /var/log/entrypoint.log
   sleep 1;
 done;
-
-python /server/manage.py prepare_app --all
 
 exec supervisord --user root --nodaemon --configuration /etc/supervisor/conf.d/supervisord.conf

@@ -1,15 +1,16 @@
 from rest_framework import serializers
 
+from reecon.models import (
+    Thread,
+    ThreadData,
+    UnprocessableThread,
+)
+
 from ..producer import (
     ProducedFloatSerializer,
     ProducedTextSerializer,
     ProducedTextListSerializer,
     ProducerSettingsSerializer,
-)
-from ...models import (
-    Thread,
-    ThreadData,
-    UnprocessableThread,
 )
 
 

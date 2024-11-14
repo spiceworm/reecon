@@ -39,15 +39,12 @@ def parse_args():
 
 def main(args):
     registry_url = f"{config['REGISTRY_URL']}/{config['CONTAINER_REPO']}"
-    image_url = f"{registry_url}/{config['APP_NAME']}/server:{args.tag}"
 
-    push_cmd = ["docker", "push", image_url]
+    subprocess.check_call(["docker", "compose", "build"])
 
-    if args.push:
-        if confirm_command(" ".join(push_cmd)):
-            subprocess.check_call(push_cmd)
-    else:
-        subprocess.check_call(["docker", "compose", "build"])
+    for service_name in ("service", "worker"):
+        image_url = f"{registry_url}/{config['APP_NAME']}/{service_name}:{args.tag}"
+        push_cmd = ["docker", "push", image_url]
 
         if confirm_command(" ".join(push_cmd)):
             subprocess.check_call(push_cmd)

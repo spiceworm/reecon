@@ -82,7 +82,7 @@ def get_worker_env():
             submission=RedditSubmissionEnv(
                 max_length=config.SUBMISSION_FILTER_MAX_LENGTH,
                 min_length=config.SUBMISSION_FILTER_MIN_LENGTH,
-            )
+            ),
         ),
         redditor=RedditorEnv(
             llm=LlmEnv(
@@ -101,5 +101,5 @@ def get_worker_env():
             submission=RedditEntitySubmissionEnv(
                 min_submissions=config.THREAD_MIN_SUBMISSIONS,
             ),
-        )
+        ),
     )

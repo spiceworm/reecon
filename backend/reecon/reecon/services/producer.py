@@ -16,7 +16,7 @@ from tenacity import (
 import textblob
 
 
-log = logging.getLogger("app.services.producer")
+log = logging.getLogger("reecon.services.producer")
 
 
 __all__ = (
@@ -47,7 +47,9 @@ class LlmProducerService(ProducerService):
         stop=stop_after_attempt(10),
         wait=wait_random_exponential(min=1, max=60),
     )
-    def generate_data(self, *, inputs: List[str], llm_name: str, producer_settings: dict, prompt: str) -> pydantic.BaseModel:
+    def generate_data(
+        self, *, inputs: List[str], llm_name: str, producer_settings: dict, prompt: str
+    ) -> pydantic.BaseModel:
         api_key = producer_settings["openai"]["api_key"]
         api = openai.OpenAI(api_key=api_key)
         chat_completion = api.beta.chat.completions.parse(

@@ -11,7 +11,7 @@ import praw
 from praw.models import (
     Comment,
     MoreComments,
-    Redditor as PrawRedditor,  # Avoid name conflict with `app.models.Redditor`
+    Redditor as PrawRedditor,  # Avoid name conflict with `reecon.models.Redditor`
     Submission,
 )
 from prawcore.exceptions import TooManyRequests
@@ -41,7 +41,7 @@ __all__ = (
 )
 
 
-log = logging.getLogger("app.services.reddit")
+log = logging.getLogger("reecon.services.reddit")
 
 
 class RedditDataService(abc.ABC):
@@ -429,4 +429,3 @@ class ThreadDataService(RedditDataService):
             )
 
         return list(submissions)
-

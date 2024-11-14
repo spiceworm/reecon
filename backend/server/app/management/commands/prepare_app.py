@@ -16,7 +16,7 @@ from django.contrib.auth.models import User
 from django.core import management
 from django import db
 
-from ...models import (
+from reecon.models import (
     IgnoredRedditor,
     Producer,
     ProducerCategory,

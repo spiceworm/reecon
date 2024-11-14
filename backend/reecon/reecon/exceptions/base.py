@@ -1,6 +1,6 @@
-__all__ = ("AppError",)
+__all__ = ("ReeconError",)
 
 
-class AppError(Exception):
+class ReeconError(Exception):
     def __init__(self, message: str) -> None:
         self.message = message

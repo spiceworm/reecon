@@ -11,12 +11,12 @@ from rest_framework.generics import CreateAPIView
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from .... import (
+from reecon import (
     models,
     schemas,
-    serializers,
-    worker,
 )
+
+from .... import serializers
 
 
 __all__ = (
@@ -79,7 +79,7 @@ class RedditorsView(CreateAPIView):
             for redditor_username in pending_usernames:
                 pending_redditors.append({"username": redditor_username})
                 django_rq.enqueue(
-                    worker.process_redditor,
+                    "app.worker.process_redditor",  # this function is defined in the worker app
                     redditor_username,
                     llm_contributor,
                     llm_producer,
@@ -131,7 +131,9 @@ class ThreadsView(CreateAPIView):
 
         # Delete unprocessable threads that are expired and can attempt to be processed again.
         # TODO: Should deletion of expired objects be handled by a separate process that runs on a schedule?
-        models.UnprocessableThread.objects.filter(created__lte=timezone.now() - config.UNPROCESSABLE_THREAD_EXP_TD).delete()
+        models.UnprocessableThread.objects.filter(
+            created__lte=timezone.now() - config.UNPROCESSABLE_THREAD_EXP_TD
+        ).delete()
 
         unprocessable_threads = models.UnprocessableThread.objects.filter(url__in=thread_urls)
         unprocessable_urls = {thread.url for thread in unprocessable_threads}
@@ -143,7 +145,7 @@ class ThreadsView(CreateAPIView):
         llm_producer = models.Producer.objects.get(name=config.LLM_NAME)
         nlp_contributor = User.objects.get(username="admin")
         nlp_producer = models.Producer.objects.get(name=config.NLP_NAME)
-        env = get_worker_env()
+        env = schemas.get_worker_env()
 
         if config.THREAD_PROCESSING_ENABLED:
             for thread_url in pending_urls:
@@ -157,7 +159,7 @@ class ThreadsView(CreateAPIView):
                 # Maybe it's because of the length of the job id or symbols that are in the URL?
 
                 django_rq.enqueue(
-                    worker.process_thread,
+                    "app.worker.process_thread",  # this function is defined in the worker app
                     thread_url,
                     llm_contributor,
                     llm_producer,
