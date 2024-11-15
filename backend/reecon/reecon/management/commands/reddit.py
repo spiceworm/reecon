@@ -1,10 +1,3 @@
-"""
-Management command that provides more control over inspecting the behavior and output of
-`RedditorDataService` and `ThreadDataService`. `RedditDataService.create()` runs all the
-necessary methods encapsulated in a single method, but this script allows you to see how the
-output of each of those encapsulated methods is used as input for the next method.
-"""
-
 import logging
 import os
 from typing import List
@@ -16,7 +9,6 @@ from django.core import management
 import tiktoken
 
 from ... import (
-    exceptions,
     models,
     schemas,
     services,
@@ -28,46 +20,42 @@ log = logging.getLogger()
 
 class Command(management.base.BaseCommand):
     def add_arguments(self, parser):
-        action_sp = parser.add_subparsers(title="actions", dest="action", required=True)
+        entity_sp = parser.add_subparsers(dest="entity", required=True)
 
-        create_object_sp = action_sp.add_parser("create-object", help="reddit entity processing.")
-        get_submissions_sp = action_sp.add_parser("get-submissions", help="reddit entity submissions.")
-        generate_data_sp = action_sp.add_parser("generate-data", help="reddit entity stats.")
+        redditor_sp = entity_sp.add_parser("redditor")
+        redditor_group = redditor_sp.add_argument_group("redditor-group")
+        redditor_group.add_argument("username")
 
-        for sp in (create_object_sp, get_submissions_sp, generate_data_sp):
-            entity_sp = sp.add_subparsers(title="entities", dest="entity", required=True)
+        thread_sp = entity_sp.add_parser("thread")
+        thread_group = thread_sp.add_argument_group("thread-group")
+        thread_group.add_argument("url")
 
-            thread_sp = entity_sp.add_parser("thread", help="Process a reddit thread.")
-            thread_sp.add_argument("url", help="Reddit thread URL.")
-            thread_sp.add_argument("--debug", action="store_true", help="Set log level to DEBUG.")
-            thread_sp.add_argument(
-                "--llm",
-                choices=models.Producer.objects.filter(category__name="LLM").values_list("name", flat=True),
-                default=config.LLM_NAME,
-                help="LLM choice to use when generating data.",
-            )
-            thread_sp.add_argument(
-                "--nlp",
-                choices=models.Producer.objects.filter(category__name="NLP").values_list("name", flat=True),
-                default=config.NLP_NAME,
-                help="NLP choice to use when generating data.",
-            )
+        for entity_sp in (redditor_sp, thread_sp):
+            service_sp = entity_sp.add_subparsers(dest="service", required=True)
 
-            redditor_sp = entity_sp.add_parser("redditor", help="Process a redditor.")
-            redditor_sp.add_argument("username", help="Redditor username.")
-            redditor_sp.add_argument("--debug", action="store_true", help="Set log level to DEBUG.")
-            redditor_sp.add_argument(
-                "--llm",
-                choices=models.Producer.objects.filter(category__name="LLM").values_list("name", flat=True),
-                default=config.LLM_NAME,
-                help="LLM choice to use when generating data.",
-            )
-            redditor_sp.add_argument(
-                "--nlp",
-                choices=models.Producer.objects.filter(category__name="NLP").values_list("name", flat=True),
-                default=config.NLP_NAME,
-                help="NLP choice to use when generating data.",
-            )
+            data_sp = service_sp.add_parser("data")
+
+            for service_p in (data_sp,):
+                method_sp = service_p.add_subparsers(dest="method", required=True)
+
+                create_object_sp = method_sp.add_parser("create-object")
+                generate_sp = method_sp.add_parser("generate")
+                get_inputs_sp = method_sp.add_parser("get-inputs")
+
+                for method_p in (create_object_sp, generate_sp, get_inputs_sp):
+                    method_p.add_argument("--debug", action="store_true")
+
+                    method_p.add_argument(
+                        "--llm",
+                        choices=models.Producer.objects.filter(category__name="LLM").values_list("name", flat=True),
+                        default=config.LLM_NAME,
+                    )
+
+                    method_p.add_argument(
+                        "--nlp",
+                        choices=models.Producer.objects.filter(category__name="NLP").values_list("name", flat=True),
+                        default=config.NLP_NAME,
+                    )
 
     def echo(self, s):
         self.stdout.write(s, ending="\n\r")
@@ -94,93 +82,48 @@ class Command(management.base.BaseCommand):
         encoding = tiktoken.encoding_for_model(llm_producer.name)
 
         if options["entity"] == "redditor":
-            username = options["username"]
-            service = services.RedditorDataService(
-                username=username,
-                llm_contributor=admin,
-                llm_producer=llm_producer,
-                nlp_contributor=admin,
-                nlp_producer=nlp_producer,
-                env=env,
-            )
+            identifier = options["username"]
 
-            try:
-                submissions: List[str] = service.get_submissions()
-                if options["action"] == "get-submissions":
-                    self.echos(submissions)
-                    log.debug(
-                        "Retrieved %s submissions (%s tokens) for %s",
-                        len(submissions),
-                        len(encoding.encode("|".join(submissions))),
-                        service.username,
-                    )
-                else:
-                    generated_data: schemas.GeneratedRedditorData = service.generate_data(
-                        inputs=submissions,
-                        producer_settings=settings.DEFAULT_PRODUCER_SETTINGS,
-                        prompt=config.REDDITOR_LLM_PROMPT,
-                    )
-                    if options["action"] == "generate-data":
-                        self.echo(generated_data.model_dump_json())
-            except exceptions.UnprocessableRedditorError as e:
-                log.exception("Unable to process %s", username)
-                obj, _ = models.UnprocessableRedditor.objects.update_or_create(
-                    username=e.username,
-                    defaults={
-                        "reason": e.reason,
-                    },
-                    create_defaults={
-                        "reason": e.reason,
-                        "username": e.username,
-                    },
-                )
-            else:
-                if options["action"] == "create-object":
-                    log.debug("Generated data = %s", generated_data.model_dump())
-                    obj: models.RedditorData = service.create_object(generated_data=generated_data)
-
+            prompt = config.REDDITOR_LLM_PROMPT
+            service_cls = services.RedditorDataService
         else:
-            url = options["url"]
-            service = services.ThreadDataService(
-                url=url,
-                llm_contributor=admin,
-                llm_producer=llm_producer,
-                nlp_contributor=admin,
-                nlp_producer=nlp_producer,
-                env=env,
-            )
+            identifier = options["url"]
 
-            try:
-                submissions: List[str] = service.get_submissions()
-                if options["action"] == "get-submissions":
-                    self.echos(submissions)
-                    log.debug(
-                        "Retrieved %s submissions (%s tokens) for %s",
-                        len(submissions),
-                        len(encoding.encode("|".join(submissions))),
-                        service.url,
-                    )
-                else:
-                    generated_data: schemas.GeneratedThreadData = service.generate_data(
-                        inputs=submissions,
-                        producer_settings=settings.DEFAULT_PRODUCER_SETTINGS,
-                        prompt=config.THREAD_LLM_PROMPT,
-                    )
-                    if options["action"] == "generate-data":
-                        self.echo(generated_data.model_dump_json())
-            except exceptions.UnprocessableThreadError as e:
-                log.exception("Unable to process %s", url)
-                obj, _ = models.UnprocessableThread.objects.update_or_create(
-                    url=e.url,
-                    defaults={
-                        "reason": e.reason,
-                    },
-                    create_defaults={
-                        "reason": e.reason,
-                        "url": e.url,
-                    },
-                )
-            else:
-                if options["action"] == "create-object":
-                    log.debug("Generated data = %s", generated_data.model_dump())
-                    obj: models.ThreadData = service.create_object(generated_data=generated_data)
+            prompt = config.THREAD_LLM_PROMPT
+            service_cls = services.ThreadDataService
+
+        service = service_cls(
+            identifier=identifier,
+            llm_contributor=admin,
+            llm_producer=llm_producer,
+            nlp_contributor=admin,
+            nlp_producer=nlp_producer,
+            producer_settings=settings.DEFAULT_PRODUCER_SETTINGS,
+            submitter=admin,
+            env=env,
+        )
+
+        inputs: List[str] = service.get_inputs()
+
+        log.debug(
+            "Retrieved %s inputs (%s tokens) for %s",
+            len(inputs),
+            len(encoding.encode("|".join(inputs))),
+            service.identifier,
+        )
+
+        if options["method"] == "get-inputs":
+            self.echos(inputs)
+            return
+
+        generated = service.generate(inputs=inputs, prompt=prompt)
+
+        if options["method"] == "generate":
+            self.echo(generated.model_dump_json(indent=4, exclude={"inputs", "prompt"}))
+            return
+
+        log.debug("Generated data = %s", generated.model_dump())
+        obj = service.create_object(generated=generated)
+
+        if options["method"] == "create-object":
+            self.echo(str(obj))

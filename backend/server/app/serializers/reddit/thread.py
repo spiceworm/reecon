@@ -16,8 +16,8 @@ from ..producer import (
 
 __all__ = (
     "ThreadDataSerializer",
-    "ThreadRequestSerializer",
-    "ThreadResponseSerializer",
+    "ThreadDataRequestSerializer",
+    "ThreadDataResponseSerializer",
 )
 
 
@@ -79,12 +79,12 @@ class ThreadDataSerializer(serializers.ModelSerializer):
         exclude = ("id", "thread")
 
 
-class ThreadRequestSerializer(serializers.Serializer):
+class ThreadDataRequestSerializer(serializers.Serializer):
     paths = serializers.ListField(child=serializers.CharField())
     producer_settings = ProducerSettingsSerializer()
 
 
-class ThreadResponseSerializer(serializers.Serializer):
+class ThreadDataResponseSerializer(serializers.Serializer):
     pending = PendingThreadSerializer(many=True)
     processed = ProcessedThreadSerializer(many=True)
     unprocessable = UnprocessableThreadSerializer(many=True)

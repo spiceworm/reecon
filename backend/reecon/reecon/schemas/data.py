@@ -34,11 +34,10 @@ class NlpGeneratedThreadData(pydantic.BaseModel):
 
 
 class GeneratedRedditorData(LlmGeneratedRedditorData, NlpGeneratedRedditorData):
-    pass
+    inputs: List[str]
+    prompt: str
 
 
 class GeneratedThreadData(LlmGeneratedThreadData, NlpGeneratedThreadData):
-    pass
-
-
-GeneratedData = GeneratedRedditorData | GeneratedThreadData
+    inputs: List[str]
+    prompt: str

@@ -50,14 +50,14 @@ export interface ProducerSettings {
     api_key: string
 }
 
-export interface ProcessRedditorsResponse {
+export interface ProcessRedditorsDataResponse {
     ignored: IgnoredRedditor[]
     pending: PendingRedditor[]
     processed: Redditor[]
     unprocessable: UnprocessableRedditor[]
 }
 
-export interface ProcessThreadsResponse {
+export interface ProcessThreadsDataResponse {
     pending: PendingThread[]
     processed: Thread[]
     unprocessable: UnprocessableThread[]

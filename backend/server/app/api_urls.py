@@ -18,8 +18,8 @@ from .views.api import v1
 v1_endpoints = [
     path("status/", v1.StatusView.as_view(), name="status"),
     path("status/messages/", v1.StatusMessagesView.as_view(), name="status-messages"),
-    path("reddit/redditors/", v1.reddit.RedditorsView.as_view(), name="reddit-redditors"),
-    path("reddit/threads/", v1.reddit.ThreadsView.as_view(), name="reddit-threads"),
+    path("reddit/redditors/data/", v1.reddit.RedditorsDataView.as_view(), name="reddit-redditors-data"),
+    path("reddit/threads/data/", v1.reddit.ThreadsDataView.as_view(), name="reddit-threads-data"),
 ]
 
 v1_auth = [

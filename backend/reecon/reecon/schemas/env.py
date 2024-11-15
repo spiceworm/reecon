@@ -8,6 +8,7 @@ __all__ = ("get_worker_env", "WorkerEnv")
 @dataclass
 class LlmEnv:
     prompt: str
+    prompt_prefix: str
     max_context_window_for_inputs: float = Field(
         ge=0.0,
         le=1.0,
@@ -88,6 +89,7 @@ def get_worker_env():
             llm=LlmEnv(
                 max_context_window_for_inputs=config.LLM_MAX_CONTEXT_WINDOW_FOR_INPUTS,
                 prompt=config.REDDITOR_LLM_PROMPT,
+                prompt_prefix=config.REDDITOR_LLM_PROMPT_PREFIX,
             ),
             submission=RedditEntitySubmissionEnv(
                 min_submissions=config.REDDITOR_MIN_SUBMISSIONS,
@@ -97,6 +99,7 @@ def get_worker_env():
             llm=LlmEnv(
                 max_context_window_for_inputs=config.LLM_MAX_CONTEXT_WINDOW_FOR_INPUTS,
                 prompt=config.THREAD_LLM_PROMPT,
+                prompt_prefix=config.THREAD_LLM_PROMPT_PREFIX,
             ),
             submission=RedditEntitySubmissionEnv(
                 min_submissions=config.THREAD_MIN_SUBMISSIONS,

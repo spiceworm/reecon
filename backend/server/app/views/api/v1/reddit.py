@@ -20,18 +20,18 @@ from .... import serializers
 
 
 __all__ = (
-    "RedditorsView",
-    "ThreadsView",
+    "RedditorsDataView",
+    "ThreadsDataView",
 )
 
 
 log = logging.getLogger("app.views.api.v1.reddit")
 
 
-@extend_schema(responses=serializers.RedditorResponseSerializer())
-class RedditorsView(CreateAPIView):
+@extend_schema(responses=serializers.RedditorDataResponseSerializer())
+class RedditorsDataView(CreateAPIView):
     queryset = models.Redditor.objects.all()
-    serializer_class = serializers.RedditorRequestSerializer
+    serializer_class = serializers.RedditorDataRequestSerializer
 
     def create(self, request: Request, *args, **kwargs):
         submit_serializer = self.get_serializer(data=request.data)
@@ -73,19 +73,21 @@ class RedditorsView(CreateAPIView):
         llm_producer = models.Producer.objects.get(name=config.LLM_NAME)
         nlp_contributor = User.objects.get(username="admin")
         nlp_producer = models.Producer.objects.get(name=config.NLP_NAME)
+        submitter = request.user
         env = schemas.get_worker_env()
 
         if config.REDDITOR_PROCESSING_ENABLED:
             for redditor_username in pending_usernames:
                 pending_redditors.append({"username": redditor_username})
                 django_rq.enqueue(
-                    "app.worker.process_redditor",  # this function is defined in the worker app
+                    "app.worker.process_redditor_data",  # this function is defined in the worker app
                     redditor_username,
                     llm_contributor,
                     llm_producer,
                     nlp_contributor,
                     nlp_producer,
                     producer_settings,
+                    submitter,
                     env,
                     job_id=f"redditor-{redditor_username}",
                 )
@@ -99,15 +101,15 @@ class RedditorsView(CreateAPIView):
             "unprocessable": unprocessable_redditors,
         }
 
-        response_serializer = serializers.RedditorResponseSerializer(instance=data)
+        response_serializer = serializers.RedditorDataResponseSerializer(instance=data)
         headers = self.get_success_headers(response_serializer.data)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
-@extend_schema(responses=serializers.ThreadResponseSerializer(many=True))
-class ThreadsView(CreateAPIView):
+@extend_schema(responses=serializers.ThreadDataResponseSerializer(many=True))
+class ThreadsDataView(CreateAPIView):
     queryset = models.Thread.objects.all()
-    serializer_class = serializers.ThreadRequestSerializer
+    serializer_class = serializers.ThreadDataRequestSerializer
 
     def create(self, request: Request, *args, **kwargs):
         submit_serializer = self.get_serializer(data=request.data)
@@ -145,6 +147,7 @@ class ThreadsView(CreateAPIView):
         llm_producer = models.Producer.objects.get(name=config.LLM_NAME)
         nlp_contributor = User.objects.get(username="admin")
         nlp_producer = models.Producer.objects.get(name=config.NLP_NAME)
+        submitter = request.user
         env = schemas.get_worker_env()
 
         if config.THREAD_PROCESSING_ENABLED:
@@ -159,13 +162,14 @@ class ThreadsView(CreateAPIView):
                 # Maybe it's because of the length of the job id or symbols that are in the URL?
 
                 django_rq.enqueue(
-                    "app.worker.process_thread",  # this function is defined in the worker app
+                    "app.worker.process_thread_data",  # this function is defined in the worker app
                     thread_url,
                     llm_contributor,
                     llm_producer,
                     nlp_contributor,
                     nlp_producer,
                     producer_settings,
+                    submitter,
                     env,
                     job_id=f"thread-{subreddit}-{thread_id}",
                 )
@@ -178,6 +182,6 @@ class ThreadsView(CreateAPIView):
             "unprocessable": unprocessable_threads,
         }
 
-        response_serializer = serializers.ThreadResponseSerializer(instance=data)
+        response_serializer = serializers.ThreadDataResponseSerializer(instance=data)
         headers = self.get_success_headers(response_serializer.data)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)

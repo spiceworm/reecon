@@ -329,17 +329,23 @@ CONSTANCE_CONFIG = collections.OrderedDict(
             "https://textblob.readthedocs.io/en/dev/",
             "nlp_select",
         ),
+        "REDDITOR_LLM_PROMPT_PREFIX": (
+            "The following pipe delimited messages are unrelated submissions posted by a person.",
+            "Text prepended to redditor LLM prompts.",
+        ),
         "REDDITOR_LLM_PROMPT": (
-            "The following pipe delimited messages are unrelated submissions posted by a person. "
             "Determine the age, a list of interests, and the IQ of that person based on their writing. "
             "Also generate a short summary that describes the author that uses 50 completion_tokens or less.",
-            "Prompt sent to the OpenAI API to infer data about redditors based on submissions.",
+            "Prompt sent to the LLM for redditor prompts.",
+        ),
+        "THREAD_LLM_PROMPT_PREFIX": (
+            "The following pipe delimited messages are unrelated submissions posted by multiple people.",
+            "Text prepended to thread LLM prompts.",
         ),
         "THREAD_LLM_PROMPT": (
-            "The following pipe delimited messages are unrelated submissions posted by multiple people. "
             "Determine a list of keywords that describe the discussion. Also generate a brief summary of what "
             "is being discussed that uses 50 completion_tokens or less.",
-            "Prompt sent to the OpenAI API to infer data about a thread based on submissions.",
+            "Prompt sent to the LLM for thread prompts.",
         ),
         "LLM_MAX_CONTEXT_WINDOW_FOR_INPUTS": (
             0.5,

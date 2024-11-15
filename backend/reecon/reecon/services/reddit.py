@@ -40,26 +40,31 @@ __all__ = (
     "ThreadDataService",
 )
 
-
 log = logging.getLogger("reecon.services.reddit")
 
 
-class RedditDataService(abc.ABC):
+class _RedditService(abc.ABC):
     TOKENIZER = nltk.data.load("tokenizers/punkt/english.pickle")
 
     def __init__(
         self,
         *,
+        identifier: str,
         llm_contributor: User,
         llm_producer: models.Producer,
         nlp_contributor: User,
         nlp_producer: models.Producer,
+        producer_settings: dict,
+        submitter: User,
         env: schemas.WorkerEnv,
     ):
+        self.identifier = identifier
         self.llm_contributor = llm_contributor
         self.llm_producer = llm_producer
         self.nlp_contributor = nlp_contributor
         self.nlp_producer = nlp_producer
+        self.producer_settings = producer_settings
+        self.submitter = submitter
         self.env = env
 
         self.reddit_client = praw.Reddit(
@@ -72,32 +77,7 @@ class RedditDataService(abc.ABC):
         )
 
     @abc.abstractmethod
-    def create(self, *args, **kwargs):
-        pass
-
-    @abc.abstractmethod
-    def create_object(self, *args, **kwargs):
-        pass
-
-    def generate_data(self, *, inputs: List[str], producer_settings: dict, prompt: str) -> schemas.GeneratedData:
-        """
-        See docstring in child class methods.
-        """
-        nlp_service = producer.NlpProducerService(response_format=self.nlp_response_format)
-        nlp_data = nlp_service.generate_data(inputs=inputs, nlp_name=self.nlp_producer.name)
-
-        llm_service = producer.LlmProducerService(response_format=self.llm_response_format)
-        llm_data = llm_service.generate_data(
-            inputs=inputs,
-            llm_name=self.llm_producer.name,
-            producer_settings=producer_settings,
-            prompt=prompt,
-        )
-
-        return self.response_format.model_validate({**nlp_data.model_dump(), **llm_data.model_dump()})
-
-    @abc.abstractmethod
-    def get_submissions(self, *args, **kwargs):
+    def get_inputs(self, *args, **kwargs):
         pass
 
     def filter_submission(self, *, text: str) -> str:
@@ -137,118 +117,8 @@ class RedditDataService(abc.ABC):
 
         return retval
 
-    @property
-    @abc.abstractmethod
-    def llm_response_format(self):
-        pass
 
-    @property
-    @abc.abstractmethod
-    def nlp_response_format(self):
-        pass
-
-    @property
-    @abc.abstractmethod
-    def response_format(self):
-        pass
-
-
-class RedditorDataService(RedditDataService):
-    llm_response_format = schemas.LlmGeneratedRedditorData
-    nlp_response_format = schemas.NlpGeneratedRedditorData
-    response_format = schemas.GeneratedRedditorData
-
-    def __init__(
-        self,
-        *,
-        username: str,
-        llm_contributor: User,
-        llm_producer: models.Producer,
-        nlp_contributor: User,
-        nlp_producer: models.Producer,
-        env: schemas.WorkerEnv,
-    ):
-        super().__init__(
-            llm_contributor=llm_contributor,
-            llm_producer=llm_producer,
-            nlp_contributor=nlp_contributor,
-            nlp_producer=nlp_producer,
-            env=env,
-        )
-        self.username = username
-
-    def create(self, producer_settings: dict) -> models.RedditorData | models.UnprocessableRedditor:
-        """
-        Convenience method that executes `get_submissions`, `generate_data`, and `create_object` with the necessary
-        arguments.
-        """
-        try:
-            submissions = self.get_submissions()
-        except exceptions.UnprocessableRedditorError as e:
-            log.exception("Unable to process %s", e.username)
-            obj, _ = models.UnprocessableRedditor.objects.update_or_create(
-                username=e.username,
-                defaults={
-                    "reason": e.reason,
-                },
-                create_defaults={
-                    "reason": e.reason,
-                    "username": e.username,
-                },
-            )
-        else:
-            generated_data: schemas.GeneratedRedditorData = self.generate_data(
-                inputs=submissions,
-                producer_settings=producer_settings,
-                prompt=self.env.redditor.llm.prompt,
-            )
-            obj: models.RedditorData = self.create_object(generated_data=generated_data)
-        return obj
-
-    def create_object(self, *, generated_data: schemas.GeneratedRedditorData) -> models.RedditorData:
-        """
-        Takes all argument objects and associates them as the database schema expects. Returns a :model:`RedditorData`
-        object based on those associations.
-        """
-        redditor, _ = models.Redditor.objects.update_or_create(
-            username=self.username,
-            defaults={
-                "last_processed": timezone.now(),
-            },
-            create_defaults={
-                "last_processed": timezone.now(),
-                "username": self.username,
-            },
-        )
-        return models.RedditorData.objects.create(
-            age=models.ProducedInteger.objects.create(
-                contributor=self.llm_contributor,
-                producer=self.llm_producer,
-                value=generated_data.age,
-            ),
-            interests=models.ProducedTextList.objects.create(
-                contributor=self.llm_contributor,
-                producer=self.llm_producer,
-                value=generated_data.normalized_interests(),
-            ),
-            iq=models.ProducedInteger.objects.create(
-                contributor=self.llm_contributor,
-                producer=self.llm_producer,
-                value=generated_data.iq,
-            ),
-            redditor=redditor,
-            sentiment_polarity=models.ProducedFloat.objects.create(
-                contributor=self.llm_contributor,
-                producer=self.llm_producer,
-                value=generated_data.sentiment_polarity,
-            ),
-            summary=models.ProducedText.objects.create(
-                contributor=self.llm_contributor,
-                producer=self.llm_producer,
-                value=generated_data.summary,
-            ),
-        )
-
+class _RedditorService(_RedditService):
     @retry(
         before_sleep=before_sleep_log(log, logging.DEBUG),
         reraise=True,
@@ -256,12 +126,12 @@ class RedditorDataService(RedditDataService):
         stop=stop_after_attempt(10),
         wait=wait_random_exponential(min=1, max=60),
     )
-    def get_submissions(self) -> List[str]:
+    def get_inputs(self) -> List[str]:
         submissions: Set[str] = set()
-        praw_redditor: PrawRedditor = self.reddit_client.redditor(name=self.username)
+        praw_redditor: PrawRedditor = self.reddit_client.redditor(name=self.identifier)
 
         context_window = self.llm_producer.context_window
-        max_input_tokens = context_window * self.env.redditor.llm.max_context_window_for_inputs
+        max_input_tokens = int(context_window * self.env.redditor.llm.max_context_window_for_inputs)
         encoding = tiktoken.encoding_for_model(self.llm_producer.name)
 
         # Get the body of threads submitted by the user.
@@ -288,102 +158,24 @@ class RedditorDataService(RedditDataService):
                 else:
                     break
 
-        if len(submissions) < self.env.redditor.submission.min_submissions:
-            raise exceptions.UnprocessableRedditorError(
-                self.username,
-                f"Less than {self.env.redditor.submission.min_submissions} submissions available for processing "
-                f"(found {len(submissions)})",
+        min_submissions = self.env.redditor.submission.min_submissions
+        if len(submissions) < min_submissions:
+            reason = f"Less than {min_submissions} submissions available for processing (found {len(submissions)})"
+            models.UnprocessableRedditor.objects.update_or_create(
+                username=self.identifier,
+                defaults={
+                    "reason": reason,
+                },
+                create_defaults={
+                    "reason": reason,
+                    "username": self.identifier,
+                },
             )
-
+            raise exceptions.UnprocessableRedditorError(self.identifier, reason)
         return list(submissions)
 
 
-class ThreadDataService(RedditDataService):
-    llm_response_format = schemas.LlmGeneratedThreadData
-    nlp_response_format = schemas.NlpGeneratedThreadData
-    response_format = schemas.GeneratedThreadData
-
-    def __init__(
-        self,
-        *,
-        url: str,
-        llm_contributor: User,
-        llm_producer: models.Producer,
-        nlp_contributor: User,
-        nlp_producer: models.Producer,
-        env: schemas.WorkerEnv,
-    ):
-        super().__init__(
-            llm_contributor=llm_contributor,
-            llm_producer=llm_producer,
-            nlp_contributor=nlp_contributor,
-            nlp_producer=nlp_producer,
-            env=env,
-        )
-        self.url = url
-
-    def create(self, producer_settings: dict) -> models.ThreadData | models.UnprocessableThread:
-        """
-        Convenience method that executes `get_submissions`, `generate_data`, and `create_object` with the necessary
-        arguments.
-        """
-        try:
-            submissions = self.get_submissions()
-        except exceptions.UnprocessableThreadError as e:
-            log.exception("Unable to process %s", e.url)
-            obj, _ = models.UnprocessableThread.objects.update_or_create(
-                url=self.url,
-                defaults={
-                    "reason": e.reason,
-                },
-                create_defaults={
-                    "reason": e.reason,
-                    "url": e.url,
-                },
-            )
-        else:
-            generated_data: schemas.GeneratedThreadData = self.generate_data(
-                inputs=submissions,
-                producer_settings=producer_settings,
-                prompt=self.env.thread.llm.prompt,
-            )
-            obj: models.ThreadData = self.create_object(generated_data=generated_data)
-        return obj
-
-    def create_object(self, *, generated_data: schemas.GeneratedThreadData) -> models.ThreadData:
-        """
-        Takes all argument objects and associates them as the database schema expects. Returns a :model:`ThreadData`
-        object based on those associations.
-        """
-        thread, _ = models.Thread.objects.update_or_create(
-            url=self.url,
-            defaults={
-                "last_processed": timezone.now(),
-            },
-            create_defaults={
-                "last_processed": timezone.now(),
-                "url": self.url,
-            },
-        )
-        return models.ThreadData.objects.create(
-            keywords=models.ProducedTextList.objects.create(
-                contributor=self.llm_contributor,
-                producer=self.llm_producer,
-                value=generated_data.normalized_keywords(),
-            ),
-            sentiment_polarity=models.ProducedFloat.objects.create(
-                contributor=self.llm_contributor,
-                producer=self.llm_producer,
-                value=generated_data.sentiment_polarity,
-            ),
-            summary=models.ProducedText.objects.create(
-                contributor=self.llm_contributor,
-                producer=self.llm_producer,
-                value=generated_data.summary,
-            ),
-            thread=thread,
-        )
-
+class _ThreadService(_RedditService):
     @retry(
         before_sleep=before_sleep_log(log, logging.DEBUG),
         reraise=True,
@@ -391,13 +183,13 @@ class ThreadDataService(RedditDataService):
         stop=stop_after_attempt(10),
         wait=wait_random_exponential(min=1, max=60),
     )
-    def get_submissions(self) -> List[str]:
+    def get_inputs(self) -> List[str]:
         submissions: Set[str] = set()
         ignored_usernames = set(models.IgnoredRedditor.objects.values_list("username", flat=True))
-        praw_submission: Submission = self.reddit_client.submission(url=self.url)
+        praw_submission: Submission = self.reddit_client.submission(url=self.identifier)
 
         context_window = self.llm_producer.context_window
-        max_input_tokens = context_window * self.env.thread.llm.max_context_window_for_inputs
+        max_input_tokens = int(context_window * self.env.thread.llm.max_context_window_for_inputs)
         encoding = tiktoken.encoding_for_model(self.llm_producer.name)
 
         # Get the thread selftext
@@ -421,11 +213,146 @@ class ThreadDataService(RedditDataService):
                     else:
                         break
 
-        if len(submissions) < self.env.thread.submission.min_submissions:
-            raise exceptions.UnprocessableThreadError(
-                self.url,
-                f"Less than {self.env.thread.submission.min_submissions} submissions available for processing "
-                f"(found {len(submissions)})",
+        min_submissions = self.env.thread.submission.min_submissions
+        if len(submissions) < min_submissions:
+            reason = f"Less than {min_submissions} submissions available for processing (found {len(submissions)})"
+            models.UnprocessableThread.objects.update_or_create(
+                url=self.identifier,
+                defaults={
+                    "reason": reason,
+                },
+                create_defaults={
+                    "reason": reason,
+                    "url": self.identifier,
+                },
             )
-
+            raise exceptions.UnprocessableThreadError(self.identifier, reason)
         return list(submissions)
+
+
+class _DataService(abc.ABC):
+    @abc.abstractmethod
+    def create_object(self, *args, **kwargs):
+        pass
+
+    @abc.abstractmethod
+    def generate(self, *args, **kwargs):
+        pass
+
+
+class RedditorDataService(_DataService, _RedditorService):
+    def create_object(self, *, generated: schemas.GeneratedRedditorData) -> models.RedditorData:
+        redditor, _ = models.Redditor.objects.update_or_create(
+            username=self.identifier,
+            defaults={
+                "last_processed": timezone.now(),
+                "submitter": self.submitter,
+            },
+            create_defaults={
+                "last_processed": timezone.now(),
+                "submitter": self.submitter,
+                "username": self.identifier,
+            },
+        )
+        return models.RedditorData.objects.create(
+            age=models.ProducedInteger.objects.create(
+                contributor=self.llm_contributor,
+                producer=self.llm_producer,
+                value=generated.age,
+            ),
+            interests=models.ProducedTextList.objects.create(
+                contributor=self.llm_contributor,
+                producer=self.llm_producer,
+                value=generated.normalized_interests(),
+            ),
+            iq=models.ProducedInteger.objects.create(
+                contributor=self.llm_contributor,
+                producer=self.llm_producer,
+                value=generated.iq,
+            ),
+            redditor=redditor,
+            sentiment_polarity=models.ProducedFloat.objects.create(
+                contributor=self.nlp_contributor,
+                producer=self.llm_producer,
+                value=generated.sentiment_polarity,
+            ),
+            summary=models.ProducedText.objects.create(
+                contributor=self.llm_contributor,
+                producer=self.llm_producer,
+                value=generated.summary,
+            ),
+        )
+
+    def generate(self, *, inputs: List[str], prompt: str) -> schemas.GeneratedRedditorData:
+        nlp_service = producer.NlpProducerService(response_format=schemas.NlpGeneratedRedditorData)
+        nlp_data = nlp_service.generate_data(inputs=inputs, nlp_name=self.nlp_producer.name)
+
+        llm_service = producer.LlmProducerService(response_format=schemas.LlmGeneratedRedditorData)
+        llm_data = llm_service.generate_data(
+            inputs=inputs,
+            llm_name=self.llm_producer.name,
+            producer_settings=self.producer_settings,
+            prompt=prompt,
+        )
+        return schemas.GeneratedRedditorData.model_validate(
+            {
+                "inputs": inputs,
+                "prompt": prompt,
+                **nlp_data.model_dump(),
+                **llm_data.model_dump(),
+            }
+        )
+
+
+class ThreadDataService(_DataService, _ThreadService):
+    def create_object(self, *, generated: schemas.GeneratedThreadData) -> models.ThreadData:
+        thread, _ = models.Thread.objects.update_or_create(
+            url=self.identifier,
+            defaults={
+                "last_processed": timezone.now(),
+                "submitter": self.submitter,
+            },
+            create_defaults={
+                "last_processed": timezone.now(),
+                "submitter": self.submitter,
+                "url": self.identifier,
+            },
+        )
+        return models.ThreadData.objects.create(
+            keywords=models.ProducedTextList.objects.create(
+                contributor=self.llm_contributor,
+                producer=self.llm_producer,
+                value=generated.normalized_keywords(),
+            ),
+            sentiment_polarity=models.ProducedFloat.objects.create(
+                contributor=self.llm_contributor,
+                producer=self.llm_producer,
+                value=generated.sentiment_polarity,
+            ),
+            summary=models.ProducedText.objects.create(
+                contributor=self.llm_contributor,
+                producer=self.llm_producer,
+                value=generated.summary,
+            ),
+            thread=thread,
+        )
+
+    def generate(self, *, inputs: List[str], prompt: str) -> schemas.GeneratedThreadData:
+        nlp_service = producer.NlpProducerService(response_format=schemas.NlpGeneratedThreadData)
+        nlp_data = nlp_service.generate_data(inputs=inputs, nlp_name=self.nlp_producer.name)
+
+        llm_service = producer.LlmProducerService(response_format=schemas.LlmGeneratedThreadData)
+        llm_data = llm_service.generate_data(
+            inputs=inputs,
+            llm_name=self.llm_producer.name,
+            producer_settings=self.producer_settings,
+            prompt=prompt,
+        )
+        return schemas.GeneratedThreadData.model_validate(
+            {
+                "inputs": inputs,
+                "prompt": prompt,
+                **nlp_data.model_dump(),
+                **llm_data.model_dump(),
+            }
+        )

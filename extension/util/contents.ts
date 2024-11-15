@@ -16,24 +16,24 @@ export const execute = async () => {
         const producerSettings = await storage.getProducerSettings()
 
         const urlPaths = dom.getThreadUrlPaths()
-        const processThreadsResponse = await backgroundMessage.processThreads(producerSettings, urlPaths)
+        const processThreadsDataResponse = await backgroundMessage.processThreadsData(producerSettings, urlPaths)
         const contentFilter = await storage.getActiveContentFilter()
 
         await Promise.all([
-            dom.annotatePendingThreads(processThreadsResponse.pending, contentFilter),
-            dom.annotateProcessedThreads(processThreadsResponse.processed, contentFilter),
-            dom.annotateUnprocessableThreads(processThreadsResponse.unprocessable, contentFilter)
+            dom.annotatePendingThreads(processThreadsDataResponse.pending, contentFilter),
+            dom.annotateProcessedThreads(processThreadsDataResponse.processed, contentFilter),
+            dom.annotateUnprocessableThreads(processThreadsDataResponse.unprocessable, contentFilter)
         ])
 
         const usernameElementsMap = dom.getUsernameElementsMap()
         const usernames = Object.keys(usernameElementsMap)
-        const processRedditorsResponse = await backgroundMessage.processRedditors(producerSettings, usernames)
+        const processRedditorsDataResponse = await backgroundMessage.processRedditorsData(producerSettings, usernames)
 
         await Promise.all([
-            dom.annotateIgnoredRedditors(processRedditorsResponse.ignored, usernameElementsMap, contentFilter),
-            dom.annotatePendingRedditors(processRedditorsResponse.pending, usernameElementsMap, contentFilter),
-            dom.annotateProcessedRedditors(processRedditorsResponse.processed, usernameElementsMap, contentFilter),
-            dom.annotateUnprocessableRedditors(processRedditorsResponse.unprocessable, usernameElementsMap, contentFilter)
+            dom.annotateIgnoredRedditors(processRedditorsDataResponse.ignored, usernameElementsMap, contentFilter),
+            dom.annotatePendingRedditors(processRedditorsDataResponse.pending, usernameElementsMap, contentFilter),
+            dom.annotateProcessedRedditors(processRedditorsDataResponse.processed, usernameElementsMap, contentFilter),
+            dom.annotateUnprocessableRedditors(processRedditorsDataResponse.unprocessable, usernameElementsMap, contentFilter)
         ])
     }
 }

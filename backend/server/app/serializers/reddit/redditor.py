@@ -17,8 +17,8 @@ from ..producer import (
 
 __all__ = (
     "RedditorDataSerializer",
-    "RedditorRequestSerializer",
-    "RedditorResponseSerializer",
+    "RedditorDataRequestSerializer",
+    "RedditorDataResponseSerializer",
 )
 
 
@@ -86,7 +86,7 @@ class RedditorDataSerializer(serializers.ModelSerializer):
         exclude = ("id", "redditor")
 
 
-class RedditorRequestSerializer(serializers.Serializer):
+class RedditorDataRequestSerializer(serializers.Serializer):
     usernames = serializers.ListField(
         child=serializers.CharField(),
         required=True,
@@ -96,7 +96,7 @@ class RedditorRequestSerializer(serializers.Serializer):
     )
 
 
-class RedditorResponseSerializer(serializers.Serializer):
+class RedditorDataResponseSerializer(serializers.Serializer):
     ignored = IgnoredRedditorSerializer(many=True)
     pending = PendingRedditorSerializer(many=True)
     processed = ProcessedRedditorSerializer(many=True)

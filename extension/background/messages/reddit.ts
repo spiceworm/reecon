@@ -8,7 +8,7 @@ import type * as types from "~util/types"
 // set difference until Set.prototype.difference` is available
 const difference = <T>(a: Set<T>, b: Set<T>) => new Set([...a].filter((x) => !b.has(x)))
 
-const processRedditors = async (producerSettings: types.ProducerSettings[], usernames: string[]): Promise<types.ProcessRedditorsResponse> => {
+const processRedditorsData = async (producerSettings: types.ProducerSettings[], usernames: string[]): Promise<types.ProcessRedditorsDataResponse> => {
     const IGNORED_BUCKET = "redditors-ignored"
     const PENDING_BUCKET = "redditors-pending"
     const PROCESSED_BUCKET = "redditors-processed"
@@ -52,7 +52,7 @@ const processRedditors = async (producerSettings: types.ProducerSettings[], user
             unprocessable: cachedUnprocessable
         }
     } else {
-        let response: types.ProcessRedditorsResponse = await api.authPost("/api/v1/reddit/redditors/", {
+        let response: types.ProcessRedditorsDataResponse = await api.authPost("/api/v1/reddit/redditors/data/", {
             producer_settings: producerSettings,
             usernames: usernamesToProcess
         })
@@ -78,7 +78,7 @@ const processRedditors = async (producerSettings: types.ProducerSettings[], user
     }
 }
 
-const processThreads = async (producerSettings: types.ProducerSettings[], urlPaths: string[]): Promise<types.ProcessThreadsResponse> => {
+const processThreadsData = async (producerSettings: types.ProducerSettings[], urlPaths: string[]): Promise<types.ProcessThreadsDataResponse> => {
     const PENDING_BUCKET = "thread-pending"
     const PROCESSED_BUCKET = "thread-processed"
     const UNPROCESSABLE_BUCKET = "threads-unprocessable"
@@ -112,42 +112,42 @@ const processThreads = async (producerSettings: types.ProducerSettings[], urlPat
             unprocessable: cachedUnprocessable
         }
     } else {
-        let processThreadsResponse: types.ProcessThreadsResponse = await api.authPost("/api/v1/reddit/threads/", {
+        let response: types.ProcessThreadsDataResponse = await api.authPost("/api/v1/reddit/threads/data/", {
             producer_settings: producerSettings,
             paths: urlPathsToProcess
         })
 
         lscache.setBucket(PENDING_BUCKET)
-        processThreadsResponse.pending.map((thread) => lscache.set(thread.path, thread, 1))
+        response.pending.map((thread) => lscache.set(thread.path, thread, 1))
 
         lscache.setBucket(PROCESSED_BUCKET)
-        processThreadsResponse.processed.map((thread) => lscache.set(thread.path, thread, process.env.PLASMO_PUBLIC_THREAD_CACHE_EXP_MINUTES))
+        response.processed.map((thread) => lscache.set(thread.path, thread, process.env.PLASMO_PUBLIC_THREAD_CACHE_EXP_MINUTES))
 
         lscache.setBucket(UNPROCESSABLE_BUCKET)
-        processThreadsResponse.unprocessable.map((thread) => lscache.set(thread.path, thread, 5))
+        response.unprocessable.map((thread) => lscache.set(thread.path, thread, 5))
 
-        processThreadsResponse.pending.push(...cachedPending)
-        processThreadsResponse.processed.push(...cachedProcessed)
-        processThreadsResponse.unprocessable.push(...cachedUnprocessable)
+        response.pending.push(...cachedPending)
+        response.processed.push(...cachedProcessed)
+        response.unprocessable.push(...cachedUnprocessable)
 
-        return processThreadsResponse
+        return response
     }
 }
 
 const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
     const action: string = req.body.action
 
-    if (action === "processRedditors") {
+    if (action === "processRedditorsData") {
         const kwargs = req.body.kwargs
         const producerSettings: types.ProducerSettings[] = kwargs.producerSettings
         const usernames: string[] = kwargs.usernames
-        const message: types.ProcessRedditorsResponse = await processRedditors(producerSettings, usernames)
+        const message: types.ProcessRedditorsDataResponse = await processRedditorsData(producerSettings, usernames)
         res.send({ message })
-    } else if (action === "processThreads") {
+    } else if (action === "processThreadsData") {
         const kwargs = req.body.kwargs
         const producerSettings: types.ProducerSettings[] = kwargs.producerSettings
         const urlPaths: string[] = kwargs.urlPaths
-        const message: types.ProcessThreadsResponse = await processThreads(producerSettings, urlPaths)
+        const message: types.ProcessThreadsDataResponse = await processThreadsData(producerSettings, urlPaths)
         res.send({ message })
     } else {
         console.error(`Unhandled message with action: ${action}`)
