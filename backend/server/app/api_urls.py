@@ -20,13 +20,14 @@ router = DefaultRouter()
 router.register(r"producers/llm", v1.LlmProducerViewSet, basename='producer-llm')
 router.register(r"status/messages", v1.StatusMessagesViewSet, basename="status-messages")
 
+router.register(r"reddit/redditor/data", v1.reddit.RedditorsDataViewSet, basename="reddit-redditor-data")
+router.register(r"reddit/thread/data", v1.reddit.ThreadsDataViewSet, basename="reddit-thread-data")
+
 
 v1_endpoints = [
     path("", include(router.urls)),
 
     path("status/", v1.StatusView.as_view(), name="status"),
-    path("reddit/redditors/data/", v1.reddit.RedditorsDataView.as_view(), name="reddit-redditors-data"),
-    path("reddit/threads/data/", v1.reddit.ThreadsDataView.as_view(), name="reddit-threads-data"),
 ]
 
 v1_auth = [

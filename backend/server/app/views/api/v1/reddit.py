@@ -7,9 +7,9 @@ from django.utils import timezone
 import django_rq
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
-from rest_framework.generics import CreateAPIView
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
 
 from reecon import (
     models,
@@ -20,21 +20,21 @@ from .... import serializers
 
 
 __all__ = (
-    "RedditorsDataView",
-    "ThreadsDataView",
+    "RedditorsDataViewSet",
+    "ThreadsDataViewSet",
 )
 
 
 log = logging.getLogger("app.views.api.v1.reddit")
 
 
-@extend_schema(responses=serializers.RedditorDataResponseSerializer())
-class RedditorsDataView(CreateAPIView):
-    queryset = models.Redditor.objects.all()
-    serializer_class = serializers.RedditorDataRequestSerializer
-
-    def create(self, request: Request, *args, **kwargs):
-        submit_serializer = self.get_serializer(data=request.data)
+class RedditorsDataViewSet(GenericViewSet):
+    @extend_schema(
+        request=serializers.RedditorDataRequestSerializer,
+        responses=serializers.RedditorDataResponseSerializer,
+    )
+    def create(self, request: Request):
+        submit_serializer = serializers.RedditorDataRequestSerializer(data=request.data)
         submit_serializer.is_valid(raise_exception=True)
         producer_settings = submit_serializer.validated_data["producer_settings"]
         usernames = set(submit_serializer.validated_data["usernames"])
@@ -102,16 +102,15 @@ class RedditorsDataView(CreateAPIView):
         }
 
         response_serializer = serializers.RedditorDataResponseSerializer(instance=data)
-        headers = self.get_success_headers(response_serializer.data)
-        return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
 
-@extend_schema(responses=serializers.ThreadDataResponseSerializer(many=True))
-class ThreadsDataView(CreateAPIView):
-    queryset = models.Thread.objects.all()
-    serializer_class = serializers.ThreadDataRequestSerializer
-
-    def create(self, request: Request, *args, **kwargs):
+class ThreadsDataViewSet(GenericViewSet):
+    @extend_schema(
+        request=serializers.ThreadDataRequestSerializer,
+        responses=serializers.ThreadDataResponseSerializer,
+    )
+    def create(self, request: Request):
         submit_serializer = self.get_serializer(data=request.data)
         submit_serializer.is_valid(raise_exception=True)
         producer_settings = submit_serializer.validated_data["producer_settings"]
@@ -183,5 +182,4 @@ class ThreadsDataView(CreateAPIView):
         }
 
         response_serializer = serializers.ThreadDataResponseSerializer(instance=data)
-        headers = self.get_success_headers(response_serializer.data)
-        return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
