@@ -1,16 +1,38 @@
 import "bootstrap/dist/css/bootstrap.min.css"
 
-import { ContentFilterTable } from "~util/components/contentFilterTable"
-import { ProducerSettingsInputs } from "~util/components/producerSettings"
+import { MemoryRouter, Navigate, Route, Routes } from "react-router-dom"
+
+import { ContentFilters } from "~tabs/routes/contentFilters"
+import { ProducerSettings } from "~tabs/routes/producerSettings"
+import { RequireAuthentication } from "~util/components/authentication"
+import { Login } from "~util/routes/auth/login"
+import { Signup } from "~util/routes/auth/signup"
 
 export default function OptionsPage() {
     return (
-        <div className={"p-3"}>
-            <h2 className={"pb-3"}>API Providers</h2>
-            <ProducerSettingsInputs />
+        <MemoryRouter>
+            <Routes>
+                <Route path={"/"} element={<Navigate to={"/content-filters"} replace={true} />} />
+                <Route
+                    path="/producer-settings"
+                    element={
+                        <RequireAuthentication>
+                            <ProducerSettings />
+                        </RequireAuthentication>
+                    }
+                />
+                <Route
+                    path="/content-filters"
+                    element={
+                        <RequireAuthentication>
+                            <ContentFilters />
+                        </RequireAuthentication>
+                    }
+                />
 
-            <h2 className={"pt-3"}>Content Filters</h2>
-            <ContentFilterTable />
-        </div>
+                <Route path="/auth/login" element={<Login onSuccessRedirectPath={"/content-filters"} />} />
+                <Route path="/auth/signup" element={<Signup onSuccessRedirectPath={"/content-filters"} />} />
+            </Routes>
+        </MemoryRouter>
     )
 }
