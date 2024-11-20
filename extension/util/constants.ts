@@ -9,6 +9,7 @@ export const DISABLE_EXTENSION = "_disableExtension"
 export const EXTENSION_STATUS_MESSAGES = "_extensionStatusMessages"
 export const HIDE_BAD_SENTIMENT_THREADS = "_hideBadSentimentThreads"
 export const OPENAI_API_KEY = "_unvalidatedOpenaiApiKey"
+export const PRODUCER_SETTINGS = "_producerSettings"
 export const STATUS_MESSAGES = "_statusMessages"
 
 export const defaultContentFilter: types.ContentFilter = {
@@ -17,6 +18,12 @@ export const defaultContentFilter: types.ContentFilter = {
     iq: 0,
     sentiment: 0.05,
     filterType: "default"
+}
+
+export const defaultProducerSettings: types.ProducerSettings = {
+    openai: {
+        api_key: ""
+    }
 }
 
 export const extensionStatusMessages: types.StatusMessage[] = [

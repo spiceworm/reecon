@@ -8,7 +8,7 @@ import type * as types from "~util/types"
 // set difference until Set.prototype.difference` is available
 const difference = <T>(a: Set<T>, b: Set<T>) => new Set([...a].filter((x) => !b.has(x)))
 
-const processRedditorsData = async (producerSettings: types.ProducerSettings[], usernames: string[]): Promise<types.ProcessRedditorsDataResponse> => {
+const processRedditorsData = async (producerSettings: types.ProducerSettings, usernames: string[]): Promise<types.ProcessRedditorsDataResponse> => {
     const IGNORED_BUCKET = "redditors-ignored"
     const PENDING_BUCKET = "redditors-pending"
     const PROCESSED_BUCKET = "redditors-processed"
@@ -78,7 +78,7 @@ const processRedditorsData = async (producerSettings: types.ProducerSettings[], 
     }
 }
 
-const processThreadsData = async (producerSettings: types.ProducerSettings[], urlPaths: string[]): Promise<types.ProcessThreadsDataResponse> => {
+const processThreadsData = async (producerSettings: types.ProducerSettings, urlPaths: string[]): Promise<types.ProcessThreadsDataResponse> => {
     const PENDING_BUCKET = "thread-pending"
     const PROCESSED_BUCKET = "thread-processed"
     const UNPROCESSABLE_BUCKET = "threads-unprocessable"
@@ -139,13 +139,13 @@ const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
 
     if (action === "processRedditorsData") {
         const kwargs = req.body.kwargs
-        const producerSettings: types.ProducerSettings[] = kwargs.producerSettings
+        const producerSettings: types.ProducerSettings = kwargs.producerSettings
         const usernames: string[] = kwargs.usernames
         const message: types.ProcessRedditorsDataResponse = await processRedditorsData(producerSettings, usernames)
         res.send({ message })
     } else if (action === "processThreadsData") {
         const kwargs = req.body.kwargs
-        const producerSettings: types.ProducerSettings[] = kwargs.producerSettings
+        const producerSettings: types.ProducerSettings = kwargs.producerSettings
         const urlPaths: string[] = kwargs.urlPaths
         const message: types.ProcessThreadsDataResponse = await processThreadsData(producerSettings, urlPaths)
         res.send({ message })

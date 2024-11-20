@@ -46,8 +46,9 @@ interface ProducedTextList {
 }
 
 export interface ProducerSettings {
-    name: string
-    api_key: string
+    openai: {
+        api_key: string
+    }
 }
 
 export interface ProcessRedditorsDataResponse {

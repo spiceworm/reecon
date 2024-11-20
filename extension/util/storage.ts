@@ -29,6 +29,7 @@ export const init = async (): Promise<void> => {
         [constants.EXTENSION_STATUS_MESSAGES]: constants.extensionStatusMessages,
         [constants.HIDE_BAD_SENTIMENT_THREADS]: false,
         [constants.OPENAI_API_KEY]: "",
+        [constants.PRODUCER_SETTINGS]: constants.defaultProducerSettings,
         [constants.STATUS_MESSAGES]: []
     })
 }
@@ -76,16 +77,8 @@ export const getHideBadSentimentThreads = async (): Promise<boolean> => {
     return (await _get(constants.HIDE_BAD_SENTIMENT_THREADS)) as boolean
 }
 
-export const getProducerSettings = async () => {
-    const openAiApiKey = (await _get(constants.OPENAI_API_KEY)) as string
-    return {
-        settings: [
-            {
-                name: "openai",
-                api_key: openAiApiKey
-            }
-        ] as types.ProducerSettings[]
-    }
+export const getProducerSettings = async (): Promise<types.ProducerSettings> => {
+    return (await _get(constants.PRODUCER_SETTINGS)) as types.ProducerSettings
 }
 
 export const setActiveContext = async (url: string): Promise<void> => {
@@ -147,7 +140,9 @@ export const shouldExecuteContentScript = async (): Promise<boolean> => {
     const disableExtension = await getDisableExtension()
 
     const producerSettings = await getProducerSettings()
-    const producerApiKeysExist = producerSettings.settings.every((producerSetting) => producerSetting.api_key.length > 0)
+
+    // NOTE: this is hardcoded to only care if the openai key exists for now
+    const producerApiKeysExist = producerSettings.openai.api_key.length > 0
 
     return auth !== null && !disableExtension && producerApiKeysExist
 }
@@ -185,6 +180,10 @@ localStorage.watch({
     },
     [constants.OPENAI_API_KEY]: async (storageChange) => {
         const { oldValue, newValue } = storageChange
+
+        let producerSettings = await getProducerSettings()
+        producerSettings.openai.api_key = newValue
+        await _set(constants.PRODUCER_SETTINGS, producerSettings)
 
         await setExtensionStatusMessage("missingOpenAiApiKey", newValue.length === 0)
     }
