@@ -2,11 +2,11 @@ import "bootstrap/dist/css/bootstrap.min.css"
 
 import { MemoryRouter, Navigate, Route, Routes } from "react-router-dom"
 
-import { Login } from "~popup/routes/auth/login"
-import { Signup } from "~popup/routes/auth/signup"
 import { Settings } from "~popup/routes/settings"
 import { Status } from "~popup/routes/status"
 import { RequireAuthentication } from "~util/components/authentication"
+import { Login } from "~util/routes/auth/login"
+import { Signup } from "~util/routes/auth/signup"
 
 function IndexPopup() {
     return (
@@ -30,8 +30,8 @@ function IndexPopup() {
                     }
                 />
 
-                <Route path="/auth/login" element={<Login />} />
-                <Route path="/auth/signup" element={<Signup />} />
+                <Route path="/auth/login" element={<Login onSuccessRedirectPath={"/settings"} />} />
+                <Route path="/auth/signup" element={<Signup onSuccessRedirectPath={"/settings"} />} />
             </Routes>
         </MemoryRouter>
     )

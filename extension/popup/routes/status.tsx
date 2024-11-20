@@ -2,7 +2,7 @@ import { Alert, Toast, ToastBody, ToastHeader } from "reactstrap"
 
 import { useStorage } from "@plasmohq/storage/dist/hook"
 
-import * as base from "~popup/bases"
+import * as bases from "~popup/bases"
 import * as constants from "~util/constants"
 import * as storage from "~util/storage"
 import type * as types from "~util/types"
@@ -13,7 +13,7 @@ export const Status = () => {
     )
 
     return (
-        <base.Authenticated>
+        <bases.Authenticated>
             {statusMessages.length === 0 ? (
                 <Alert color={"light"}>No status messages</Alert>
             ) : (
@@ -26,6 +26,6 @@ export const Status = () => {
                     </div>
                 ))
             )}
-        </base.Authenticated>
+        </bases.Authenticated>
     )
 }

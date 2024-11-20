@@ -1,22 +1,15 @@
 import { ThreeDotsVertical } from "react-bootstrap-icons"
 import { NavLink, useNavigate } from "react-router-dom"
-import { Badge, Container, DropdownItem, DropdownMenu, DropdownToggle, Nav, NavItem, Spinner, UncontrolledDropdown } from "reactstrap"
+import { Badge, DropdownItem, DropdownMenu, DropdownToggle, Nav, NavItem, Spinner, UncontrolledDropdown } from "reactstrap"
 import useSWR from "swr"
 
 import { useStorage } from "@plasmohq/storage/dist/hook"
 
 import * as api from "~util/api"
+import * as bases from "~util/components/bases"
 import * as constants from "~util/constants"
 import * as storage from "~util/storage"
 import type * as types from "~util/types"
-
-export const Unauthenticated = ({ children }) => {
-    return (
-        <Container className={"p-3"} fluid={true}>
-            {children}
-        </Container>
-    )
-}
 
 export const Authenticated = ({ children }) => {
     const navigate = useNavigate()
@@ -34,7 +27,7 @@ export const Authenticated = ({ children }) => {
     }
 
     return (
-        <Unauthenticated>
+        <bases.Unauthenticated>
             <Nav tabs justified>
                 <NavItem>
                     <NavLink className={"nav-link"} to={"/settings"}>
@@ -59,6 +52,6 @@ export const Authenticated = ({ children }) => {
             </Nav>
 
             {children}
-        </Unauthenticated>
+        </bases.Unauthenticated>
     )
 }

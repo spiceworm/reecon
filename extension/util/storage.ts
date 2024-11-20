@@ -81,7 +81,7 @@ export const getProducerSettings = async (): Promise<types.ProducerSettings> => 
     return (await _get(constants.PRODUCER_SETTINGS)) as types.ProducerSettings
 }
 
-export const setActiveContext = async (url: string): Promise<void> => {
+export const setActiveContentFilter = async (url: string): Promise<void> => {
     const _url = new URL(url)
 
     let newContext: string = constants.defaultContentFilter.context

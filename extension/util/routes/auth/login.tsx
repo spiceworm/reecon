@@ -7,15 +7,15 @@ import useSWRImmutable from "swr/immutable"
 
 import { useStorage } from "@plasmohq/storage/dist/hook"
 
-import * as base from "~popup/bases"
 import * as api from "~util/api"
+import * as bases from "~util/components/bases"
 import * as constants from "~util/constants"
 import * as storage from "~util/storage"
 
 const loginPassword = signal("")
 const loginUsername = signal("")
 
-export const Login = () => {
+export const Login = ({ onSuccessRedirectPath }) => {
     const [_, setAuth] = useStorage({
         instance: storage.localStorage,
         key: constants.AUTH
@@ -30,7 +30,7 @@ export const Login = () => {
         {
             onSuccess: async (data, key, config) => {
                 await setAuth({ access: data.access, refresh: data.refresh })
-                navigate("/settings", { replace: true })
+                navigate(onSuccessRedirectPath, { replace: true })
             }
         }
     )
@@ -44,7 +44,7 @@ export const Login = () => {
     }
 
     return (
-        <base.Unauthenticated>
+        <bases.Unauthenticated>
             <p className={"text-center"}>Login</p>
 
             {error ? <UncontrolledAlert color={"danger"}>{JSON.parse(error.message).detail}</UncontrolledAlert> : null}
@@ -85,6 +85,6 @@ export const Login = () => {
                     </NavLink>
                 </div>
             </Form>
-        </base.Unauthenticated>
+        </bases.Unauthenticated>
     )
 }

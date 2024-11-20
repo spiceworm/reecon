@@ -1,8 +1,8 @@
-import { Button, Form, Input, Label, Table } from "reactstrap"
+import { Button, Form, Input, Label } from "reactstrap"
 
 import { useStorage } from "@plasmohq/storage/dist/hook"
 
-import * as base from "~popup/bases"
+import * as bases from "~popup/bases"
 import { ContentFilterTable } from "~util/components/contentFilterTable"
 import * as constants from "~util/constants"
 import * as storage from "~util/storage"
@@ -28,12 +28,13 @@ export const Settings = () => {
     }
 
     return (
-        <base.Authenticated>
+        <bases.Authenticated>
             <Form>
                 <div className={"form-check pt-2"}>
                     <Input
                         className={"form-check-input"}
                         checked={disableExtension}
+                        id={"disableExtension"}
                         onChange={(e) => setDisableExtension(e.target.checked)}
                         type="checkbox"
                     />
@@ -43,6 +44,7 @@ export const Settings = () => {
                     <Input
                         className={"form-check-input"}
                         checked={hideBadSentimentThreads}
+                        id={"hideBadSentimentThreads"}
                         onChange={(e) => setHideBadSentimentThreads(e.target.checked)}
                         type="checkbox"
                     />
@@ -72,6 +74,6 @@ export const Settings = () => {
                     All Settings
                 </Button>
             </div>
-        </base.Authenticated>
+        </bases.Authenticated>
     )
 }

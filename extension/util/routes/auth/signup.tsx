@@ -7,15 +7,15 @@ import useSWRImmutable from "swr/immutable"
 
 import { useStorage } from "@plasmohq/storage/dist/hook"
 
-import * as base from "~popup/bases"
 import * as api from "~util/api"
+import * as bases from "~util/components/bases"
 import * as constants from "~util/constants"
 import * as storage from "~util/storage"
 
 const signupPassword = signal("")
 const signupUsername = signal("")
 
-export const Signup = () => {
+export const Signup = ({ onSuccessRedirectPath }) => {
     const [_, setAuth] = useStorage({ instance: storage.localStorage, key: constants.AUTH })
     const [passwordVisible, setPasswordVisible] = react.useState(false)
     const [signupCredentials, setSignupCredentials] = react.useState(null)
@@ -34,7 +34,7 @@ export const Signup = () => {
         {
             onSuccess: async (data, key, config) => {
                 await setAuth({ access: data.access, refresh: data.refresh })
-                navigate("/settings", { replace: true })
+                navigate(onSuccessRedirectPath, { replace: true })
             }
         }
     )
@@ -48,7 +48,7 @@ export const Signup = () => {
     }
 
     return (
-        <base.Unauthenticated>
+        <bases.Unauthenticated>
             <p className={"text-center"}>Signup</p>
 
             {!signupError ? null : <UncontrolledAlert color={"danger"}>{JSON.parse(signupError.message).detail}</UncontrolledAlert>}
@@ -90,6 +90,6 @@ export const Signup = () => {
                     </NavLink>
                 </div>
             </Form>
-        </base.Unauthenticated>
+        </bases.Unauthenticated>
     )
 }
