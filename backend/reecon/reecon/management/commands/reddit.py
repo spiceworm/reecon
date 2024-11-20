@@ -33,9 +33,10 @@ class Command(management.base.BaseCommand):
         for entity_sp in (redditor_sp, thread_sp):
             service_sp = entity_sp.add_subparsers(dest="service", required=True)
 
+            context_query_sp = service_sp.add_parser("context-query")
             data_sp = service_sp.add_parser("data")
 
-            for service_p in (data_sp,):
+            for service_p in (context_query_sp, data_sp):
                 method_sp = service_p.add_subparsers(dest="method", required=True)
 
                 create_object_sp = method_sp.add_parser("create-object")
@@ -80,17 +81,30 @@ class Command(management.base.BaseCommand):
         env = schemas.get_worker_env()
 
         encoding = tiktoken.encoding_for_model(llm_producer.name)
+        prompt = ""
 
         if options["entity"] == "redditor":
             identifier = options["username"]
 
-            prompt = config.REDDITOR_LLM_PROMPT
-            service_cls = services.RedditorDataService
+            if options["service"] == "context-query":
+                service_cls = services.RedditorContextQueryService
+                if options["method"] in ("generate", "create-object"):
+                    env.redditor.llm.prompt = input("prompt: ")
+                    prompt = f"{env.redditor.llm.prompt_prefix} {env.redditor.llm.prompt}"
+            else:
+                prompt = f"{env.redditor.llm.prompt_prefix} {env.redditor.llm.prompt}"
+                service_cls = services.RedditorDataService
         else:
             identifier = options["url"]
 
-            prompt = config.THREAD_LLM_PROMPT
-            service_cls = services.ThreadDataService
+            if options["service"] == "context-query":
+                service_cls = services.ThreadContextQueryService
+                if options["method"] in ("generate", "create-object"):
+                    env.thread.llm.prompt = input("prompt: ")
+                    prompt = f"{env.thread.llm.prompt_prefix} {env.thread.llm.prompt}"
+            else:
+                prompt = f"{env.thread.llm.prompt_prefix} {env.thread.llm.prompt}"
+                service_cls = services.ThreadDataService
 
         service = service_cls(
             identifier=identifier,

@@ -6,8 +6,10 @@ from ..models import (
     Producer,
     ProducerCategory,
     Redditor,
+    RedditorContextQuery,
     StatusMessage,
     Thread,
+    ThreadContextQuery,
     UnprocessableRedditor,
     UnprocessableThread,
 )
@@ -17,8 +19,10 @@ __all__ = (
     "ProducerAdmin",
     "ProducerCategoryAdmin",
     "RedditorAdmin",
+    "RedditorContextQueryAdmin",
     "StatusMessageAdmin",
     "ThreadAdmin",
+    "ThreadContextQueryAdmin",
     "UnprocessableRedditorAdmin",
     "UnprocessableThreadAdmin",
 )
@@ -52,6 +56,11 @@ class RedditorAdmin(admin.ModelAdmin):
     list_display = get_list_display(Redditor)
 
 
+@admin.register(RedditorContextQuery)
+class RedditorContextQueryAdmin(admin.ModelAdmin):
+    list_display = get_list_display(RedditorContextQuery)
+
+
 @admin.register(StatusMessage)
 class StatusMessageAdmin(admin.ModelAdmin):
     list_display = get_list_display(StatusMessage)
@@ -62,7 +71,7 @@ class StatusMessageAdmin(admin.ModelAdmin):
         readonly_fields = ["active_is_computed"]
 
         # Do not show the "active" checkbox in the admin UI for `StatusMessage` objects if the `active` field is
-        # dynamically set in signals.py by by signals triggered by Constance config changes.
+        # dynamically set in signals.py by signals triggered by Constance config changes.
         if obj and obj.active_is_computed:
             readonly_fields.append("active")
 
@@ -72,6 +81,11 @@ class StatusMessageAdmin(admin.ModelAdmin):
 @admin.register(Thread)
 class ThreadAdmin(admin.ModelAdmin):
     list_display = get_list_display(Thread)
+
+
+@admin.register(ThreadContextQuery)
+class ThreadContextQueryAdmin(admin.ModelAdmin):
+    list_display = get_list_display(ThreadContextQuery)
 
 
 @admin.register(UnprocessableRedditor)

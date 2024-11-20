@@ -17,6 +17,7 @@ from ..abstracts import (
 
 __all__ = (
     "Thread",
+    "ThreadContextQuery",
     "ThreadData",
     "UnprocessableThread",
 )
@@ -37,6 +38,38 @@ class Thread(Created, LastProcessed, ThreadUrl):
 
     def __str__(self):
         return f"{self.__class__.__name__}(url={self.url}, submitter={self.submitter.username})"
+
+
+class ThreadContextQuery(Created):
+    context = models.ForeignKey(
+        Thread,
+        null=False,
+        on_delete=models.CASCADE,
+        related_name="context_queries",
+        help_text="The reddit thread whose submissions were used to generate the query response.",
+    )
+    prompt = models.TextField(
+        null=False,
+    )
+    response = models.OneToOneField(
+        ProducedText,
+        null=False,
+        on_delete=models.CASCADE,
+        related_name="response_thread_context_query",
+    )
+    submitter = models.ForeignKey(
+        User,
+        null=False,
+        on_delete=models.CASCADE,
+        related_name="submitted_thread_context_queries",
+        help_text="The user who submit the context query for processing.",
+    )
+
+    def __str__(self):
+        return (
+            f"{self.__class__.__name__}(context={self.context.url}, submitter={self.submitter.username}, "
+            f"prompt={Truncator(self.prompt).chars(100)}, response={Truncator(self.response).chars(100)})"
+        )
 
 
 class ThreadData(Created):

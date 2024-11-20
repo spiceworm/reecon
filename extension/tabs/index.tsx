@@ -3,6 +3,7 @@ import "bootstrap/dist/css/bootstrap.min.css"
 import { MemoryRouter, Navigate, Route, Routes } from "react-router-dom"
 
 import { ContentFilters } from "~tabs/routes/contentFilters"
+import { ContextQuery } from "~tabs/routes/contextQuery"
 import { ProducerSettings } from "~tabs/routes/producerSettings"
 import { RequireAuthentication } from "~util/components/authentication"
 import { Login } from "~util/routes/auth/login"
@@ -13,6 +14,14 @@ export default function OptionsPage() {
         <MemoryRouter>
             <Routes>
                 <Route path={"/"} element={<Navigate to={"/content-filters"} replace={true} />} />
+                <Route
+                    path="/context-query"
+                    element={
+                        <RequireAuthentication>
+                            <ContextQuery />
+                        </RequireAuthentication>
+                    }
+                />
                 <Route
                     path="/producer-settings"
                     element={

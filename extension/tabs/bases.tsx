@@ -17,6 +17,11 @@ export const Authenticated = ({ children }) => {
                         Producer Settings
                     </NavLink>
                 </NavItem>
+                <NavItem>
+                    <NavLink className={"nav-link"} to={"/context-query"}>
+                        Context Query
+                    </NavLink>
+                </NavItem>
             </Nav>
 
             {children}

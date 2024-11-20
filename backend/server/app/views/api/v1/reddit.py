@@ -1,15 +1,21 @@
 import logging
 from urllib.parse import urlparse
 
+import rq.exceptions
 from constance import config
 from django.contrib.auth.models import User
 from django.utils import timezone
 import django_rq
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import (
+    extend_schema,
+    OpenApiParameter,
+    OpenApiTypes,
+)
 from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
+from rq.job import Job
 
 from reecon import (
     models,
@@ -20,12 +26,80 @@ from .... import serializers
 
 
 __all__ = (
+    "RedditorContextQueryViewSet",
     "RedditorsDataViewSet",
+    "ThreadContextQueryViewSet",
     "ThreadsDataViewSet",
 )
 
 
 log = logging.getLogger("app.views.api.v1.reddit")
+
+
+class RedditorContextQueryViewSet(GenericViewSet):
+    lookup_url_kwarg = "job_id"
+
+    @extend_schema(
+        request=serializers.RedditorContextQueryCreateRequestSerializer,
+        responses=serializers.RedditorContextQueryCreateResponseSerializer,
+    )
+    def create(self, request: Request) -> Response:
+        submit_serializer = serializers.RedditorContextQueryCreateRequestSerializer(data=request.data)
+        submit_serializer.is_valid(raise_exception=True)
+
+        username = submit_serializer.validated_data["username"]
+        producer_settings = submit_serializer.validated_data["producer_settings"]
+        prompt = submit_serializer.validated_data["prompt"]
+
+        log.debug("Received %s: %s", username, prompt)
+
+        llm_contributor = request.user
+        llm_producer = models.Producer.objects.get(name=config.LLM_NAME)  # TODO: allow user to specify model in producer_settings
+        nlp_contributor = User.objects.get(username="admin")
+        nlp_producer = models.Producer.objects.get(name=config.NLP_NAME)
+        submitter = request.user
+        env = schemas.get_worker_env()
+        env.redditor.llm.prompt = prompt
+
+        # Do not explicitly set a job id because context-query jobs should have unique IDs.
+        # Multiple users could submit a context query for the same redditor, but each query
+        # will create a new job.
+        job = django_rq.enqueue(
+            "app.worker.process_redditor_context_query",  # this function is defined in the worker app
+            username,
+            llm_contributor,
+            llm_producer,
+            nlp_contributor,
+            nlp_producer,
+            producer_settings,
+            submitter,
+            env,
+        )
+
+        data = {
+            "job_id": job.id,
+        }
+
+        response_serializer = serializers.RedditorContextQueryCreateResponseSerializer(instance=data)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter("job_id", OpenApiTypes.STR, OpenApiParameter.PATH),
+        ],
+        responses=serializers.RedditorContextQueryRetrieveResponseSerializer,
+    )
+    def retrieve(self, request: Request, job_id) -> Response:
+        try:
+            job = Job.fetch(job_id, connection=django_rq.get_connection())
+        except rq.exceptions.NoSuchJobError:
+            return Response({}, status=status.HTTP_400_BAD_REQUEST)
+
+        if job.is_finished:
+            obj: models.RedditorContextQuery = job.return_value()
+            response_serializer = serializers.RedditorContextQueryRetrieveResponseSerializer(instance=obj)
+            return Response(response_serializer.data, status=status.HTTP_200_OK)
+        return Response({}, status=status.HTTP_202_ACCEPTED)
 
 
 class RedditorsDataViewSet(GenericViewSet):
@@ -103,6 +177,72 @@ class RedditorsDataViewSet(GenericViewSet):
 
         response_serializer = serializers.RedditorDataResponseSerializer(instance=data)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+
+class ThreadContextQueryViewSet(GenericViewSet):
+    lookup_url_kwarg = "job_id"
+
+    @extend_schema(
+        request=serializers.ThreadContextQueryCreateRequestSerializer,
+        responses=serializers.ThreadContextQueryCreateResponseSerializer,
+    )
+    def create(self, request: Request):
+        submit_serializer = serializers.ThreadContextQueryCreateRequestSerializer(data=request.data)
+        submit_serializer.is_valid(raise_exception=True)
+
+        url_path = submit_serializer.validated_data["path"]
+        producer_settings = submit_serializer.validated_data["producer_settings"]
+        prompt = submit_serializer.validated_data["prompt"]
+
+        log.debug("Received %s: %s", url_path, prompt)
+
+        llm_contributor = request.user
+        llm_producer = models.Producer.objects.get(name=config.LLM_NAME)
+        nlp_contributor = User.objects.get(username="admin")
+        nlp_producer = models.Producer.objects.get(name=config.NLP_NAME)
+        submitter = request.user
+        env = schemas.get_worker_env()
+        env.thread.llm.prompt = prompt
+
+        # Do not explicitly set a job id because context-query jobs should have unique IDs.
+        # Multiple users could submit a context query for the same thread, but each query
+        # will create a new job.
+        job = django_rq.enqueue(
+            "app.worker.process_thread_context_query",  # this function is defined in the worker app
+            url_path,
+            llm_contributor,
+            llm_producer,
+            nlp_contributor,
+            nlp_producer,
+            producer_settings,
+            submitter,
+            env,
+        )
+
+        data = {
+            "job_id": job.id,
+        }
+
+        response_serializer = serializers.ThreadContextQueryCreateResponseSerializer(instance=data)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter("job_id", OpenApiTypes.STR, OpenApiParameter.PATH),
+        ],
+        responses=serializers.ThreadContextQueryRetrieveResponseSerializer,
+    )
+    def retrieve(self, request: Request, job_id) -> Response:
+        try:
+            job = Job.fetch(job_id, connection=django_rq.get_connection())
+        except rq.exceptions.NoSuchJobError:
+            return Response({}, status=status.HTTP_404_NOT_FOUND)
+
+        if job.is_finished:
+            obj: models.ThreadContextQuery = job.return_value()
+            response_serializer = serializers.ThreadContextQueryRetrieveResponseSerializer(instance=obj)
+            return Response(response_serializer.data, status=status.HTTP_200_OK)
+        return Response({}, status=status.HTTP_202_ACCEPTED)
 
 
 class ThreadsDataViewSet(GenericViewSet):

@@ -20,6 +20,7 @@ from ..producer import (
 __all__ = (
     "IgnoredRedditor",
     "Redditor",
+    "RedditorContextQuery",
     "RedditorData",
     "UnprocessableRedditor",
 )
@@ -49,6 +50,38 @@ class Redditor(Created, LastProcessed, RedditorUsername):
 
     def __str__(self):
         return f"{self.__class__.__name__}(username={self.username}, submitter={self.submitter.username})"
+
+
+class RedditorContextQuery(Created):
+    context = models.ForeignKey(
+        Redditor,
+        null=False,
+        on_delete=models.CASCADE,
+        related_name="context_queries",
+        help_text="The reddit redditor whose submissions were used to generate the query response.",
+    )
+    prompt = models.TextField(
+        null=False,
+    )
+    response = models.OneToOneField(
+        ProducedText,
+        null=False,
+        on_delete=models.CASCADE,
+        related_name="response_redditor_context_query",
+    )
+    submitter = models.ForeignKey(
+        User,
+        null=False,
+        on_delete=models.CASCADE,
+        related_name="submitted_redditor_context_queries",
+        help_text="The user who submit the context query for processing.",
+    )
+
+    def __str__(self):
+        return (
+            f"{self.__class__.__name__}(context={self.context.username}, submitter={self.submitter.username}, "
+            f"prompt={Truncator(self.prompt).chars(100)}, response={Truncator(self.response.value).chars(100)})"
+        )
 
 
 class RedditorData(Created):

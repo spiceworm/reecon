@@ -36,7 +36,9 @@ from .. import (
 
 
 __all__ = (
+    "RedditorContextQueryService",
     "RedditorDataService",
+    "ThreadContextQueryService",
     "ThreadDataService",
 )
 
@@ -230,6 +232,16 @@ class _ThreadService(_RedditService):
         return list(submissions)
 
 
+class _ContextQueryService(abc.ABC):
+    @abc.abstractmethod
+    def create_object(self, *args, **kwargs):
+        pass
+
+    @abc.abstractmethod
+    def generate(self, *args, **kwargs):
+        pass
+
+
 class _DataService(abc.ABC):
     @abc.abstractmethod
     def create_object(self, *args, **kwargs):
@@ -238,6 +250,60 @@ class _DataService(abc.ABC):
     @abc.abstractmethod
     def generate(self, *args, **kwargs):
         pass
+
+
+class RedditorContextQueryService(_ContextQueryService, _RedditorService):
+    def create_object(self, generated: schemas.GeneratedRedditorContextQuery) -> models.RedditorContextQuery:
+        redditor = models.Redditor.objects.get(username=self.identifier)
+        return models.RedditorContextQuery.objects.create(
+            context=redditor,
+            prompt=generated.prompt,
+            response=models.ProducedText.objects.create(
+                contributor=self.llm_contributor,
+                producer=self.llm_producer,
+                value=generated.response,
+            ),
+            submitter=self.submitter,
+        )
+
+    def generate(self, *, inputs: List[str], prompt: str) -> schemas.GeneratedRedditorContextQuery:
+        llm_service = producer.LlmProducerService(response_format=schemas.LlmGeneratedContextQuery)
+        llm_data = llm_service.generate_data(
+            inputs=inputs,
+            llm_name=self.llm_producer.name,
+            producer_settings=self.producer_settings,
+            prompt=prompt,
+        )
+        return schemas.GeneratedRedditorContextQuery.model_validate(
+            {"inputs": inputs, "prompt": prompt, **llm_data.model_dump()}
+        )
+
+
+class ThreadContextQueryService(_ContextQueryService, _ThreadService):
+    def create_object(self, *, generated: schemas.GeneratedThreadContextQuery) -> models.ThreadContextQuery:
+        thread = models.Thread.objects.get(url=self.identifier)
+        return models.ThreadContextQuery.objects.create(
+            context=thread,
+            prompt=generated.prompt,
+            response=models.ProducedText.objects.create(
+                contributor=self.llm_contributor,
+                producer=self.llm_producer,
+                value=generated.response,
+            ),
+            submitter=self.submitter,
+        )
+
+    def generate(self, *, inputs: List[str], prompt: str) -> schemas.GeneratedThreadContextQuery:
+        llm_service = producer.LlmProducerService(response_format=schemas.LlmGeneratedContextQuery)
+        llm_data = llm_service.generate_data(
+            inputs=inputs,
+            llm_name=self.llm_producer.name,
+            producer_settings=self.producer_settings,
+            prompt=prompt,
+        )
+        return schemas.GeneratedThreadContextQuery.model_validate(
+            {"inputs": inputs, "prompt": prompt, **llm_data.model_dump()}
+        )
 
 
 class RedditorDataService(_DataService, _RedditorService):
