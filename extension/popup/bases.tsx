@@ -1,6 +1,6 @@
 import { ThreeDotsVertical } from "react-bootstrap-icons"
 import { NavLink, useNavigate } from "react-router-dom"
-import { Badge, DropdownItem, DropdownMenu, DropdownToggle, Nav, NavItem, Spinner, UncontrolledDropdown } from "reactstrap"
+import { Badge, DropdownItem, DropdownMenu, DropdownToggle, Nav, NavItem, UncontrolledDropdown } from "reactstrap"
 import useSWR from "swr"
 
 import { useStorage } from "@plasmohq/storage/dist/hook"
@@ -36,8 +36,8 @@ export const Authenticated = ({ children }) => {
                 </NavItem>
                 <NavItem>
                     <NavLink className={"nav-link"} to={"/status"}>
-                        Status {isLoading ? <Spinner /> : null}
-                        {statusMessages.length > 0 ? <Badge color={error ? "danger" : "warning"}>{statusMessages.length}</Badge> : null}
+                        Status
+                        {" "}{statusMessages.length > 0 ? <Badge color={error ? "danger" : "warning"}>{statusMessages.length}</Badge> : null}
                     </NavLink>
                 </NavItem>
                 <UncontrolledDropdown setActiveFromChild>
