@@ -84,14 +84,14 @@ def process_redditor_data(
 
 
 def process_thread_context_query(
-        redditor_username: str,
-        llm_contributor: User,
-        llm_producer: models.Producer,
-        nlp_contributor: User,
-        nlp_producer: models.Producer,
-        producer_settings: dict,
-        submitter: User,
-        env: schemas.WorkerEnv,
+    redditor_username: str,
+    llm_contributor: User,
+    llm_producer: models.Producer,
+    nlp_contributor: User,
+    nlp_producer: models.Producer,
+    producer_settings: dict,
+    submitter: User,
+    env: schemas.WorkerEnv,
 ):
     service = services.ThreadContextQueryService(
         identifier=redditor_username,

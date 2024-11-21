@@ -9,4 +9,5 @@ class ReadOnlyListModelViewSet(ListModelMixin, GenericViewSet):
     """
     A viewset that provides a default `list()` action.
     """
+
     pass

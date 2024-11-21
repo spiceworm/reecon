@@ -17,10 +17,12 @@ from .views.api import v1
 
 
 router = DefaultRouter()
-router.register(r"producers/llm", v1.LlmProducerViewSet, basename='producer-llm')
+router.register(r"producers/llm", v1.LlmProducerViewSet, basename="producer-llm")
 router.register(r"status/messages", v1.StatusMessagesViewSet, basename="status-messages")
 
-router.register(r"reddit/redditor/context-query", v1.RedditorContextQueryViewSet, basename="reddit-redditor-context-query")
+router.register(
+    r"reddit/redditor/context-query", v1.RedditorContextQueryViewSet, basename="reddit-redditor-context-query"
+)
 router.register(r"reddit/thread/context-query", v1.ThreadContextQueryViewSet, basename="reddit-thread-context-query")
 
 router.register(r"reddit/redditor/data", v1.RedditorsDataViewSet, basename="reddit-redditor-data")
@@ -29,7 +31,6 @@ router.register(r"reddit/thread/data", v1.ThreadsDataViewSet, basename="reddit-t
 
 v1_endpoints = [
     path("", include(router.urls)),
-
     path("status/", v1.StatusView.as_view(), name="status"),
 ]
 

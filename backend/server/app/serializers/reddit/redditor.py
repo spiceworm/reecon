@@ -84,13 +84,11 @@ class RedditorContextQueryCreateRequestSerializer(serializers.Serializer):
     producer_settings = ProducerSettingsSerializer()
 
 
-
 class RedditorContextQueryCreateResponseSerializer(serializers.Serializer):
     job_id = serializers.CharField()
 
 
 RedditorContextQueryRetrieveResponseSerializer = RedditorContextQuerySerializer
-
 
 
 class RedditorDataSerializer(serializers.ModelSerializer):
