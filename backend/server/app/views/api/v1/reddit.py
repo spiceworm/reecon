@@ -54,30 +54,37 @@ class RedditorContextQueryViewSet(GenericViewSet):
         log.debug("Received %s: %s", username, prompt)
 
         llm_contributor = request.user
-        llm_producer = models.Producer.objects.get(name=config.LLM_NAME)  # TODO: allow user to specify model in producer_settings
+        # TODO: allow user to specify model in producer_settings
+        llm_producer = models.Producer.objects.get(name=config.LLM_NAME)
         nlp_contributor = User.objects.get(username="admin")
         nlp_producer = models.Producer.objects.get(name=config.NLP_NAME)
         submitter = request.user
         env = schemas.get_worker_env()
         env.redditor.llm.prompt = prompt
 
-        # Do not explicitly set a job id because context-query jobs should have unique IDs.
-        # Multiple users could submit a context query for the same redditor, but each query
-        # will create a new job.
-        job = django_rq.enqueue(
-            "app.worker.process_redditor_context_query",  # this function is defined in the worker app
-            username,
-            llm_contributor,
-            llm_producer,
-            nlp_contributor,
-            nlp_producer,
-            producer_settings,
-            submitter,
-            env,
-        )
+        if config.REDDITOR_CONTEXT_QUERY_PROCESSING_ENABLED:
+            # Do not explicitly set a job id because context-query jobs should have unique IDs.
+            # Multiple users could submit a context query for the same redditor, but each query
+            # will create a new job.
+            job = django_rq.enqueue(
+                "app.worker.process_redditor_context_query",  # this function is defined in the worker app
+                username,
+                llm_contributor,
+                llm_producer,
+                nlp_contributor,
+                nlp_producer,
+                producer_settings,
+                submitter,
+                env,
+            )
+
+            job_id = job.id
+        else:
+            job_id = ""
+            log.debug("Redditor context query processing is disabled")
 
         data = {
-            "job_id": job.id,
+            "job_id": job_id,
         }
 
         response_serializer = serializers.RedditorContextQueryCreateResponseSerializer(instance=data)
@@ -150,7 +157,7 @@ class RedditorsDataViewSet(GenericViewSet):
         submitter = request.user
         env = schemas.get_worker_env()
 
-        if config.REDDITOR_PROCESSING_ENABLED:
+        if config.REDDITOR_DATA_PROCESSING_ENABLED:
             for redditor_username in pending_usernames:
                 pending_redditors.append({"username": redditor_username})
                 django_rq.enqueue(
@@ -166,7 +173,7 @@ class RedditorsDataViewSet(GenericViewSet):
                     job_id=f"redditor-{redditor_username}",
                 )
         else:
-            log.debug("Redditor processing is disabled")
+            log.debug("Redditor data processing is disabled")
 
         data = {
             "ignored": ignored_redditors,
@@ -204,23 +211,29 @@ class ThreadContextQueryViewSet(GenericViewSet):
         env = schemas.get_worker_env()
         env.thread.llm.prompt = prompt
 
-        # Do not explicitly set a job id because context-query jobs should have unique IDs.
-        # Multiple users could submit a context query for the same thread, but each query
-        # will create a new job.
-        job = django_rq.enqueue(
-            "app.worker.process_thread_context_query",  # this function is defined in the worker app
-            url_path,
-            llm_contributor,
-            llm_producer,
-            nlp_contributor,
-            nlp_producer,
-            producer_settings,
-            submitter,
-            env,
-        )
+        if config.THREAD_CONTEXT_QUERY_PROCESSING_ENABLED:
+            # Do not explicitly set a job id because context-query jobs should have unique IDs.
+            # Multiple users could submit a context query for the same thread, but each query
+            # will create a new job.
+            job = django_rq.enqueue(
+                "app.worker.process_thread_context_query",  # this function is defined in the worker app
+                url_path,
+                llm_contributor,
+                llm_producer,
+                nlp_contributor,
+                nlp_producer,
+                producer_settings,
+                submitter,
+                env,
+            )
+
+            job_id = job.id
+        else:
+            job_id = ""
+            log.debug("Thread context query processing is disabled")
 
         data = {
-            "job_id": job.id,
+            "job_id": job_id,
         }
 
         response_serializer = serializers.ThreadContextQueryCreateResponseSerializer(instance=data)
@@ -289,7 +302,7 @@ class ThreadsDataViewSet(GenericViewSet):
         submitter = request.user
         env = schemas.get_worker_env()
 
-        if config.THREAD_PROCESSING_ENABLED:
+        if config.THREAD_DATA_PROCESSING_ENABLED:
             for thread_url in pending_urls:
                 thread_path = urlparse(thread_url).path
                 pending_threads.append({"path": thread_path, "url": thread_url})
@@ -313,7 +326,7 @@ class ThreadsDataViewSet(GenericViewSet):
                     job_id=f"thread-{subreddit}-{thread_id}",
                 )
         else:
-            log.debug("Thread processing is disabled")
+            log.debug("Thread data processing is disabled")
 
         data = {
             "pending": pending_threads,

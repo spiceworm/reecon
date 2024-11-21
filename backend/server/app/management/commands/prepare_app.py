@@ -101,15 +101,27 @@ def create_hardcoded_status_messages():
     for active_is_computed, name, category, message in [
         (
             True,
-            "redditorProcessingDisabled",
+            "redditorContextQueryProcessingDisabled",
             "warning",
-            "Redditor processing disabled for all users",
+            "Redditor context query processing disabled for all users",
         ),
         (
             True,
-            "threadProcessingDisabled",
+            "redditorDataProcessingDisabled",
             "warning",
-            "Thread processing disabled for all users",
+            "Redditor data processing disabled for all users",
+        ),
+        (
+            True,
+            "threadContextQueryProcessingDisabled",
+            "warning",
+            "Thread context query processing disabled for all users",
+        ),
+        (
+            True,
+            "threadDataProcessingDisabled",
+            "warning",
+            "Thread data processing disabled for all users",
         ),
     ]:
         StatusMessage.objects.update_or_create(

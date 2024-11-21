@@ -307,14 +307,24 @@ CONSTANCE_ADDITIONAL_FIELDS = {
 }
 CONSTANCE_CONFIG = collections.OrderedDict(
     {
-        "REDDITOR_PROCESSING_ENABLED": (
+        "REDDITOR_CONTEXT_QUERY_PROCESSING_ENABLED": (
             False,
-            "Enabled processing of reddit redditors.",
+            "Enable processing of context queries for reddit redditors.",
             "checkbox",
         ),
-        "THREAD_PROCESSING_ENABLED": (
+        "REDDITOR_DATA_PROCESSING_ENABLED": (
             False,
-            "Enabled processing of reddit threads.",
+            "Enable processing of data for reddit redditors.",
+            "checkbox",
+        ),
+        "THREAD_CONTEXT_QUERY_PROCESSING_ENABLED": (
+            False,
+            "Enable processing of context queries for reddit threads.",
+            "checkbox",
+        ),
+        "THREAD_DATA_PROCESSING_ENABLED": (
+            False,
+            "Enable processing of data for reddit threads.",
             "checkbox",
         ),
         "LLM_NAME": (
