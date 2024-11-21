@@ -71,7 +71,7 @@ export const Settings = () => {
 
             <div className={"d-flex justify-content-center"}>
                 <Button color={"primary"} onClick={handleAllSettingsBtnClick} type={"button"}>
-                    All Settings
+                    More
                 </Button>
             </div>
         </bases.Authenticated>
