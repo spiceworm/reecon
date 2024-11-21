@@ -11,5 +11,7 @@ __all__ = ("LlmProducerViewSet",)
 
 
 class LlmProducerViewSet(ReadOnlyListModelViewSet):
-    queryset = Producer.objects.filter(category=ProducerCategory.objects.get(name="LLM"))
     serializer_class = ProducerSerializer
+
+    def get_queryset(self):
+        return Producer.objects.filter(category=ProducerCategory.objects.get(name="LLM"))
