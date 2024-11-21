@@ -2,12 +2,12 @@ import "bootstrap/dist/css/bootstrap.min.css"
 
 import { MemoryRouter, Navigate, Route, Routes } from "react-router-dom"
 
-import { ContentFilters } from "~tabs/routes/contentFilters"
-import { ContextQuery } from "~tabs/routes/contextQuery"
-import { ProducerSettings } from "~tabs/routes/producerSettings"
+import { ContentFilters } from "~tabs/views/contentFilters"
+import { ContextQuery } from "~tabs/views/contextQuery"
+import { ProducerSettings } from "~tabs/views/producerSettings"
 import { RequireAuthentication } from "~util/components/authentication"
-import { Login } from "~util/routes/auth/login"
-import { Signup } from "~util/routes/auth/signup"
+import { Login } from "~util/views/auth/login"
+import { Signup } from "~util/views/auth/signup"
 
 export default function OptionsPage() {
     return (

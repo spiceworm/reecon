@@ -2,11 +2,11 @@ import "bootstrap/dist/css/bootstrap.min.css"
 
 import { MemoryRouter, Navigate, Route, Routes } from "react-router-dom"
 
-import { Settings } from "~popup/routes/settings"
-import { Status } from "~popup/routes/status"
+import { Settings } from "~popup/views/settings"
+import { Status } from "~popup/views/status"
 import { RequireAuthentication } from "~util/components/authentication"
-import { Login } from "~util/routes/auth/login"
-import { Signup } from "~util/routes/auth/signup"
+import { Login } from "~util/views/auth/login"
+import { Signup } from "~util/views/auth/signup"
 
 function IndexPopup() {
     return (
