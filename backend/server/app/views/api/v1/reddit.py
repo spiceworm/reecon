@@ -110,6 +110,9 @@ class RedditorContextQueryViewSet(GenericViewSet):
 
 
 class RedditorsDataViewSet(GenericViewSet):
+    queryset = models.Redditor.objects.all()
+    serializer_class = serializers.RedditorDataRequestSerializer
+
     @extend_schema(
         request=serializers.RedditorDataRequestSerializer,
         responses=serializers.RedditorDataResponseSerializer,
@@ -259,6 +262,9 @@ class ThreadContextQueryViewSet(GenericViewSet):
 
 
 class ThreadsDataViewSet(GenericViewSet):
+    queryset = models.Thread.objects.all()
+    serializer_class = serializers.ThreadDataRequestSerializer
+
     @extend_schema(
         request=serializers.ThreadDataRequestSerializer,
         responses=serializers.ThreadDataResponseSerializer,

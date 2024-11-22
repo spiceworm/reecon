@@ -167,9 +167,11 @@ class _RedditorService(_RedditService):
                 username=self.identifier,
                 defaults={
                     "reason": reason,
+                    "submitter": self.submitter,
                 },
                 create_defaults={
                     "reason": reason,
+                    "submitter": self.submitter,
                     "username": self.identifier,
                 },
             )
@@ -222,9 +224,11 @@ class _ThreadService(_RedditService):
                 url=self.identifier,
                 defaults={
                     "reason": reason,
+                    "submitter": self.submitter,
                 },
                 create_defaults={
                     "reason": reason,
+                    "submitter": self.submitter,
                     "url": self.identifier,
                 },
             )
