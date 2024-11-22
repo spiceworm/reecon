@@ -345,7 +345,8 @@ CONSTANCE_CONFIG = collections.OrderedDict(
         ),
         "REDDITOR_LLM_PROMPT": (
             "Determine the age, a list of interests, and the IQ of that person based on their writing. "
-            "Also generate a short summary that describes the author that uses 50 completion_tokens or less.",
+            "Also generate a short summary that describes the author that uses 50 completion_tokens or less. "
+            "Be as objective as possible.",
             "Prompt sent to the LLM for redditor prompts.",
         ),
         "THREAD_LLM_PROMPT_PREFIX": (
@@ -354,11 +355,11 @@ CONSTANCE_CONFIG = collections.OrderedDict(
         ),
         "THREAD_LLM_PROMPT": (
             "Determine a list of keywords that describe the discussion. Also generate a brief summary of what "
-            "is being discussed that uses 50 completion_tokens or less.",
+            "is being discussed that uses 50 completion_tokens or less. Be as objective as possible.",
             "Prompt sent to the LLM for thread prompts.",
         ),
         "LLM_MAX_CONTEXT_WINDOW_FOR_INPUTS": (
-            0.5,
+            0.8,
             "The maximum percentage (expressed as a decimal from 0 to 1) of the LLM context window tokens "
             "that can be used for inputs.",
         ),
@@ -374,11 +375,11 @@ CONSTANCE_CONFIG = collections.OrderedDict(
             "processing. This is the length of the text after filtering.",
         ),
         "REDDITOR_MIN_SUBMISSIONS": (
-            1,
+            5,
             "The minimum number of submissions available after filtering for processing of a redditor to occur.",
         ),
         "THREAD_MIN_SUBMISSIONS": (
-            1,
+            5,
             "The minimum number of submissions available after filtering for processing of a thread to occur.",
         ),
         "REDDITOR_FRESHNESS_TD": (
