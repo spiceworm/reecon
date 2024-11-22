@@ -119,10 +119,19 @@ class RedditorData(Created):
     )
     sentiment_polarity = models.OneToOneField(
         ProducedFloat,
+        default=0.0,  # Possible range is [-1.0, 1.0]
         null=False,
         on_delete=models.CASCADE,
         related_name="sentiment_polarity_redditor_data",
         help_text="The inferred sentiment polarity of the redditor based on their submissions.",
+    )
+    sentiment_subjectivity = models.OneToOneField(
+        ProducedFloat,
+        default=0.5,  # Possible range is [0.0, 1.0]
+        null=False,
+        on_delete=models.CASCADE,
+        related_name="sentiment_subjectivity_redditor_data",
+        help_text="The inferred sentiment subjectivity of the redditor based on their submissions.",
     )
     summary = models.OneToOneField(
         ProducedText,
@@ -136,7 +145,7 @@ class RedditorData(Created):
         return (
             f"{self.__class__.__name__}(age={self.age.value}, iq={self.iq.value}, interests={self.interests.value}, "
             f"redditor={self.redditor.username}, sentiment_polarity={self.sentiment_polarity.value}, "
-            f"summary={Truncator(self.summary.value).chars(100)})"
+            f"sentiment_subjectivity={self.sentiment_subjectivity.value}, summary={Truncator(self.summary.value).chars(100)})"
         )
 
 

@@ -97,6 +97,9 @@ class ThreadDataSerializer(serializers.ModelSerializer):
     sentiment_polarity = ProducedFloatSerializer(
         read_only=True,
     )
+    sentiment_subjectivity = ProducedFloatSerializer(
+        read_only=True,
+    )
     summary = ProducedTextSerializer(
         read_only=True,
     )

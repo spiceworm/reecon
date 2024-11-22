@@ -78,9 +78,17 @@ class NlpProducerService(ProducerService):
         # generated in a predictable manner.
         if nlp_name == "textblob":
             polarity_values = []
+            subjectivity_values = []
             for text in inputs:
                 blob = textblob.TextBlob(text)
                 polarity_values.append(blob.sentiment.polarity)
+                subjectivity_values.append(blob.sentiment.subjectivity)
             sentiment_polarity = statistics.mean(polarity_values)
-            return self.response_format.model_validate({"sentiment_polarity": sentiment_polarity})
+            sentiment_subjectivity = statistics.mean(subjectivity_values)
+            return self.response_format.model_validate(
+                {
+                    "sentiment_polarity": sentiment_polarity,
+                    "sentiment_subjectivity": sentiment_subjectivity,
+                }
+            )
         raise NotImplementedError(f"NLP using {nlp_name} is not implemented")

@@ -29,8 +29,9 @@ export const annotateProcessedThreads = async (processedThreads: types.Thread[],
         dataSpan.setAttribute("id", dataSpanID)
 
         const sentiment_polarity = thread.data.sentiment_polarity.value
+        const sentiment_subjectivity = thread.data.sentiment_subjectivity.value
         const summary = thread.data.summary.value
-        dataSpan.title = `sentiment: ${sentiment_polarity}\u000dsummary: ${summary}\u000d\u000d${JSON.stringify(thread.data, null, 4)}`
+        dataSpan.title = `polarity: ${sentiment_polarity}\u000dsubjectivity: ${sentiment_subjectivity}\u000dsummary: ${summary}\u000d\u000d${JSON.stringify(thread.data, null, 4)}`
         dataSpan.innerText = " 🔮"
 
         getThreadTitleElement(thread.path).insertAdjacentElement("beforeend", dataSpan)
@@ -131,8 +132,9 @@ export const annotateProcessedRedditors = async (processedRedditors: types.Reddi
             const age = processedRedditor.data.age.value
             const iq = processedRedditor.data.iq.value
             const sentiment_polarity = processedRedditor.data.sentiment_polarity.value
+            const sentiment_subjectivity = processedRedditor.data.sentiment_subjectivity.value
             const summary = processedRedditor.data.summary.value
-            dataSpan.title = `age: ${age}\u000diq: ${iq}\u000dsentiment_polarity: ${sentiment_polarity}\u000dsummary: ${summary}\u000d\u000d${JSON.stringify(processedRedditor.data, null, 4)}`
+            dataSpan.title = `age: ${age}\u000diq: ${iq}\u000dpolarity: ${sentiment_polarity}\u000dsubjectivity: ${sentiment_subjectivity}\u000dsummary: ${summary}\u000d\u000d${JSON.stringify(processedRedditor.data, null, 4)}`
             dataSpan.innerText = ` [age=${age}, iq=${iq}]`
 
             for (let linkElement of usernameElementsMap[username]) {

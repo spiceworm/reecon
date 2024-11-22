@@ -76,6 +76,7 @@ interface RedditorData {
     iq: ProducedInteger
     interests: ProducedTextList
     sentiment_polarity: ProducedFloat
+    sentiment_subjectivity: ProducedFloat
     summary: ProducedText
 }
 
@@ -98,6 +99,7 @@ export interface Thread {
 interface ThreadData {
     keywords: ProducedTextList
     sentiment_polarity: ProducedFloat
+    sentiment_subjectivity: ProducedFloat
     summary: ProducedText
 }
 

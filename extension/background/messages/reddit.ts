@@ -52,7 +52,7 @@ const processRedditorsData = async (producerSettings: types.ProducerSettings, us
             unprocessable: cachedUnprocessable
         }
     } else {
-        let response: types.ProcessRedditorsDataResponse = await api.authPost("/api/v1/reddit/redditors/data/", {
+        let response: types.ProcessRedditorsDataResponse = await api.authPost("/api/v1/reddit/redditor/data/", {
             producer_settings: producerSettings,
             usernames: usernamesToProcess
         })
@@ -112,7 +112,7 @@ const processThreadsData = async (producerSettings: types.ProducerSettings, urlP
             unprocessable: cachedUnprocessable
         }
     } else {
-        let response: types.ProcessThreadsDataResponse = await api.authPost("/api/v1/reddit/threads/data/", {
+        let response: types.ProcessThreadsDataResponse = await api.authPost("/api/v1/reddit/thread/data/", {
             producer_settings: producerSettings,
             paths: urlPathsToProcess
         })

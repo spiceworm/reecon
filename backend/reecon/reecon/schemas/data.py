@@ -27,10 +27,12 @@ class LlmGeneratedThreadData(pydantic.BaseModel):
 
 class NlpGeneratedRedditorData(pydantic.BaseModel):
     sentiment_polarity: float
+    sentiment_subjectivity: float
 
 
 class NlpGeneratedThreadData(pydantic.BaseModel):
     sentiment_polarity: float
+    sentiment_subjectivity: float
 
 
 class GeneratedRedditorData(LlmGeneratedRedditorData, NlpGeneratedRedditorData):

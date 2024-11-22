@@ -86,10 +86,19 @@ class ThreadData(Created):
     )
     sentiment_polarity = models.OneToOneField(
         ProducedFloat,
+        default=0.0,  # Possible range is [-1.0, 1.0]
         null=False,
         on_delete=models.CASCADE,
         related_name="sentiment_polarity_thread_data",
         help_text="The inferred sentiment polarity of the thread based on the submissions.",
+    )
+    sentiment_subjectivity = models.OneToOneField(
+        ProducedFloat,
+        default=0.5,  # Possible range is [0.0, 1.0]
+        null=False,
+        on_delete=models.CASCADE,
+        related_name="sentiment_subjectivity_thread_data",
+        help_text="The inferred sentiment subjectivity of the thread based on the submissions.",
     )
     summary = models.OneToOneField(
         ProducedText,
@@ -108,7 +117,8 @@ class ThreadData(Created):
 
     def __str__(self):
         return (
-            f"{self.__class__.__name__}(sentiment_polarity={self.sentiment_polarity.value}, "
+            f"{self.__class__.__name__}(keywords={self.keywords.value}, sentiment_polarity={self.sentiment_polarity.value}, "
+            f"sentiment_subjectivity={self.sentiment_subjectivity.value}, "
             f"summary={Truncator(self.summary.value).chars(100)}, thread={self.thread.url})"
         )
 

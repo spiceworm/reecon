@@ -339,8 +339,13 @@ class RedditorDataService(_DataService, _RedditorService):
             redditor=redditor,
             sentiment_polarity=models.ProducedFloat.objects.create(
                 contributor=self.nlp_contributor,
-                producer=self.llm_producer,
+                producer=self.nlp_producer,
                 value=generated.sentiment_polarity,
+            ),
+            sentiment_subjectivity=models.ProducedFloat.objects.create(
+                contributor=self.nlp_contributor,
+                producer=self.nlp_producer,
+                value=generated.sentiment_subjectivity,
             ),
             summary=models.ProducedText.objects.create(
                 contributor=self.llm_contributor,
@@ -391,9 +396,14 @@ class ThreadDataService(_DataService, _ThreadService):
                 value=generated.normalized_keywords(),
             ),
             sentiment_polarity=models.ProducedFloat.objects.create(
-                contributor=self.llm_contributor,
-                producer=self.llm_producer,
+                contributor=self.nlp_contributor,
+                producer=self.nlp_producer,
                 value=generated.sentiment_polarity,
+            ),
+            sentiment_subjectivity=models.ProducedFloat.objects.create(
+                contributor=self.nlp_contributor,
+                producer=self.nlp_producer,
+                value=generated.sentiment_subjectivity,
             ),
             summary=models.ProducedText.objects.create(
                 contributor=self.llm_contributor,
