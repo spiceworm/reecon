@@ -14,7 +14,10 @@ from praw.models import (
     Redditor as PrawRedditor,  # Avoid name conflict with `reecon.models.Redditor`
     Submission,
 )
-from prawcore.exceptions import TooManyRequests
+from prawcore.exceptions import (
+    Forbidden,
+    TooManyRequests,
+)
 from tenacity import (
     before_sleep_log,
     retry,
@@ -136,29 +139,45 @@ class _RedditorService(_RedditService):
         max_input_tokens = int(context_window * self.env.redditor.llm.max_context_window_for_inputs)
         encoding = tiktoken.encoding_for_model(self.llm_producer.name)
 
-        # Get the body of threads submitted by the user.
-        thread: Submission
-        for thread in praw_redditor.submissions.new():
-            if text := self.filter_submission(text=thread.selftext):
-                pending_inputs = "|".join(submissions | {text})
-                pending_tokens = len(encoding.encode(pending_inputs))
-                if pending_tokens < max_input_tokens:
-                    submissions.add(text)
-                else:
-                    break
+        try:
+            # Get the body of threads submitted by the user.
+            thread: Submission
+            for thread in praw_redditor.submissions.new():
+                if text := self.filter_submission(text=thread.selftext):
+                    pending_inputs = "|".join(submissions | {text})
+                    pending_tokens = len(encoding.encode(pending_inputs))
+                    if pending_tokens < max_input_tokens:
+                        submissions.add(text)
+                    else:
+                        break
 
-        # Get the body of comments submitted by the user.
-        comment: Comment
-        for comment in praw_redditor.comments.new():
-            if isinstance(comment, MoreComments):
-                continue
-            if text := self.filter_submission(text=comment.body):
-                pending_inputs = "|".join(submissions | {text})
-                pending_tokens = len(encoding.encode(pending_inputs))
-                if pending_tokens < max_input_tokens:
-                    submissions.add(text)
-                else:
-                    break
+            # Get the body of comments submitted by the user.
+            comment: Comment
+            for comment in praw_redditor.comments.new():
+                if isinstance(comment, MoreComments):
+                    continue
+                if text := self.filter_submission(text=comment.body):
+                    pending_inputs = "|".join(submissions | {text})
+                    pending_tokens = len(encoding.encode(pending_inputs))
+                    if pending_tokens < max_input_tokens:
+                        submissions.add(text)
+                    else:
+                        break
+        except Forbidden as e:
+            reason = str(e)
+            models.UnprocessableRedditor.objects.update_or_create(
+                username=self.identifier,
+                defaults={
+                    "reason": reason,
+                    "submitter": self.submitter,
+                },
+                create_defaults={
+                    "reason": reason,
+                    "submitter": self.submitter,
+                    "username": self.identifier,
+                },
+            )
+            raise exceptions.UnprocessableRedditorError(self.identifier, reason)
 
         min_submissions = self.env.redditor.submission.min_submissions
         if len(submissions) < min_submissions:
