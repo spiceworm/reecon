@@ -51,14 +51,14 @@ export interface ProducerSettings {
     }
 }
 
-export interface ProcessRedditorsDataResponse {
+export interface SubmitRedditorDataResponse {
     ignored: IgnoredRedditor[]
     pending: PendingRedditor[]
     processed: Redditor[]
     unprocessable: UnprocessableRedditor[]
 }
 
-export interface ProcessThreadsDataResponse {
+export interface SubmitThreadDataResponse {
     pending: PendingThread[]
     processed: Thread[]
     unprocessable: UnprocessableThread[]
@@ -73,6 +73,7 @@ export interface Redditor {
 
 interface RedditorData {
     age: ProducedInteger
+    created: Date
     iq: ProducedInteger
     interests: ProducedTextList
     sentiment_polarity: ProducedFloat
@@ -98,6 +99,7 @@ export interface Thread {
 }
 
 interface ThreadData {
+    created: Date
     keywords: ProducedTextList
     sentiment_polarity: ProducedFloat
     sentiment_subjectivity: ProducedFloat
@@ -106,11 +108,13 @@ interface ThreadData {
 }
 
 export interface UnprocessableRedditor {
+    created: Date
     username: string
     reason: string
 }
 
 export interface UnprocessableThread {
+    created: Date
     path: string
     reason: string
     url: string

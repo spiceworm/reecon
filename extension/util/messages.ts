@@ -2,30 +2,30 @@ import { sendToBackground } from "@plasmohq/messaging"
 
 import type * as types from "~util/types"
 
-export const processRedditorsData = async (producerSettings: object, usernames: string[]) => {
+export const processRedditorData = async (producerSettings: object, usernames: string[]) => {
     const resp = await sendToBackground({
         name: "reddit",
         body: {
-            action: "processRedditorsData",
+            action: "processRedditorData",
             kwargs: {
                 producerSettings: producerSettings,
                 usernames: usernames
             }
         }
     })
-    return resp.message as types.ProcessRedditorsDataResponse
+    return resp.message as types.SubmitRedditorDataResponse
 }
 
-export const processThreadsData = async (producerSettings: object, urlPaths: string[]) => {
+export const processThreadData = async (producerSettings: object, urlPaths: string[]) => {
     const resp = await sendToBackground({
         name: "reddit",
         body: {
-            action: "processThreadsData",
+            action: "processThreadData",
             kwargs: {
                 producerSettings: producerSettings,
                 urlPaths: urlPaths
             }
         }
     })
-    return resp.message as types.ProcessThreadsDataResponse
+    return resp.message as types.SubmitThreadDataResponse
 }

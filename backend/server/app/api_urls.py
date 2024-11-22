@@ -25,8 +25,8 @@ router.register(
 )
 router.register(r"reddit/thread/context-query", v1.ThreadContextQueryViewSet, basename="reddit-thread-context-query")
 
-router.register(r"reddit/redditor/data", v1.RedditorsDataViewSet, basename="reddit-redditor-data")
-router.register(r"reddit/thread/data", v1.ThreadsDataViewSet, basename="reddit-thread-data")
+router.register(r"reddit/redditor/data", v1.RedditorDataViewSet, basename="reddit-redditor-data")
+router.register(r"reddit/thread/data", v1.ThreadDataViewSet, basename="reddit-thread-data")
 
 
 v1_endpoints = [

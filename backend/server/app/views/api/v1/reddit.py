@@ -27,9 +27,9 @@ from .... import serializers
 
 __all__ = (
     "RedditorContextQueryViewSet",
-    "RedditorsDataViewSet",
+    "RedditorDataViewSet",
     "ThreadContextQueryViewSet",
-    "ThreadsDataViewSet",
+    "ThreadDataViewSet",
 )
 
 
@@ -109,7 +109,7 @@ class RedditorContextQueryViewSet(GenericViewSet):
         return Response({}, status=status.HTTP_202_ACCEPTED)
 
 
-class RedditorsDataViewSet(GenericViewSet):
+class RedditorDataViewSet(GenericViewSet):
     queryset = models.Redditor.objects.all()
     serializer_class = serializers.RedditorDataRequestSerializer
 
@@ -261,7 +261,7 @@ class ThreadContextQueryViewSet(GenericViewSet):
         return Response({}, status=status.HTTP_202_ACCEPTED)
 
 
-class ThreadsDataViewSet(GenericViewSet):
+class ThreadDataViewSet(GenericViewSet):
     queryset = models.Thread.objects.all()
     serializer_class = serializers.ThreadDataRequestSerializer
 

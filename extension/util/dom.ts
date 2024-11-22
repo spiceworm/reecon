@@ -28,11 +28,13 @@ export const annotateProcessedThreads = async (processedThreads: types.Thread[],
         let dataSpan = document.createElement("span")
         dataSpan.setAttribute("id", dataSpanID)
 
+        const processed = thread.created
+        const keywords = thread.data.keywords.value
         const sentiment_polarity = thread.data.sentiment_polarity.value
         const sentiment_subjectivity = thread.data.sentiment_subjectivity.value
         const summary = thread.data.summary.value
         const total_inputs = thread.data.total_inputs
-        dataSpan.title = `total_inputs: ${total_inputs}\u000dpolarity: ${sentiment_polarity}\u000dsubjectivity: ${sentiment_subjectivity}\u000dsummary: ${summary}\u000d\u000d${JSON.stringify(thread.data, null, 4)}`
+        dataSpan.title = `processed: ${processed}\u000dkeywords: ${keywords}\u000dtotal_inputs: ${total_inputs}\u000dpolarity: ${sentiment_polarity}\u000dsubjectivity: ${sentiment_subjectivity}\u000dsummary: ${summary}\u000d\u000d${JSON.stringify(thread.data, null, 4)}`
         dataSpan.innerText = " 🔮"
 
         getThreadTitleElement(thread.path).insertAdjacentElement("beforeend", dataSpan)
