@@ -64,11 +64,15 @@ class ThreadContextQuery(Created):
         related_name="submitted_thread_context_queries",
         help_text="The user who submit the context query for processing.",
     )
+    total_inputs = models.IntegerField(
+        default=0, null=False, help_text="The total number of inputs used when processing the context query."
+    )
 
     def __str__(self):
         return (
             f"{self.__class__.__name__}(context={self.context.url}, submitter={self.submitter.username}, "
-            f"prompt={Truncator(self.prompt).chars(100)}, response={Truncator(self.response).chars(100)})"
+            f"prompt={Truncator(self.prompt).chars(100)}, response={Truncator(self.response).chars(100)}), "
+            f"total_inputs={self.total_inputs}"
         )
 
 
@@ -114,12 +118,15 @@ class ThreadData(Created):
         related_name="data",
         help_text="The reddit thread whose submissions were used to generate the stats in this entry.",
     )
+    total_inputs = models.IntegerField(
+        default=0, null=False, help_text="The total number of inputs used when processing the data."
+    )
 
     def __str__(self):
         return (
             f"{self.__class__.__name__}(keywords={self.keywords.value}, sentiment_polarity={self.sentiment_polarity.value}, "
-            f"sentiment_subjectivity={self.sentiment_subjectivity.value}, "
-            f"summary={Truncator(self.summary.value).chars(100)}, thread={self.thread.url})"
+            f"sentiment_subjectivity={self.sentiment_subjectivity.value}, summary={Truncator(self.summary.value).chars(100)}, "
+            f"thread={self.thread.url}), total_inputs={self.total_inputs}"
         )
 
 

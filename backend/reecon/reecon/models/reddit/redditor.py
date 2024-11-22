@@ -76,11 +76,15 @@ class RedditorContextQuery(Created):
         related_name="submitted_redditor_context_queries",
         help_text="The user who submit the context query for processing.",
     )
+    total_inputs = models.IntegerField(
+        default=0, null=False, help_text="The total number of inputs used when processing the context query."
+    )
 
     def __str__(self):
         return (
             f"{self.__class__.__name__}(context={self.context.username}, submitter={self.submitter.username}, "
-            f"prompt={Truncator(self.prompt).chars(100)}, response={Truncator(self.response.value).chars(100)})"
+            f"prompt={Truncator(self.prompt).chars(100)}, response={Truncator(self.response.value).chars(100)}), "
+            f"total_inputs={self.total_inputs}"
         )
 
 
@@ -140,12 +144,16 @@ class RedditorData(Created):
         related_name="summary_redditor_data",
         help_text="An inferred summary of the redditor based on their submissions.",
     )
+    total_inputs = models.IntegerField(
+        default=0, null=False, help_text="The total number of inputs used when processing the data."
+    )
 
     def __str__(self):
         return (
             f"{self.__class__.__name__}(age={self.age.value}, iq={self.iq.value}, interests={self.interests.value}, "
             f"redditor={self.redditor.username}, sentiment_polarity={self.sentiment_polarity.value}, "
-            f"sentiment_subjectivity={self.sentiment_subjectivity.value}, summary={Truncator(self.summary.value).chars(100)})"
+            f"sentiment_subjectivity={self.sentiment_subjectivity.value}, summary={Truncator(self.summary.value).chars(100)}), "
+            f"total_inputs={self.total_inputs}"
         )
 
 

@@ -78,6 +78,7 @@ interface RedditorData {
     sentiment_polarity: ProducedFloat
     sentiment_subjectivity: ProducedFloat
     summary: ProducedText
+    total_inputs: number
 }
 
 export interface StatusMessage {
@@ -101,6 +102,7 @@ interface ThreadData {
     sentiment_polarity: ProducedFloat
     sentiment_subjectivity: ProducedFloat
     summary: ProducedText
+    total_inputs: number
 }
 
 export interface UnprocessableRedditor {

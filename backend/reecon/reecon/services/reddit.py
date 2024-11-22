@@ -268,6 +268,7 @@ class RedditorContextQueryService(_ContextQueryService, _RedditorService):
                 value=generated.response,
             ),
             submitter=self.submitter,
+            total_inputs=len(generated.inputs),
         )
 
     def generate(self, *, inputs: List[str], prompt: str) -> schemas.GeneratedRedditorContextQuery:
@@ -295,6 +296,7 @@ class ThreadContextQueryService(_ContextQueryService, _ThreadService):
                 value=generated.response,
             ),
             submitter=self.submitter,
+            total_inputs=len(generated.inputs),
         )
 
     def generate(self, *, inputs: List[str], prompt: str) -> schemas.GeneratedThreadContextQuery:
@@ -356,6 +358,7 @@ class RedditorDataService(_DataService, _RedditorService):
                 producer=self.llm_producer,
                 value=generated.summary,
             ),
+            total_inputs=len(generated.inputs),
         )
 
     def generate(self, *, inputs: List[str], prompt: str) -> schemas.GeneratedRedditorData:
@@ -415,6 +418,7 @@ class ThreadDataService(_DataService, _ThreadService):
                 value=generated.summary,
             ),
             thread=thread,
+            total_inputs=len(generated.inputs),
         )
 
     def generate(self, *, inputs: List[str], prompt: str) -> schemas.GeneratedThreadData:
