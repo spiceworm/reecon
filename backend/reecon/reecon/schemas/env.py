@@ -30,10 +30,8 @@ class RedditEntitySubmissionEnv:
 class RedditApiEnv:
     client_id: str
     client_secret: str
-    password: str
     ratelimit_seconds: int
     user_agent: str
-    username: str
 
 
 @dataclass
@@ -75,10 +73,8 @@ def get_worker_env():
             api=RedditApiEnv(
                 client_id=settings.REDDIT_API_CLIENT_ID,
                 client_secret=settings.REDDIT_API_CLIENT_SECRET,
-                password=settings.REDDIT_API_PASSWORD,
                 ratelimit_seconds=settings.REDDIT_API_RATELIMIT_SECONDS,
                 user_agent=settings.REDDIT_API_USER_AGENT,
-                username=settings.REDDIT_API_USERNAME,
             ),
             submission=RedditSubmissionEnv(
                 max_length=config.SUBMISSION_FILTER_MAX_LENGTH,

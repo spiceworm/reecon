@@ -75,10 +75,8 @@ class _RedditService(abc.ABC):
         self.reddit_client = praw.Reddit(
             client_id=self.env.reddit.api.client_id,
             client_secret=self.env.reddit.api.client_secret,
-            password=self.env.reddit.api.password,
             ratelimit_seconds=self.env.reddit.api.ratelimit_seconds,
             user_agent=self.env.reddit.api.user_agent,
-            username=self.env.reddit.api.username,
         )
 
     @abc.abstractmethod
