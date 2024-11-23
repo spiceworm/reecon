@@ -161,20 +161,28 @@ class RedditorDataViewSet(GenericViewSet):
         env = schemas.get_worker_env()
 
         if config.REDDITOR_DATA_PROCESSING_ENABLED:
+            job_queue = django_rq.get_queue()
+            existing_job_ids = set(job_queue.get_job_ids())
+
             for redditor_username in pending_usernames:
                 pending_redditors.append({"username": redditor_username})
-                django_rq.enqueue(
-                    "app.worker.process_redditor_data",  # this function is defined in the worker app
-                    redditor_username,
-                    llm_contributor,
-                    llm_producer,
-                    nlp_contributor,
-                    nlp_producer,
-                    producer_settings,
-                    submitter,
-                    env,
-                    job_id=f"redditor-{redditor_username}",
-                )
+
+                job_id = f"redditor-{redditor_username}"
+                if job_id not in existing_job_ids:
+                    job_queue.enqueue(
+                        "app.worker.process_redditor_data",  # this function is defined in the worker app
+                        redditor_username,
+                        llm_contributor,
+                        llm_producer,
+                        nlp_contributor,
+                        nlp_producer,
+                        producer_settings,
+                        submitter,
+                        env,
+                        job_id=job_id,
+                    )
+                else:
+                    log.debug("Not enqueuing duplicate job for %s", redditor_username)
         else:
             log.debug("Redditor data processing is disabled")
 
@@ -309,6 +317,9 @@ class ThreadDataViewSet(GenericViewSet):
         env = schemas.get_worker_env()
 
         if config.THREAD_DATA_PROCESSING_ENABLED:
+            job_queue = django_rq.get_queue()
+            existing_job_ids = set(job_queue.get_job_ids())
+
             for thread_url in pending_urls:
                 thread_path = urlparse(thread_url).path
                 pending_threads.append({"path": thread_path, "url": thread_url})
@@ -319,18 +330,22 @@ class ThreadDataViewSet(GenericViewSet):
                 # Using the full thread URL as the job id causes the job to get enqueued but never executed.
                 # Maybe it's because of the length of the job id or symbols that are in the URL?
 
-                django_rq.enqueue(
-                    "app.worker.process_thread_data",  # this function is defined in the worker app
-                    thread_url,
-                    llm_contributor,
-                    llm_producer,
-                    nlp_contributor,
-                    nlp_producer,
-                    producer_settings,
-                    submitter,
-                    env,
-                    job_id=f"thread-{subreddit}-{thread_id}",
-                )
+                job_id = f"thread-{subreddit}-{thread_id}"
+                if job_id not in existing_job_ids:
+                    job_queue.enqueue(
+                        "app.worker.process_thread_data",  # this function is defined in the worker app
+                        thread_url,
+                        llm_contributor,
+                        llm_producer,
+                        nlp_contributor,
+                        nlp_producer,
+                        producer_settings,
+                        submitter,
+                        env,
+                        job_id=job_id,
+                    )
+                else:
+                    log.debug("Not enqueuing duplicate job for %s", thread_url)
         else:
             log.debug("Thread data processing is disabled")
 
