@@ -1,19 +1,17 @@
 # reecon
-Firefox browser extension that:
+Browser extension that:
 - Scans all usernames and threads on the current page of old reddit.com layout (does not support new layout)
 - The usernames and thread paths are sent to server for processing of submissions
 - Based on found submissions, the server generates data for each redditor and thread using natural language processing and large language models
 - The extension then injects the generated data onto the page so it is visible when browsing
 - Data currently include age, IQ, sentiment polarity, and a brief summary about the user based on their submissions.
 
-# Admin Views
-- Django admin - http://127.0.0.1:8888/admin/
-- RQ stats - http://127.0.0.1:8888/admin/django_rq/queue/
-- Constance - http://127.0.0.1:8888/admin/constance/config/
+# Admin View
+- Django admin - https://reecon.xyz/admin/
 
-# Documentation Views
-- Swagger API v1 Docs - http://127.0.0.1:8888/api/v1/docs/
-- Redoc API v1 Docs - http://127.0.0.1:8888/api/v1/docs/redoc/
+# Documentation
+- Swagger API v1 Docs - https://reecon.xyz/api/v1/docs/
+- Redoc API v1 Docs - https://reecon.xyz/api/v1/docs/redoc/
 
 # Development
 ## Start extension development server
@@ -37,16 +35,20 @@ docker compose up --build
 ```bash
 docker exec -it reecon-backend-server-1 tail -f /var/log/supervisor/gunicorn/app.log
 docker exec -it reecon-backend-server-1 tail -f /var/log/supervisor/rq-worker/worker.log
+
+docker exec -it reecon-backend-worker-1 tail -f /var/log/supervisor/rq-worker/worker.log
 ```
 
 ### Debugging Tools
 ```bash
 # DigitalOcean currently has a bug - https://www.digitalocean.com/community/questions/app-platform-supervisor-error
-# For a local dev instance, uncomment unix_http_server lines at top of reecon/app/supervisord.conf
+# For a local dev instance, uncomment unix_http_server lines at top of supervisord.conf for server and worker
 # in order to use `supervisorctl`.
-docker exec -it reecon-backend-server-1 ./db.sh
-docker exec -it reecon-backend-server-1 ./debug.sh
-docker exec -it reecon-backend-server-1 ./redis.sh
+
+# These are available in the running server and worker containers
+$ reecon-db.sh
+$ reecon-debug.sh
+$ reecon-redis.sh
 ```
 
 # Environment Variables
@@ -94,14 +96,25 @@ REDIS_SSL=True / False
 ```
 
 TODO:
-- Make `producer_settings` a pydantic model so it can be used in type annotations. This is better than `typing.Dict`
-- Store extension auth and producer settings using plasmo's SecureStorage
+- If going to an "aggregator" sub like /r/all and /r/popular, apply content filters to each individual thread based on the context of that thread
+  - In settings popup, show all active content filters
+- Think about how to handle local settings after logout. Logging back in as a different user will currently load the initial users settings
+- storage watcher not always setting notification when openai key missing
+- Allow users to contribute anonymously or have a checkbox to hide their username from contributions (while still being associated with them)
+- Auto redirect reddit urls to old.reddit.com since the extension wont work otherwise
+- Add toggle to subsidize all openai api requests so that users do not have to provide their own key
+- Add way for extension to get settings from server
+  - disabled context queries disables form elements
+  - subsidized processing means producer API key does not need to be present in the extension
 
 Enhancements:
-- Use batching API for processing redditors because they don't have to be processed immediately especially in the beginning. Then a job can just check the ones that are expired and resubmit them to the batch processing API again in the future
 - Add option to collapse comments for unprocessable redditors
-- (?) Add button to expand all comments
 - Have some way to inspect list of hidden threads
 - Recommend threads to users based on their interests determined from their submissions history.
-- Allow users to submit AI queries within the context of a thread or redditor comments. For example: "what are the largest concerns users have about about the topic discussed in this thread?", "what industry do you think this redditor works in?"
-- Allow users to report other users that they suspect are bots that should be added as an IgnoredRedditor
+- Hide thread posts from redditors that trigger filter rule for current context
+- Add some indication that the context script fired
+- Do not show expose producer api keys when looking at RQ job arguments in admin panel
+- update llm prompt to return keywords in order of relevance from most to least
+- Store extension auth and producer settings using plasmo's SecureStorage
+- Add contributions tab that shows how many submissions the user has paid for with their key
+- Show contribution rank next to each redditors username
