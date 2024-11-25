@@ -26,5 +26,5 @@ class StatusView(RetrieveAPIView):
 
 
 class StatusMessagesViewSet(ReadOnlyListModelViewSet):
-    queryset = StatusMessage.objects.filter(active=True)
+    queryset = StatusMessage.objects.all()
     serializer_class = StatusMessageRequestSerializer

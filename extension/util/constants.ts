@@ -10,7 +10,11 @@ export const EXTENSION_STATUS_MESSAGES = "_extensionStatusMessages"
 export const HIDE_BAD_SENTIMENT_THREADS = "_hideBadSentimentThreads"
 export const OPENAI_API_KEY = "_unvalidatedOpenaiApiKey"
 export const PRODUCER_SETTINGS = "_producerSettings"
+export const REDDITOR_CONTEXT_QUERY_PROCESSING_ENABLED = "_redditorContextQueryProcessingEnabled"
+export const REDDITOR_DATA_PROCESSING_ENABLED = "_redditorDataProcessingEnabled"
 export const STATUS_MESSAGES = "_statusMessages"
+export const THREAD_CONTEXT_QUERY_PROCESSING_ENABLED = "_threadContextQueryProcessingEnabled"
+export const THREAD_DATA_PROCESSING_ENABLED = "_threadDataProcessingEnabled"
 
 export const defaultContentFilter: types.ContentFilter = {
     age: 0,

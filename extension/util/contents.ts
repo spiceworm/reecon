@@ -13,27 +13,31 @@ export const execute = async () => {
         // TODO: show visual queue in the browser that the content script got executed
         lastExecution = Date.now()
 
+        const contentFilter = await storage.getActiveContentFilter()
         const producerSettings = await storage.getProducerSettings()
 
-        const urlPaths = dom.getThreadUrlPaths()
-        const processThreadDataResponse = await backgroundMessage.processThreadData(producerSettings, urlPaths)
-        const contentFilter = await storage.getActiveContentFilter()
+        if (await storage.getThreadDataProcessingEnabled()) {
+            const urlPaths = dom.getThreadUrlPaths()
+            const processThreadDataResponse = await backgroundMessage.processThreadData(producerSettings, urlPaths)
 
-        await Promise.all([
-            dom.annotatePendingThreads(processThreadDataResponse.pending, contentFilter),
-            dom.annotateProcessedThreads(processThreadDataResponse.processed, contentFilter),
-            dom.annotateUnprocessableThreads(processThreadDataResponse.unprocessable, contentFilter)
-        ])
+            await Promise.all([
+                dom.annotatePendingThreads(processThreadDataResponse.pending, contentFilter),
+                dom.annotateProcessedThreads(processThreadDataResponse.processed, contentFilter),
+                dom.annotateUnprocessableThreads(processThreadDataResponse.unprocessable, contentFilter)
+            ])
+        }
 
-        const usernameElementsMap = dom.getUsernameElementsMap()
-        const usernames = Object.keys(usernameElementsMap)
-        const processRedditorDataResponse = await backgroundMessage.processRedditorData(producerSettings, usernames)
+        if (await storage.getRedditorDataProcessingEnabled()) {
+            const usernameElementsMap = dom.getUsernameElementsMap()
+            const usernames = Object.keys(usernameElementsMap)
+            const processRedditorDataResponse = await backgroundMessage.processRedditorData(producerSettings, usernames)
 
-        await Promise.all([
-            dom.annotateIgnoredRedditors(processRedditorDataResponse.ignored, usernameElementsMap, contentFilter),
-            dom.annotatePendingRedditors(processRedditorDataResponse.pending, usernameElementsMap, contentFilter),
-            dom.annotateProcessedRedditors(processRedditorDataResponse.processed, usernameElementsMap, contentFilter),
-            dom.annotateUnprocessableRedditors(processRedditorDataResponse.unprocessable, usernameElementsMap, contentFilter)
-        ])
+            await Promise.all([
+                dom.annotateIgnoredRedditors(processRedditorDataResponse.ignored, usernameElementsMap, contentFilter),
+                dom.annotatePendingRedditors(processRedditorDataResponse.pending, usernameElementsMap, contentFilter),
+                dom.annotateProcessedRedditors(processRedditorDataResponse.processed, usernameElementsMap, contentFilter),
+                dom.annotateUnprocessableRedditors(processRedditorDataResponse.unprocessable, usernameElementsMap, contentFilter)
+            ])
+        }
     }
 }

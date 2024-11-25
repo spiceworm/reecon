@@ -12,12 +12,14 @@ export const Status = () => {
         v === undefined ? [] : v
     )
 
+    const activeStatusMessage = statusMessages.filter((message: types.StatusMessage)=> message.active)
+
     return (
         <bases.Authenticated>
-            {statusMessages.length === 0 ? (
+            {activeStatusMessage.length === 0 ? (
                 <Alert color={"light"}>No status messages</Alert>
             ) : (
-                statusMessages.map((message, idx: number) => (
+                activeStatusMessage.map((message, idx: number) => (
                     <div className={"p-1"}>
                         <Toast key={`status-message-${idx}`}>
                             <ToastHeader icon={message.category}>Source: {message.source}</ToastHeader>

@@ -30,7 +30,11 @@ export const init = async (): Promise<void> => {
         [constants.HIDE_BAD_SENTIMENT_THREADS]: false,
         [constants.OPENAI_API_KEY]: "",
         [constants.PRODUCER_SETTINGS]: constants.defaultProducerSettings,
-        [constants.STATUS_MESSAGES]: []
+        [constants.REDDITOR_CONTEXT_QUERY_PROCESSING_ENABLED]: false,
+        [constants.REDDITOR_DATA_PROCESSING_ENABLED]: false,
+        [constants.STATUS_MESSAGES]: [],
+        [constants.THREAD_CONTEXT_QUERY_PROCESSING_ENABLED]: false,
+        [constants.THREAD_DATA_PROCESSING_ENABLED]: false
     })
 }
 
@@ -79,6 +83,14 @@ export const getHideBadSentimentThreads = async (): Promise<boolean> => {
 
 export const getProducerSettings = async (): Promise<types.ProducerSettings> => {
     return (await _get(constants.PRODUCER_SETTINGS)) as types.ProducerSettings
+}
+
+export const getRedditorDataProcessingEnabled = async (): Promise<boolean> => {
+    return (await _get(constants.REDDITOR_DATA_PROCESSING_ENABLED)) as boolean
+}
+
+export const getThreadDataProcessingEnabled = async (): Promise<boolean> => {
+    return (await _get(constants.THREAD_DATA_PROCESSING_ENABLED)) as boolean
 }
 
 export const setActiveContentFilter = async (url: string): Promise<void> => {
@@ -139,6 +151,11 @@ export const shouldExecuteContentScript = async (): Promise<boolean> => {
     const auth = await getAuth()
     const disableExtension = await getDisableExtension()
 
+    if (auth !== null && !disableExtension) {
+        // Retrieve status messages which will be used to set local variables.
+        await api.updateApiStatusMessages()
+    }
+
     const producerSettings = await getProducerSettings()
 
     // NOTE: this is hardcoded to only care if the openai key exists for now
@@ -151,7 +168,19 @@ localStorage.watch({
     [constants.API_STATUS_MESSAGES]: async (storageChange) => {
         const { oldValue, newValue } = storageChange
 
-        await setStatusMessages(newValue.concat(await getExtensionStatusMessages()).filter((message: types.StatusMessage) => message.active))
+        await setStatusMessages(newValue.concat(await getExtensionStatusMessages()))
+
+        for (const message of newValue as types.StatusMessage[]) {
+            if (message.name === "redditorContextQueryProcessingDisabled") {
+                await _set(constants.REDDITOR_CONTEXT_QUERY_PROCESSING_ENABLED, !message.active)
+            } else if (message.name === "redditorDataProcessingDisabled") {
+                await _set(constants.REDDITOR_DATA_PROCESSING_ENABLED, !message.active)
+            } else if (message.name === "threadContextQueryProcessingDisabled") {
+                await _set(constants.THREAD_CONTEXT_QUERY_PROCESSING_ENABLED, !message.active)
+            } else if (message.name === "threadDataProcessingDisabled") {
+                await _set(constants.THREAD_DATA_PROCESSING_ENABLED, !message.active)
+            }
+        }
     },
     [constants.AUTH]: async (storageChange) => {
         const { oldValue, newValue } = storageChange
@@ -176,7 +205,7 @@ localStorage.watch({
     [constants.EXTENSION_STATUS_MESSAGES]: async (storageChange) => {
         const { oldValue, newValue } = storageChange
 
-        await setStatusMessages(newValue.concat(await getApiStatusMessages()).filter((message: types.StatusMessage) => message.active))
+        await setStatusMessages(newValue.concat(await getApiStatusMessages()))
     },
     [constants.OPENAI_API_KEY]: async (storageChange) => {
         const { oldValue, newValue } = storageChange
