@@ -16,6 +16,7 @@ from praw.models import (
 )
 from prawcore.exceptions import (
     Forbidden,
+    NotFound,
     TooManyRequests,
 )
 from tenacity import (
@@ -161,7 +162,7 @@ class _RedditorService(_RedditService):
                         submissions.add(text)
                     else:
                         break
-        except Forbidden as e:
+        except (Forbidden, NotFound) as e:
             reason = str(e)
             models.UnprocessableRedditor.objects.update_or_create(
                 username=self.identifier,
