@@ -1,7 +1,7 @@
 {
   "name": "reecon",
   "displayName": "reecon",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "reecon",
   "author": "me@reecon.xyz",
   "scripts": {
@@ -18,7 +18,7 @@
     "bootstrap": "^5.3.3",
     "jwt-decode": "^4.0.0",
     "lscache": "^1.3.2",
-    "openai": "^4.73.0",
+    "openai": "^4.73.1",
     "plasmo": "0.89.4",
     "react": "18.3.1",
     "react-bootstrap-icons": "^1.11.4",
