@@ -52,7 +52,7 @@ $ reecon-redis.sh
 ```
 
 # Environment Variables
-### These are all required for dev and prod
+### Required for dev and prod
 ```
 ADMIN_PASSWORD=<admin-password>
 APP_NAME=reecon
@@ -72,7 +72,7 @@ SECRET_KEY=<secret-key>
 VERSION=<semantic-version>
 ```
 
-### Set these for dev instance
+### Additional env vars for dev instance
 ```
 DEBUG=True
 LOG_LEVEL=DEBUG
@@ -84,7 +84,7 @@ POSTGRES_USER=postgres
 REDIS_HOST=redis
 ```
 
-### Set these for prod instance
+### Additional env vars for prod instance
 ```
 PRODUCTION=True
 REDIS_HOST=<host>
@@ -93,19 +93,30 @@ REDIS_PORT=<port>
 REDIS_SSL=True / False
 ```
 
-TODO:
+# Bump version
+### Change version variable in:
+- backend/.env
+- backend/.env.production
+- extension/package.json
+- reinstall reecon python package for local virtualenv
+  - `cd reecon/backend/reecon`
+  - `export VERSION=<new-version>; python -m build && pip install dist/reecon-${VERSION}.tar.gz`
+
+# Deploy to Production
+```
+$ cd ~/backend
+$ . ~/venv/reecon/bin/activate
+(reecon) $ ./deploy.py
+```
+
+# TODO:
 - If going to an "aggregator" sub like /r/all and /r/popular, apply content filters to each individual thread based on the context of that thread
   - In settings popup, show all active content filters
 - Think about how to handle local settings after logout. Logging back in as a different user will currently load the initial users settings
-- storage watcher not always setting notification when openai key missing
 - Allow users to contribute anonymously or have a checkbox to hide their username from contributions (while still being associated with them)
 - Auto redirect reddit urls to old.reddit.com since the extension wont work otherwise
-- Add toggle to subsidize all openai api requests so that users do not have to provide their own key
-- Add way for extension to get settings from server
-  - disabled context queries disables form elements
-  - subsidized processing means producer API key does not need to be present in the extension
 
-Enhancements:
+# Enhancements:
 - Add option to collapse comments for unprocessable redditors
 - Have some way to inspect list of hidden threads
 - Recommend threads to users based on their interests determined from their submissions history.
