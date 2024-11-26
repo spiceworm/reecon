@@ -98,8 +98,9 @@ def create_hardcoded_producers():
 
 
 def create_hardcoded_status_messages():
-    for active_is_computed, name, category, message in [
+    for active, active_is_computed, name, category, message in [
         (
+            True,
             True,
             "redditorContextQueryProcessingDisabled",
             "warning",
@@ -107,17 +108,20 @@ def create_hardcoded_status_messages():
         ),
         (
             True,
+            True,
             "redditorDataProcessingDisabled",
             "warning",
             "Redditor data processing disabled for all users",
         ),
         (
             True,
+            True,
             "threadContextQueryProcessingDisabled",
             "warning",
             "Thread context query processing disabled for all users",
         ),
         (
+            True,
             True,
             "threadDataProcessingDisabled",
             "warning",
@@ -132,11 +136,7 @@ def create_hardcoded_status_messages():
                 "message": message,
             },
             create_defaults={
-                # `active` defaults to True on creation because *_PROCESSING_ENABLED constance config keys default to False.
-                # We cannot access the constance config object because that will trigger a signal to be dispatched that will
-                # attempt to update the `StatusMessage` object. However, the `StatusMessage` object will not exist because
-                # this is where they are being created.
-                "active": True,
+                "active": active,
                 "active_is_computed": active_is_computed,
                 "category": category,
                 "message": message,
