@@ -211,8 +211,8 @@ class ThreadContextQueryViewSet(GenericViewSet):
         url_path = submit_serializer.validated_data["path"]
         producer_settings = submit_serializer.validated_data["producer_settings"]
         prompt = submit_serializer.validated_data["prompt"]
-
         log.debug("Received %s: %s", url_path, prompt)
+        thread_url = f"https://reddit.com{url_path}"
 
         llm_contributor = request.user
         llm_producer = models.Producer.objects.get(name=config.LLM_NAME)
@@ -228,7 +228,7 @@ class ThreadContextQueryViewSet(GenericViewSet):
             # will create a new job.
             job = django_rq.enqueue(
                 "app.worker.process_thread_context_query",  # this function is defined in the worker app
-                url_path,
+                thread_url,
                 llm_contributor,
                 llm_producer,
                 nlp_contributor,
