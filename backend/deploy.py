@@ -34,6 +34,12 @@ def parse_args():
         default=get_latest_tag(),
         help="Tag the newly built image before pushing. Tag HEAD with TAG if not in git history.",
     )
+    parser.add_argument(
+        "-y",
+        "--yes",
+        action="store_true",
+        help="Push without prompting for confirmation.",
+    )
     return parser.parse_args()
 
 
@@ -46,7 +52,7 @@ def main(args):
         image_url = f"{registry_url}/{config['APP_NAME']}/{service_name}:{args.tag}"
         push_cmd = ["docker", "push", image_url]
 
-        if confirm_command(" ".join(push_cmd)):
+        if args.yes or confirm_command(" ".join(push_cmd)):
             subprocess.check_call(push_cmd)
 
 
