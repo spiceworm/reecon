@@ -106,7 +106,7 @@ def process_thread_context_query(
 
     try:
         inputs = service.get_inputs()
-    except exceptions.UnprocessableRedditorError as e:
+    except exceptions.UnprocessableThreadError as e:
         log.info(e)
     else:
         prompt = f"{env.thread.llm.prompt_prefix} {env.thread.llm.prompt}"

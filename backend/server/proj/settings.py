@@ -406,6 +406,11 @@ CONSTANCE_CONFIG = collections.OrderedDict(
             "deletion, previously unprocessable paths will be reattempted if included in an API request.",
             timedelta,
         ),
+        "REDDITOR_ACCOUNT_MIN_AGE": (
+            timedelta(days=7),
+            "The minimum number of days old a redditor account must be for data processing to occur.",
+            timedelta,
+        ),
     }
 )
 

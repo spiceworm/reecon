@@ -1,3 +1,5 @@
+import datetime as dt
+
 from pydantic import Field
 from pydantic.dataclasses import dataclass
 
@@ -41,7 +43,13 @@ class RedditEnv:
 
 
 @dataclass
+class RedditorAccountEnv:
+    min_age: dt.timedelta
+
+
+@dataclass
 class RedditorEnv:
+    account: RedditorAccountEnv
     llm: LlmEnv
     submission: RedditEntitySubmissionEnv
 
@@ -82,6 +90,9 @@ def get_worker_env():
             ),
         ),
         redditor=RedditorEnv(
+            account=RedditorAccountEnv(
+                min_age=config.REDDITOR_ACCOUNT_MIN_AGE,
+            ),
             llm=LlmEnv(
                 max_context_window_for_inputs=config.LLM_MAX_CONTEXT_WINDOW_FOR_INPUTS,
                 prompt=config.REDDITOR_LLM_PROMPT,

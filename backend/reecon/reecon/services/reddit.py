@@ -1,4 +1,5 @@
 import abc
+import datetime as dt
 import logging
 from typing import (
     List,
@@ -121,6 +122,10 @@ class _RedditService(abc.ABC):
 
         return retval
 
+    @abc.abstractmethod
+    def unprocessable_entity(self, reason: str) -> exceptions.UnprocessableEntityError:
+        pass
+
 
 class _RedditorService(_RedditService):
     @retry(
@@ -139,6 +144,18 @@ class _RedditorService(_RedditService):
         encoding = tiktoken.encoding_for_model(self.llm_producer.name)
 
         try:
+            # Check if the redditor account is old enough to be processed
+            try:
+                created_utc = praw_redditor.created_utc
+            except AttributeError:
+                raise self.unprocessable_entity("Inaccessible account")
+            else:
+                created_ts = dt.datetime.fromtimestamp(created_utc).replace(tzinfo=dt.UTC)
+                current_ts = dt.datetime.now(dt.UTC)
+
+                if current_ts - created_ts < self.env.redditor.account.min_age:
+                    raise self.unprocessable_entity(f"Account age is less than {self.env.redditor.account.min_age} old")
+
             # Get the body of threads submitted by the user.
             thread: Submission
             for thread in praw_redditor.submissions.new():
@@ -163,38 +180,29 @@ class _RedditorService(_RedditService):
                     else:
                         break
         except (Forbidden, NotFound) as e:
-            reason = str(e)
-            models.UnprocessableRedditor.objects.update_or_create(
-                username=self.identifier,
-                defaults={
-                    "reason": reason,
-                    "submitter": self.submitter,
-                },
-                create_defaults={
-                    "reason": reason,
-                    "submitter": self.submitter,
-                    "username": self.identifier,
-                },
-            )
-            raise exceptions.UnprocessableRedditorError(self.identifier, reason)
+            raise self.unprocessable_entity(str(e))
 
         min_submissions = self.env.redditor.submission.min_submissions
         if len(submissions) < min_submissions:
-            reason = f"Less than {min_submissions} submissions available for processing (found {len(submissions)})"
-            models.UnprocessableRedditor.objects.update_or_create(
-                username=self.identifier,
-                defaults={
-                    "reason": reason,
-                    "submitter": self.submitter,
-                },
-                create_defaults={
-                    "reason": reason,
-                    "submitter": self.submitter,
-                    "username": self.identifier,
-                },
+            raise self.unprocessable_entity(
+                f"Less than {min_submissions} submissions available for processing (found {len(submissions)})"
             )
-            raise exceptions.UnprocessableRedditorError(self.identifier, reason)
         return list(submissions)
+
+    def unprocessable_entity(self, reason):
+        models.UnprocessableRedditor.objects.update_or_create(
+            username=self.identifier,
+            defaults={
+                "reason": reason,
+                "submitter": self.submitter,
+            },
+            create_defaults={
+                "reason": reason,
+                "submitter": self.submitter,
+                "username": self.identifier,
+            },
+        )
+        return exceptions.UnprocessableRedditorError(self.identifier, reason)
 
 
 class _ThreadService(_RedditService):
@@ -237,21 +245,25 @@ class _ThreadService(_RedditService):
 
         min_submissions = self.env.thread.submission.min_submissions
         if len(submissions) < min_submissions:
-            reason = f"Less than {min_submissions} submissions available for processing (found {len(submissions)})"
-            models.UnprocessableThread.objects.update_or_create(
-                url=self.identifier,
-                defaults={
-                    "reason": reason,
-                    "submitter": self.submitter,
-                },
-                create_defaults={
-                    "reason": reason,
-                    "submitter": self.submitter,
-                    "url": self.identifier,
-                },
+            raise self.unprocessable_entity(
+                f"Less than {min_submissions} submissions available for processing (found {len(submissions)})"
             )
-            raise exceptions.UnprocessableThreadError(self.identifier, reason)
         return list(submissions)
+
+    def unprocessable_entity(self, reason):
+        models.UnprocessableThread.objects.update_or_create(
+            url=self.identifier,
+            defaults={
+                "reason": reason,
+                "submitter": self.submitter,
+            },
+            create_defaults={
+                "reason": reason,
+                "submitter": self.submitter,
+                "url": self.identifier,
+            },
+        )
+        return exceptions.UnprocessableThreadError(self.identifier, reason)
 
 
 class _ContextQueryService(abc.ABC):
