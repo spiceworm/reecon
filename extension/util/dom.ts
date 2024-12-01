@@ -3,13 +3,16 @@ import type * as types from "~util/types"
 
 export const annotatePendingThreads = async (pendingThreads: types.PendingThread[], contentFilter: types.ContentFilter) => {
     for (const thread of pendingThreads) {
-        const dataSpanID = `${process.env.PLASMO_PUBLIC_APP_NAME}-pendingThread-${thread.path}`
+        const dataSpanPrefix = `${process.env.PLASMO_PUBLIC_APP_NAME}-${thread.path}`
+        const dataSpanName = `${dataSpanPrefix}-pendingThread`
 
-        // Delete existing data span so it can be recreated
-        document.getElementById(dataSpanID)?.remove()
+        // Delete all existing data spans for the thread so we can create new ones. This will also delete out
+        // of date information for the thread. For example, if it was pending and then was successfully
+        // processed, this will delete the pending annotation so that both are not present in the DOM.
+        ;[...document.querySelectorAll(`span[name^=${CSS.escape(dataSpanPrefix)}]`)].map((span) => span.remove())
 
         let dataSpan = document.createElement("span")
-        dataSpan.setAttribute("id", dataSpanID)
+        dataSpan.setAttribute("name", dataSpanName)
         dataSpan.title = "Submitted for processing"
         dataSpan.innerText = " 🕒"
 
@@ -20,13 +23,16 @@ export const annotatePendingThreads = async (pendingThreads: types.PendingThread
 export const annotateProcessedThreads = async (processedThreads: types.Thread[], contentFilter: types.ContentFilter) => {
     for (const thread of processedThreads) {
         const threadRow = getThreadRowElement(thread.path)
-        const dataSpanID = `${process.env.PLASMO_PUBLIC_APP_NAME}-processedThread-${thread.path}`
+        const dataSpanPrefix = `${process.env.PLASMO_PUBLIC_APP_NAME}-${thread.path}`
+        const dataSpanName = `${dataSpanPrefix}-processedThread`
 
-        // Delete existing data span so it can be recreated
-        document.getElementById(dataSpanID)?.remove()
+        // Delete all existing data spans for the thread so we can create new ones. This will also delete out
+        // of date information for the thread. For example, if it was pending and then was successfully
+        // processed, this will delete the pending annotation so that both are not present in the DOM.
+        ;[...document.querySelectorAll(`span[name^=${CSS.escape(dataSpanPrefix)}]`)].map((span) => span.remove())
 
         let dataSpan = document.createElement("span")
-        dataSpan.setAttribute("id", dataSpanID)
+        dataSpan.setAttribute("name", dataSpanName)
 
         const processed = thread.created
         const keywords = thread.data.keywords.value
@@ -52,13 +58,16 @@ export const annotateProcessedThreads = async (processedThreads: types.Thread[],
 
 export const annotateUnprocessableThreads = async (unprocessableThreads: types.UnprocessableThread[], contentFilter: types.ContentFilter) => {
     for (const thread of unprocessableThreads) {
-        const dataSpanID = `${process.env.PLASMO_PUBLIC_APP_NAME}-unprocessableThread-${thread.path}`
+        const dataSpanPrefix = `${process.env.PLASMO_PUBLIC_APP_NAME}-${thread.path}`
+        const dataSpanName = `${dataSpanPrefix}-unprocessableThread`
 
-        // Delete existing data span so it can be recreated
-        document.getElementById(dataSpanID)?.remove()
+        // Delete all existing data spans for the thread so we can create new ones. This will also delete out
+        // of date information for the thread. For example, if it was pending and then was successfully
+        // processed, this will delete the pending annotation so that both are not present in the DOM.
+        ;[...document.querySelectorAll(`span[name^=${CSS.escape(dataSpanName)}]`)].map((span) => span.remove())
 
         let dataSpan = document.createElement("span")
-        dataSpan.setAttribute("id", dataSpanID)
+        dataSpan.setAttribute("name", dataSpanName)
         dataSpan.title = `reason: ${thread.reason}`
         dataSpan.innerText = " ❔"
 
@@ -73,11 +82,14 @@ export const annotateIgnoredRedditors = async (
 ) => {
     for (const ignoredRedditor of ignoredRedditors) {
         const username = ignoredRedditor.username
-        const dataSpanName = `${process.env.PLASMO_PUBLIC_APP_NAME}-ignoredRedditor-${username}`
+        const dataSpanPrefix = `${process.env.PLASMO_PUBLIC_APP_NAME}-${username}`
+        const dataSpanName = `${dataSpanPrefix}-ignoredRedditor`
 
         if (username in usernameElementsMap) {
-            // Delete existing data spans so we can create new ones
-            ;[...document.getElementsByName(dataSpanName)].map((span) => span.remove())
+            // Delete all existing data spans for the user so we can create new ones. This will also delete out
+            // of date information for the username. For example, if it was pending and then was successfully
+            // processed, this will delete the pending annotation so that both are not present in the DOM.
+            ;[...document.querySelectorAll(`span[name^=${dataSpanPrefix}]`)].map((span) => span.remove())
 
             let dataSpan = document.createElement("span")
             dataSpan.setAttribute("name", dataSpanName)
@@ -99,11 +111,14 @@ export const annotatePendingRedditors = async (
 ) => {
     for (const pendingRedditor of pendingRedditors) {
         const username = pendingRedditor.username
-        const dataSpanName = `${process.env.PLASMO_PUBLIC_APP_NAME}-pendingRedditor-${username}`
+        const dataSpanPrefix = `${process.env.PLASMO_PUBLIC_APP_NAME}-${username}`
+        const dataSpanName = `${dataSpanPrefix}-pendingRedditor`
 
         if (username in usernameElementsMap) {
-            // Delete existing data spans so we can create new ones
-            ;[...document.getElementsByName(dataSpanName)].map((span) => span.remove())
+            // Delete all existing data spans for the user so we can create new ones. This will also delete out
+            // of date information for the username. For example, if it was pending and then was successfully
+            // processed, this will delete the pending annotation so that both are not present in the DOM.
+            ;[...document.querySelectorAll(`span[name^=${dataSpanPrefix}]`)].map((span) => span.remove())
 
             let dataSpan = document.createElement("span")
             dataSpan.setAttribute("name", dataSpanName)
@@ -122,11 +137,14 @@ export const annotatePendingRedditors = async (
 export const annotateProcessedRedditors = async (processedRedditors: types.Redditor[], usernameElementsMap, contentFilter: types.ContentFilter) => {
     for (const processedRedditor of processedRedditors) {
         const username = processedRedditor.username
-        const dataSpanName = `${process.env.PLASMO_PUBLIC_APP_NAME}-processedRedditor-${username}`
+        const dataSpanPrefix = `${process.env.PLASMO_PUBLIC_APP_NAME}-${username}`
+        const dataSpanName = `${dataSpanPrefix}-processedRedditor`
 
         if (username in usernameElementsMap) {
-            // Delete existing data spans so we can create new ones
-            ;[...document.getElementsByName(dataSpanName)].map((span) => span.remove())
+            // Delete all existing data spans for the user so we can create new ones. This will also delete out
+            // of date information for the username. For example, if it was pending and then was successfully
+            // processed, this will delete the pending annotation so that both are not present in the DOM.
+            ;[...document.querySelectorAll(`span[name^=${dataSpanPrefix}]`)].map((span) => span.remove())
 
             let dataSpan = document.createElement("span")
             dataSpan.setAttribute("name", dataSpanName)
@@ -155,11 +173,14 @@ export const annotateUnprocessableRedditors = async (
 ) => {
     for (const unprocessableRedditor of unprocessableRedditors) {
         const username = unprocessableRedditor.username
-        const dataSpanName = `${process.env.PLASMO_PUBLIC_APP_NAME}-unprocessableRedditor-${username}`
+        const dataSpanPrefix = `${process.env.PLASMO_PUBLIC_APP_NAME}-${username}`
+        const dataSpanName = `${dataSpanPrefix}-unprocessableRedditor`
 
         if (username in usernameElementsMap) {
-            // Delete existing data spans so we can create new ones
-            ;[...document.getElementsByName(dataSpanName)].map((span) => span.remove())
+            // Delete all existing data spans for the user so we can create new ones. This will also delete out
+            // of date information for the username. For example, if it was pending and then was successfully
+            // processed, this will delete the pending annotation so that both are not present in the DOM.
+            ;[...document.querySelectorAll(`span[name^=${dataSpanPrefix}]`)].map((span) => span.remove())
 
             let dataSpan = document.createElement("span")
             dataSpan.setAttribute("name", dataSpanName)
