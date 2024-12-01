@@ -3,7 +3,7 @@ import type { PlasmoCSConfig } from "plasmo"
 import * as contents from "~util/contents"
 
 export const config: PlasmoCSConfig = {
-    matches: ["https://www.reddit.com/", "https://www.reddit.com/r/*", "https://www.reddit.com/user/*"]
+    matches: ["https://*.reddit.com/", "https://*.reddit.com/r/*", "https://*.reddit.com/user/*"]
 }
 
 const rowObserver = new MutationObserver((mutationRecords) => {
