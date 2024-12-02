@@ -1,5 +1,6 @@
-from django.contrib.auth.models import User
 from rest_framework import serializers
+
+from .user import UserSerializer
 
 
 __all__ = (
@@ -13,7 +14,4 @@ class SignupRequestSerializer(serializers.Serializer):
     password = serializers.CharField(required=True)
 
 
-class SignupResponseSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        exclude = ("email", "id", "password")
+SignupResponseSerializer = UserSerializer

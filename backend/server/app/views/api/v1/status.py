@@ -18,7 +18,7 @@ class StatusView(RetrieveAPIView):
     authentication_classes = ()
     serializer_class = StatusRequestSerializer
 
-    def get(self, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         data = {"status": "ok"}
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
