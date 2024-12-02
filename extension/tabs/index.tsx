@@ -4,8 +4,8 @@ import { MemoryRouter, Navigate, Route, Routes } from "react-router-dom"
 
 import { ContentFilters } from "~tabs/views/contentFilters"
 import { ContextQuery } from "~tabs/views/contextQuery"
-import { ProducerSettings } from "~tabs/views/producerSettings"
 import { RequireAuthentication } from "~util/components/authentication"
+import { Settings } from "~tabs/views/settings"
 import { Login } from "~util/views/auth/login"
 import { Signup } from "~util/views/auth/signup"
 
@@ -23,10 +23,10 @@ export default function OptionsPage() {
                     }
                 />
                 <Route
-                    path="/producer-settings"
+                    path="/settings"
                     element={
                         <RequireAuthentication>
-                            <ProducerSettings />
+                            <Settings />
                         </RequireAuthentication>
                     }
                 />

@@ -1,7 +1,7 @@
 import * as bases from "~tabs/bases"
-import { ProducerSettingsInputs } from "~util/components/producerSettings"
+import { ProducerSettingsInputs } from "~util/components/settings"
 
-export const ProducerSettings = () => {
+export const Settings = () => {
     return (
         <bases.Authenticated>
             <ProducerSettingsInputs />

@@ -13,8 +13,8 @@ export const Authenticated = ({ children }) => {
                     </NavLink>
                 </NavItem>
                 <NavItem>
-                    <NavLink className={"nav-link"} to={"/producer-settings"}>
-                        Producer Settings
+                    <NavLink className={"nav-link"} to={"/settings"}>
+                        Settings
                     </NavLink>
                 </NavItem>
                 <NavItem>
