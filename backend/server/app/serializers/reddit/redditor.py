@@ -57,7 +57,7 @@ class ProcessedRedditorSerializer(serializers.ModelSerializer):
         Even though we are storing all RedditorData entries, we only want to serialize
         the latest one, not all of them.
         """
-        data = RedditorData.objects.filter(redditor=redditor).latest("created")
+        data = redditor.data.latest("created")
         serializer = RedditorDataSerializer(instance=data)
         return serializer.data
 

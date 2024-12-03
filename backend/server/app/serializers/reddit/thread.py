@@ -52,7 +52,7 @@ class ProcessedThreadSerializer(serializers.ModelSerializer):
         Even though we are storing all ThreadData entries, we only want to serialize
         the latest one, not all of them.
         """
-        data = ThreadData.objects.filter(thread=thread).latest("created")
+        data = thread.data.latest("created")
         serializer = ThreadDataSerializer(instance=data)
         return serializer.data
 

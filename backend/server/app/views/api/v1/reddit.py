@@ -143,7 +143,7 @@ class RedditorDataViewSet(GenericViewSet):
         ).delete()
 
         unprocessable_redditors = models.UnprocessableRedditor.objects.filter(username__in=usernames)
-        unprocessable_usernames = {redditor.username for redditor in unprocessable_redditors}
+        unprocessable_usernames = set(unprocessable_redditors.values_list("username", flat=True))
 
         ignored_redditors = models.IgnoredRedditor.objects.filter(username__in=usernames)
         ignored_usernames = set(ignored_redditors.values_list("username", flat=True))
@@ -304,7 +304,7 @@ class ThreadDataViewSet(GenericViewSet):
         ).delete()
 
         unprocessable_threads = models.UnprocessableThread.objects.filter(url__in=thread_urls)
-        unprocessable_urls = {thread.url for thread in unprocessable_threads}
+        unprocessable_urls = set(unprocessable_threads.values_list("url", flat=True))
 
         pending_urls = set(thread_urls) - known_urls - fresh_urls - unprocessable_urls
         pending_threads = []
