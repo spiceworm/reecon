@@ -113,17 +113,23 @@ $ . ~/venv/reecon/bin/activate
 - If going to an "aggregator" sub like /r/all and /r/popular, apply content filters to each individual thread based on the context of that thread
   - In settings popup, show all active content filters
 - Think about how to handle local settings after logout. Logging back in as a different user will currently load the initial users settings
-- Allow users to contribute anonymously or have a checkbox to hide their username from contributions (while still being associated with them)
-- Auto redirect reddit urls to old.reddit.com since the extension wont work otherwise
+    - Add option to back up settings to file and another option to import from file
+- Context queries fail if a redditor does not exist in the db yet. They only get added if their data has been processed.
+- Generate a bell curve using recent processed redditor data to determine high, medium, and low values for sentiment polarity and subjectivity
+- Simplify context query form by using websockets
+- There is no way for a user to recover their account if they forgot their password because the app does not require them to enter an email address
+    - If their reecon username is the same as their redditor username, could add a password reset mechanism by messaging the reecon-admin bot
+- Make annotated data render nicer
 
 # Enhancements:
-- Add option to collapse comments for unprocessable redditors
+- Add option to hide comments for unprocessable redditors
 - Have some way to inspect list of hidden threads
 - Recommend threads to users based on their interests determined from their submissions history.
 - Hide thread posts from redditors that trigger filter rule for current context
-- Add some indication that the context script fired
-- Do not show expose producer api keys when looking at RQ job arguments in admin panel
+- Do not expose producer api keys when looking at RQ job arguments in admin panel
 - update llm prompt to return keywords in order of relevance from most to least
-- Store extension auth and producer settings using plasmo's SecureStorage
 - Add contributions tab that shows how many submissions the user has paid for with their key
 - Show contribution rank next to each redditors username
+- Add way for users to report suspected bot accounts so they get added to the ignored redditors list
+- Add UI endpoint to render processed data for individual redditors / threads. This could be used when people share processed information as a link or could be incorporated into a search feature of the site one day
+- Allow users to contribute anonymously or have a checkbox to hide their username from contributions (while still being associated with them)

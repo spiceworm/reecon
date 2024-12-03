@@ -12,7 +12,7 @@ export const Status = () => {
         v === undefined ? [] : v
     )
 
-    const activeStatusMessage = statusMessages.filter((message: types.StatusMessage)=> message.active)
+    const activeStatusMessage = statusMessages.filter((message: types.StatusMessage) => message.active)
 
     return (
         <bases.Authenticated>

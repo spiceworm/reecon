@@ -26,7 +26,7 @@ export const Authenticated = ({ children }) => {
         navigate("/auth/login", { replace: true })
     }
 
-    const activeStatusMessage = statusMessages.filter((message: types.StatusMessage)=> message.active)
+    const activeStatusMessage = statusMessages.filter((message: types.StatusMessage) => message.active)
 
     return (
         <bases.Unauthenticated>
@@ -38,8 +38,8 @@ export const Authenticated = ({ children }) => {
                 </NavItem>
                 <NavItem>
                     <NavLink className={"nav-link"} to={"/status"}>
-                        Status
-                        {" "}{activeStatusMessage.length > 0 ? <Badge color={error ? "danger" : "warning"}>{activeStatusMessage.length}</Badge> : null}
+                        Status{" "}
+                        {activeStatusMessage.length > 0 ? <Badge color={error ? "danger" : "warning"}>{activeStatusMessage.length}</Badge> : null}
                     </NavLink>
                 </NavItem>
                 <UncontrolledDropdown setActiveFromChild>

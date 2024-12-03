@@ -4,8 +4,8 @@ import { MemoryRouter, Navigate, Route, Routes } from "react-router-dom"
 
 import { ContentFilters } from "~tabs/views/contentFilters"
 import { ContextQuery } from "~tabs/views/contextQuery"
-import { RequireAuthentication } from "~util/components/authentication"
 import { Settings } from "~tabs/views/settings"
+import { RequireAuthentication } from "~util/components/authentication"
 import { Login } from "~util/views/auth/login"
 import { Signup } from "~util/views/auth/signup"
 

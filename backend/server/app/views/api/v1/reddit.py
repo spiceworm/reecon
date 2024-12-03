@@ -62,6 +62,12 @@ class RedditorContextQueryViewSet(GenericViewSet):
         env = schemas.get_worker_env()
         env.redditor.llm.prompt = prompt
 
+        # FIXME: Cannot process a context query for a redditor whose data has not been processed yet
+        # because `Redditor` entries are not inserted until a successful data processing has occurred.
+        # If the redditor is not processed, the user should send a request to process the one they want
+        # to context query.
+        # If the redditor is unprocessable or ignored, return an error to the user.
+
         if config.REDDITOR_CONTEXT_QUERY_PROCESSING_ENABLED:
             # Do not explicitly set a job id because context-query jobs should have unique IDs.
             # Multiple users could submit a context query for the same redditor, but each query
@@ -221,6 +227,12 @@ class ThreadContextQueryViewSet(GenericViewSet):
         submitter = request.user
         env = schemas.get_worker_env()
         env.thread.llm.prompt = prompt
+
+        # FIXME: Cannot process a context query for a thread whose data has not been processed yet
+        # because `Thread` entries are not inserted until a successful data processing has occurred.
+        # If the thread is not processed, the user should send a request to process the one they want
+        # to context query.
+        # If the thread is unprocessable, return an error to the user.
 
         if config.THREAD_CONTEXT_QUERY_PROCESSING_ENABLED:
             # Do not explicitly set a job id because context-query jobs should have unique IDs.
