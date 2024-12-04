@@ -23,6 +23,7 @@ __all__ = (
     "RedditorContextQuery",
     "RedditorData",
     "UnprocessableRedditor",
+    "UnprocessableRedditorContextQuery",
 )
 
 
@@ -169,6 +170,19 @@ class UnprocessableRedditor(Created, RedditorUsername, UnprocessableReason):
         on_delete=models.CASCADE,
         related_name="submitted_unprocessable_redditors",
         help_text="The user who submit the unprocessable redditor for processing.",
+    )
+
+    def __str__(self):
+        return f"{self.__class__.__name__}(username={self.username}, submitter={self.submitter.username})"
+
+
+class UnprocessableRedditorContextQuery(Created, RedditorUsername, UnprocessableReason):
+    submitter = models.ForeignKey(
+        User,
+        null=False,
+        on_delete=models.CASCADE,
+        related_name="submitted_unprocessable_redditor_context_queries",
+        help_text="The user who submit the unprocessable redditor context query for processing.",
     )
 
     def __str__(self):

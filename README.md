@@ -114,12 +114,13 @@ $ . ~/venv/reecon/bin/activate
   - In settings popup, show all active content filters
 - Think about how to handle local settings after logout. Logging back in as a different user will currently load the initial users settings
     - Add option to back up settings to file and another option to import from file
-- Context queries fail if a redditor does not exist in the db yet. They only get added if their data has been processed.
 - Generate a bell curve using recent processed redditor data to determine high, medium, and low values for sentiment polarity and subjectivity
 - Simplify context query form by using websockets
 - There is no way for a user to recover their account if they forgot their password because the app does not require them to enter an email address
     - If their reecon username is the same as their redditor username, could add a password reset mechanism by messaging the reecon-admin bot
 - Make annotated data render nicer
+- Make use of RQ priority queues (would need to configure a worker host for each queue)
+    - Unprocessed redditors/threads go in medium priority, reprocessing redditors/threads go in low priority, context queries go in high priority
 
 # Enhancements:
 - Add option to hide comments for unprocessable redditors

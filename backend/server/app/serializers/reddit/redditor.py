@@ -5,6 +5,7 @@ from reecon.models import (
     RedditorContextQuery,
     RedditorData,
     UnprocessableRedditor,
+    UnprocessableRedditorContextQuery,
 )
 
 from ..producer import (
@@ -78,6 +79,12 @@ class RedditorContextQuerySerializer(serializers.ModelSerializer):
         exclude = ("id",)
 
 
+class UnprocessableRedditorContextQuerySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UnprocessableRedditorContextQuery
+        exclude = ("id",)
+
+
 class RedditorContextQueryCreateRequestSerializer(serializers.Serializer):
     username = serializers.CharField()
     prompt = serializers.CharField()
@@ -88,7 +95,15 @@ class RedditorContextQueryCreateResponseSerializer(serializers.Serializer):
     job_id = serializers.CharField()
 
 
-RedditorContextQueryRetrieveResponseSerializer = RedditorContextQuerySerializer
+class RedditorContextQueryRetrieveResponseSerializer(serializers.Serializer):
+    error = UnprocessableRedditorSerializer(
+        default=None,
+        read_only=True,
+    )
+    success = RedditorContextQuerySerializer(
+        default=None,
+        read_only=True,
+    )
 
 
 class RedditorDataSerializer(serializers.ModelSerializer):

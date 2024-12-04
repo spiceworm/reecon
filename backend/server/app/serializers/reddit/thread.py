@@ -5,6 +5,7 @@ from reecon.models import (
     ThreadContextQuery,
     ThreadData,
     UnprocessableThread,
+    UnprocessableThreadContextQuery,
 )
 
 from ..producer import (
@@ -77,6 +78,12 @@ class ThreadContextQuerySerializer(serializers.ModelSerializer):
         exclude = ("id",)
 
 
+class UnprocessableThreadContextQuerySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UnprocessableThreadContextQuery
+        exclude = ("id",)
+
+
 class ThreadContextQueryCreateRequestSerializer(serializers.Serializer):
     path = serializers.CharField()
     prompt = serializers.CharField()
@@ -87,7 +94,15 @@ class ThreadContextQueryCreateResponseSerializer(serializers.Serializer):
     job_id = serializers.CharField()
 
 
-ThreadContextQueryRetrieveResponseSerializer = ThreadContextQuerySerializer
+class ThreadContextQueryRetrieveResponseSerializer(serializers.Serializer):
+    error = UnprocessableThreadSerializer(
+        default=None,
+        read_only=True,
+    )
+    success = ThreadContextQuerySerializer(
+        default=None,
+        read_only=True,
+    )
 
 
 class ThreadDataSerializer(serializers.ModelSerializer):

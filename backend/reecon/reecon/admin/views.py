@@ -11,7 +11,9 @@ from ..models import (
     Thread,
     ThreadContextQuery,
     UnprocessableRedditor,
+    UnprocessableRedditorContextQuery,
     UnprocessableThread,
+    UnprocessableThreadContextQuery,
 )
 
 __all__ = (
@@ -93,6 +95,16 @@ class UnprocessableRedditorAdmin(admin.ModelAdmin):
     list_display = get_list_display(UnprocessableRedditor)
 
 
+@admin.register(UnprocessableRedditorContextQuery)
+class UnprocessableRedditorContextQueryAdmin(admin.ModelAdmin):
+    list_display = get_list_display(UnprocessableRedditorContextQuery)
+
+
 @admin.register(UnprocessableThread)
 class UnprocessableThreadAdmin(admin.ModelAdmin):
     list_display = get_list_display(UnprocessableThread)
+
+
+@admin.register(UnprocessableThreadContextQuery)
+class UnprocessableThreadContextQueryAdmin(admin.ModelAdmin):
+    list_display = get_list_display(UnprocessableThreadContextQuery)

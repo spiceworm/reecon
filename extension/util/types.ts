@@ -51,6 +51,10 @@ export interface ProducerSettings {
     }
 }
 
+export interface SubmitContextQueryResponse {
+    job_id: string
+}
+
 export interface SubmitRedditorDataResponse {
     ignored: IgnoredRedditor[]
     pending: PendingRedditor[]
@@ -62,6 +66,18 @@ export interface SubmitThreadDataResponse {
     pending: PendingThread[]
     processed: Thread[]
     unprocessable: UnprocessableThread[]
+}
+
+interface ContextQuery {
+    created: Date
+    prompt: string
+    response: ProducedText
+    total_inputs: number
+}
+
+export interface ContextQueryResponse {
+    error: UnprocessableRedditorContextQuery | UnprocessableThreadContextQuery | null
+    success: ContextQuery | null
 }
 
 export interface Redditor {
@@ -113,7 +129,20 @@ export interface UnprocessableRedditor {
     reason: string
 }
 
+export interface UnprocessableRedditorContextQuery {
+    created: Date
+    username: string
+    reason: string
+}
+
 export interface UnprocessableThread {
+    created: Date
+    path: string
+    reason: string
+    url: string
+}
+
+export interface UnprocessableThreadContextQuery {
     created: Date
     path: string
     reason: string

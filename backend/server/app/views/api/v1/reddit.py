@@ -62,12 +62,6 @@ class RedditorContextQueryViewSet(GenericViewSet):
         env = schemas.get_worker_env()
         env.redditor.llm.prompt = prompt
 
-        # FIXME: Cannot process a context query for a redditor whose data has not been processed yet
-        # because `Redditor` entries are not inserted until a successful data processing has occurred.
-        # If the redditor is not processed, the user should send a request to process the one they want
-        # to context query.
-        # If the redditor is unprocessable or ignored, return an error to the user.
-
         if config.REDDITOR_CONTEXT_QUERY_PROCESSING_ENABLED:
             # Do not explicitly set a job id because context-query jobs should have unique IDs.
             # Multiple users could submit a context query for the same redditor, but each query
@@ -112,8 +106,12 @@ class RedditorContextQueryViewSet(GenericViewSet):
             return Response({}, status=status.HTTP_400_BAD_REQUEST)
 
         if job.is_finished:
-            obj: models.RedditorContextQuery = job.return_value()
-            response_serializer = serializers.RedditorContextQueryRetrieveResponseSerializer(instance=obj)
+            obj: models.RedditorContextQuery | models.UnprocessableRedditorContextQuery = job.return_value()
+            data = {
+                "error": obj if isinstance(obj, models.UnprocessableRedditorContextQuery) else None,
+                "success": obj if isinstance(obj, models.RedditorContextQuery) else None,
+            }
+            response_serializer = serializers.RedditorContextQueryRetrieveResponseSerializer(instance=data)
             return Response(response_serializer.data, status=status.HTTP_200_OK)
         return Response({}, status=status.HTTP_202_ACCEPTED)
 
@@ -233,12 +231,6 @@ class ThreadContextQueryViewSet(GenericViewSet):
         env = schemas.get_worker_env()
         env.thread.llm.prompt = prompt
 
-        # FIXME: Cannot process a context query for a thread whose data has not been processed yet
-        # because `Thread` entries are not inserted until a successful data processing has occurred.
-        # If the thread is not processed, the user should send a request to process the one they want
-        # to context query.
-        # If the thread is unprocessable, return an error to the user.
-
         if config.THREAD_CONTEXT_QUERY_PROCESSING_ENABLED:
             # Do not explicitly set a job id because context-query jobs should have unique IDs.
             # Multiple users could submit a context query for the same thread, but each query
@@ -283,8 +275,12 @@ class ThreadContextQueryViewSet(GenericViewSet):
             return Response({}, status=status.HTTP_404_NOT_FOUND)
 
         if job.is_finished:
-            obj: models.ThreadContextQuery = job.return_value()
-            response_serializer = serializers.ThreadContextQueryRetrieveResponseSerializer(instance=obj)
+            obj: models.ThreadContextQuery | models.UnprocessableThreadContextQuery = job.return_value()
+            data = {
+                "error": obj if isinstance(obj, models.UnprocessableThreadContextQuery) else None,
+                "success": obj if isinstance(obj, models.ThreadContextQuery) else None,
+            }
+            response_serializer = serializers.ThreadContextQueryRetrieveResponseSerializer(instance=data)
             return Response(response_serializer.data, status=status.HTTP_200_OK)
         return Response({}, status=status.HTTP_202_ACCEPTED)
 

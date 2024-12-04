@@ -20,6 +20,7 @@ __all__ = (
     "ThreadContextQuery",
     "ThreadData",
     "UnprocessableThread",
+    "UnprocessableThreadContextQuery",
 )
 
 
@@ -142,6 +143,19 @@ class UnprocessableThread(Created, ThreadUrl, UnprocessableReason):
         on_delete=models.CASCADE,
         related_name="submitted_unprocessable_threads",
         help_text="The user who submit the unprocessable thread for processing.",
+    )
+
+    def __str__(self):
+        return f"{self.__class__.__name__}(url={self.url}, submitter={self.submitter.username})"
+
+
+class UnprocessableThreadContextQuery(Created, ThreadUrl, UnprocessableReason):
+    submitter = models.ForeignKey(
+        User,
+        null=False,
+        on_delete=models.CASCADE,
+        related_name="submitted_unprocessable_thread_context_queries",
+        help_text="The user who submit the unprocessable thread context query for processing.",
     )
 
     def __str__(self):
