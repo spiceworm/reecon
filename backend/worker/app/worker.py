@@ -22,6 +22,7 @@ log = logging.getLogger("app.worker.jobs.reddit")
 
 
 def process_redditor_context_query(
+    *,
     redditor_username: str,
     llm_contributor: User,
     llm_producer: models.Producer,
@@ -53,6 +54,7 @@ def process_redditor_context_query(
 
 
 def process_redditor_data(
+    *,
     redditor_username: str,
     llm_contributor: User,
     llm_producer: models.Producer,
@@ -84,6 +86,7 @@ def process_redditor_data(
 
 
 def process_thread_context_query(
+    *,
     thread_url: str,
     llm_contributor: User,
     llm_producer: models.Producer,
@@ -115,6 +118,7 @@ def process_thread_context_query(
 
 
 def process_thread_data(
+    *,
     thread_url: str,
     llm_contributor: User,
     llm_producer: models.Producer,

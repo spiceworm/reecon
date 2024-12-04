@@ -74,15 +74,17 @@ class RedditorContextQueryViewSet(GenericViewSet):
             # will create a new job.
             job = django_rq.enqueue(
                 "app.worker.process_redditor_context_query",  # this function is defined in the worker app
-                username,
-                llm_contributor,
-                llm_producer,
-                nlp_contributor,
-                nlp_producer,
-                producer_settings,
-                submitter,
-                env,
                 at_front=True,
+                kwargs={
+                    "redditor_username": username,
+                    "llm_contributor": llm_contributor,
+                    "llm_producer": llm_producer,
+                    "nlp_contributor": nlp_contributor,
+                    "nlp_producer": nlp_producer,
+                    "producer_settings": producer_settings,
+                    "submitter": submitter,
+                    "env": env,
+                },
             )
 
             job_id = job.id
@@ -178,14 +180,16 @@ class RedditorDataViewSet(GenericViewSet):
                 if job_id not in existing_job_ids:
                     job_queue.enqueue(
                         "app.worker.process_redditor_data",  # this function is defined in the worker app
-                        redditor_username,
-                        llm_contributor,
-                        llm_producer,
-                        nlp_contributor,
-                        nlp_producer,
-                        producer_settings,
-                        submitter,
-                        env,
+                        kwargs={
+                            "redditor_username": redditor_username,
+                            "llm_contributor": llm_contributor,
+                            "llm_producer": llm_producer,
+                            "nlp_contributor": nlp_contributor,
+                            "nlp_producer": nlp_producer,
+                            "producer_settings": producer_settings,
+                            "submitter": submitter,
+                            "env": env,
+                        },
                         job_id=job_id,
                     )
                 else:
@@ -241,15 +245,17 @@ class ThreadContextQueryViewSet(GenericViewSet):
             # will create a new job.
             job = django_rq.enqueue(
                 "app.worker.process_thread_context_query",  # this function is defined in the worker app
-                thread_url,
-                llm_contributor,
-                llm_producer,
-                nlp_contributor,
-                nlp_producer,
-                producer_settings,
-                submitter,
-                env,
                 at_front=True,
+                kwargs={
+                    "thread_url": thread_url,
+                    "llm_contributor": llm_contributor,
+                    "llm_producer": llm_producer,
+                    "nlp_contributor": nlp_contributor,
+                    "nlp_producer": nlp_producer,
+                    "producer_settings": producer_settings,
+                    "submitter": submitter,
+                    "env": env,
+                },
             )
 
             job_id = job.id
@@ -348,14 +354,16 @@ class ThreadDataViewSet(GenericViewSet):
                 if job_id not in existing_job_ids:
                     job_queue.enqueue(
                         "app.worker.process_thread_data",  # this function is defined in the worker app
-                        thread_url,
-                        llm_contributor,
-                        llm_producer,
-                        nlp_contributor,
-                        nlp_producer,
-                        producer_settings,
-                        submitter,
-                        env,
+                        kwargs={
+                            "thread_url": thread_url,
+                            "llm_contributor": llm_contributor,
+                            "llm_producer": llm_producer,
+                            "nlp_contributor": nlp_contributor,
+                            "nlp_producer": nlp_producer,
+                            "producer_settings": producer_settings,
+                            "submitter": submitter,
+                            "env": env,
+                        },
                         job_id=job_id,
                     )
                 else:
