@@ -191,7 +191,7 @@ class _RedditorService(_RedditService):
         return list(submissions)
 
     def unprocessable_entity(self, reason):
-        models.UnprocessableRedditor.objects.update_or_create(
+        obj, _ = models.UnprocessableRedditor.objects.update_or_create(
             username=self.identifier,
             defaults={
                 "reason": reason,
@@ -203,7 +203,7 @@ class _RedditorService(_RedditService):
                 "username": self.identifier,
             },
         )
-        return exceptions.UnprocessableRedditorError(self.identifier, reason)
+        return exceptions.UnprocessableRedditorError(self.identifier, reason, obj)
 
 
 class _ThreadService(_RedditService):
@@ -259,7 +259,7 @@ class _ThreadService(_RedditService):
         return list(submissions)
 
     def unprocessable_entity(self, reason):
-        models.UnprocessableThread.objects.update_or_create(
+        obj, _ = models.UnprocessableThread.objects.update_or_create(
             url=self.identifier,
             defaults={
                 "reason": reason,
@@ -271,7 +271,7 @@ class _ThreadService(_RedditService):
                 "url": self.identifier,
             },
         )
-        return exceptions.UnprocessableThreadError(self.identifier, reason)
+        return exceptions.UnprocessableThreadError(self.identifier, reason, obj)
 
 
 class _ContextQueryService(abc.ABC):

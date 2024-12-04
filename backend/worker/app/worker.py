@@ -63,7 +63,7 @@ def process_redditor_data(
     producer_settings: dict,
     submitter: User,
     env: schemas.WorkerEnv,
-):
+) -> models.RedditorData | models.UnprocessableRedditor:
     service = services.RedditorDataService(
         identifier=redditor_username,
         llm_contributor=llm_contributor,
@@ -79,6 +79,7 @@ def process_redditor_data(
         inputs = service.get_inputs()
     except exceptions.UnprocessableRedditorError as e:
         log.info(e)
+        return e.obj
     else:
         prompt = f"{env.redditor.llm.prompt_prefix} {env.redditor.llm.prompt}"
         generated = service.generate(inputs=inputs, prompt=prompt)
@@ -127,7 +128,7 @@ def process_thread_data(
     producer_settings: dict,
     submitter: User,
     env: schemas.WorkerEnv,
-):
+) -> models.ThreadData | models.UnprocessableThread:
     service = services.ThreadDataService(
         identifier=thread_url,
         llm_contributor=llm_contributor,
@@ -143,6 +144,7 @@ def process_thread_data(
         inputs = service.get_inputs()
     except exceptions.UnprocessableThreadError as e:
         log.info(e)
+        return e.obj
     else:
         prompt = f"{env.thread.llm.prompt_prefix} {env.thread.llm.prompt}"
         generated = service.generate(inputs=inputs, prompt=prompt)
