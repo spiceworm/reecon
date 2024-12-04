@@ -82,6 +82,7 @@ class RedditorContextQueryViewSet(GenericViewSet):
                 producer_settings,
                 submitter,
                 env,
+                at_front=True,
             )
 
             job_id = job.id
@@ -248,6 +249,7 @@ class ThreadContextQueryViewSet(GenericViewSet):
                 producer_settings,
                 submitter,
                 env,
+                at_front=True,
             )
 
             job_id = job.id
