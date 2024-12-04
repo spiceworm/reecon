@@ -15,6 +15,7 @@ from praw.models import (
     Redditor as PrawRedditor,  # Avoid name conflict with `reecon.models.Redditor`
     Submission,
 )
+from praw.exceptions import InvalidURL
 from prawcore.exceptions import (
     Forbidden,
     NotFound,
@@ -216,32 +217,39 @@ class _ThreadService(_RedditService):
     def get_inputs(self) -> List[str]:
         submissions: Set[str] = set()
         ignored_usernames = set(models.IgnoredRedditor.objects.values_list("username", flat=True))
-        praw_submission: Submission = self.reddit_client.submission(url=self.identifier)
+
+        try:
+            praw_submission: Submission = self.reddit_client.submission(url=self.identifier)
+        except InvalidURL as e:
+            raise self.unprocessable_entity(str(e))
 
         context_window = self.llm_producer.context_window
         max_input_tokens = int(context_window * self.env.thread.llm.max_context_window_for_inputs)
         encoding = tiktoken.encoding_for_model(self.llm_producer.name)
 
-        # Get the thread selftext
-        if text := self.filter_submission(text=praw_submission.selftext):
-            pending_inputs = "|".join(submissions | {text})
-            pending_tokens = len(encoding.encode(pending_inputs))
-            if pending_tokens < max_input_tokens:
-                submissions.add(text)
+        try:
+            # Get the thread selftext
+            if text := self.filter_submission(text=praw_submission.selftext):
+                pending_inputs = "|".join(submissions | {text})
+                pending_tokens = len(encoding.encode(pending_inputs))
+                if pending_tokens < max_input_tokens:
+                    submissions.add(text)
 
-        # Get thread comments
-        comment: Comment
-        for comment in praw_submission.comments.list():
-            if isinstance(comment, MoreComments):
-                continue
-            if comment.author and comment.author.name not in ignored_usernames:
-                if text := self.filter_submission(text=comment.body):
-                    pending_inputs = "|".join(submissions | {text})
-                    pending_tokens = len(encoding.encode(pending_inputs))
-                    if pending_tokens < max_input_tokens:
-                        submissions.add(text)
-                    else:
-                        break
+            # Get thread comments
+            comment: Comment
+            for comment in praw_submission.comments.list():
+                if isinstance(comment, MoreComments):
+                    continue
+                if comment.author and comment.author.name not in ignored_usernames:
+                    if text := self.filter_submission(text=comment.body):
+                        pending_inputs = "|".join(submissions | {text})
+                        pending_tokens = len(encoding.encode(pending_inputs))
+                        if pending_tokens < max_input_tokens:
+                            submissions.add(text)
+                        else:
+                            break
+        except NotFound as e:
+            raise self.unprocessable_entity(str(e))
 
         min_submissions = self.env.thread.submission.min_submissions
         if len(submissions) < min_submissions:
