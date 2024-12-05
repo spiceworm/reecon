@@ -68,22 +68,34 @@ export interface SubmitThreadDataResponse {
     unprocessable: UnprocessableThread[]
 }
 
-interface ContextQuery {
+export interface RedditorContextQuery {
     created: Date
+    context: Redditor
     prompt: string
     response: ProducedText
+    submitter: User
+    total_inputs: number
+}
+
+export interface ThreadContextQuery {
+    created: Date
+    context: Thread
+    prompt: string
+    response: ProducedText
+    submitter: User
     total_inputs: number
 }
 
 export interface ContextQueryResponse {
     error: UnprocessableRedditorContextQuery | UnprocessableThreadContextQuery | null
-    success: ContextQuery | null
+    success: RedditorContextQuery | ThreadContextQuery | null
 }
 
 export interface Redditor {
     created: Date
     data: RedditorData
     last_processed: Date
+    submitter: User
     username: string
 }
 
@@ -111,6 +123,7 @@ export interface Thread {
     data: ThreadData
     last_processed: Date
     path: string
+    submitter: User
     url: string
 }
 
@@ -127,18 +140,21 @@ export interface UnprocessableRedditor {
     created: Date
     username: string
     reason: string
+    submitter: User
 }
 
 export interface UnprocessableRedditorContextQuery {
     created: Date
     username: string
     reason: string
+    submitter: User
 }
 
 export interface UnprocessableThread {
     created: Date
     path: string
     reason: string
+    submitter: User
     url: string
 }
 
@@ -146,5 +162,15 @@ export interface UnprocessableThreadContextQuery {
     created: Date
     path: string
     reason: string
+    submitter: User
     url: string
+}
+
+interface User {
+    date_joined: Date
+    is_active: boolean
+    is_staff: boolean
+    is_superuser: boolean
+    last_login: Date | null
+    username: string
 }
