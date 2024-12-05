@@ -8,6 +8,7 @@ from reecon.models import (
     UnprocessableThreadContextQuery,
 )
 
+from ..user import UserSerializer
 from ..producer import (
     ProducedFloatSerializer,
     ProducedTextSerializer,
@@ -19,6 +20,7 @@ from ..producer import (
 __all__ = (
     "ThreadContextQueryCreateRequestSerializer",
     "ThreadContextQueryCreateResponseSerializer",
+    "ThreadContextQueryListResponseSerializer",
     "ThreadContextQueryRetrieveResponseSerializer",
     "ThreadDataSerializer",
     "ThreadDataRequestSerializer",
@@ -43,6 +45,9 @@ class ProcessedThreadSerializer(serializers.ModelSerializer):
     path = serializers.CharField(
         read_only=True,
     )
+    submitter = UserSerializer(
+        read_only=True,
+    )
 
     class Meta:
         model = Thread
@@ -62,6 +67,9 @@ class UnprocessableThreadSerializer(serializers.ModelSerializer):
     path = serializers.CharField(
         read_only=True,
     )
+    submitter = UserSerializer(
+        read_only=True,
+    )
 
     class Meta:
         model = UnprocessableThread
@@ -69,6 +77,9 @@ class UnprocessableThreadSerializer(serializers.ModelSerializer):
 
 
 class ThreadContextQuerySerializer(serializers.ModelSerializer):
+    context = ProcessedThreadSerializer(
+        read_only=True,
+    )
     response = ProducedTextSerializer(
         read_only=True,
     )
@@ -79,6 +90,10 @@ class ThreadContextQuerySerializer(serializers.ModelSerializer):
 
 
 class UnprocessableThreadContextQuerySerializer(serializers.ModelSerializer):
+    submitter = UserSerializer(
+        read_only=True,
+    )
+
     class Meta:
         model = UnprocessableThreadContextQuery
         exclude = ("id",)
@@ -92,6 +107,9 @@ class ThreadContextQueryCreateRequestSerializer(serializers.Serializer):
 
 class ThreadContextQueryCreateResponseSerializer(serializers.Serializer):
     job_id = serializers.CharField()
+
+
+ThreadContextQueryListResponseSerializer = ThreadContextQuerySerializer
 
 
 class ThreadContextQueryRetrieveResponseSerializer(serializers.Serializer):

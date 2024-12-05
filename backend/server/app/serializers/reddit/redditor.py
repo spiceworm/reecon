@@ -8,6 +8,7 @@ from reecon.models import (
     UnprocessableRedditorContextQuery,
 )
 
+from ..user import UserSerializer
 from ..producer import (
     ProducedFloatSerializer,
     ProducedIntegerSerializer,
@@ -20,6 +21,7 @@ from ..producer import (
 __all__ = (
     "RedditorContextQueryCreateRequestSerializer",
     "RedditorContextQueryCreateResponseSerializer",
+    "RedditorContextQueryListResponseSerializer",
     "RedditorContextQueryRetrieveResponseSerializer",
     "RedditorDataSerializer",
     "RedditorDataRequestSerializer",
@@ -48,6 +50,9 @@ class ProcessedRedditorSerializer(serializers.ModelSerializer):
         "get_data",
         read_only=True,
     )
+    submitter = UserSerializer(
+        read_only=True,
+    )
 
     class Meta:
         model = Redditor
@@ -64,13 +69,23 @@ class ProcessedRedditorSerializer(serializers.ModelSerializer):
 
 
 class UnprocessableRedditorSerializer(serializers.ModelSerializer):
+    submitter = UserSerializer(
+        read_only=True,
+    )
+
     class Meta:
         model = UnprocessableRedditor
         exclude = ("id",)
 
 
 class RedditorContextQuerySerializer(serializers.ModelSerializer):
+    context = ProcessedRedditorSerializer(
+        read_only=True,
+    )
     response = ProducedTextSerializer(
+        read_only=True,
+    )
+    submitter = UserSerializer(
         read_only=True,
     )
 
@@ -93,6 +108,9 @@ class RedditorContextQueryCreateRequestSerializer(serializers.Serializer):
 
 class RedditorContextQueryCreateResponseSerializer(serializers.Serializer):
     job_id = serializers.CharField()
+
+
+RedditorContextQueryListResponseSerializer = RedditorContextQuerySerializer
 
 
 class RedditorContextQueryRetrieveResponseSerializer(serializers.Serializer):

@@ -26,8 +26,6 @@ class SignupView(CreateAPIView):
         data = serializer.data
 
         if User.objects.filter(username=data["username"]).exists():
-            # TODO create a table containing reserved usernames that people cannot use and check for those here
-            # e.g. admin, reecon-admin administrator, root, etc
             raise UserSignupConflictException()
 
         user = User.objects.create_user(

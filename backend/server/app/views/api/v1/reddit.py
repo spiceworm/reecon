@@ -94,6 +94,14 @@ class RedditorContextQueryViewSet(GenericViewSet):
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
     @extend_schema(
+        responses=serializers.RedditorContextQueryListResponseSerializer,
+    )
+    def list(self, request, *args, **kwargs):
+        queryset = request.user.submitted_redditor_context_queries.all()
+        response_serializer = serializers.RedditorContextQueryListResponseSerializer(instance=queryset, many=True)
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(
         parameters=[
             OpenApiParameter("job_id", OpenApiTypes.STR, OpenApiParameter.PATH),
         ],
@@ -261,6 +269,14 @@ class ThreadContextQueryViewSet(GenericViewSet):
 
         response_serializer = serializers.ThreadContextQueryCreateResponseSerializer(instance=data)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+    @extend_schema(
+        responses=serializers.ThreadContextQueryListResponseSerializer,
+    )
+    def list(self, request, *args, **kwargs):
+        queryset = request.user.submitted_thread_context_queries.all()
+        response_serializer = serializers.ThreadContextQueryListResponseSerializer(instance=queryset, many=True)
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
 
     @extend_schema(
         parameters=[
