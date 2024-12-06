@@ -28,6 +28,9 @@ if (document.readyState !== "loading") {
     // run content script the first time the page loads. Subsequent executions are handled by `MutationObserver`s
     contents.execute().then()
 
+    // run content script every 30 seconds to update the DOM with newly processed results
+    setInterval(contents.execute, 30_000)
+
     const observerOptions = {
         subtree: true,
         childList: true
