@@ -38,7 +38,7 @@ export const ContextQueryForm = () => {
     const [producerSettings] = useStorage({ instance: storage.localStorage, key: constants.PRODUCER_SETTINGS }, (v: types.ProducerSettings) =>
         v === undefined ? constants.defaultProducerSettings : v
     )
-    const [jobId, setJobId] = useStorage({ instance: storage.localStorage, key: "jobId" }, (v: string) => (v === undefined ? "" : v))
+    const [jobId, setJobId] = useState("")
 
     const [isLoading, setIsLoading] = useState(false)
     const [queryResponse, setQueryResponse] = useState(null)
@@ -62,7 +62,7 @@ export const ContextQueryForm = () => {
         },
         onSuccess: async (data: types.SubmitContextQueryResponse, key, config) => {
             setPostBody(null)
-            await setJobId(data.job_id)
+            setJobId(data.job_id)
 
             // If context queries are disabled
             if (data.job_id.length === 0) {
@@ -78,14 +78,14 @@ export const ContextQueryForm = () => {
         },
         refreshInterval: (latestData: types.ContextQueryResponse) => {
             if (latestData && "success" in latestData && latestData.success !== null) {
-                setJobId("").then()
+                setJobId("")
                 setIsLoading(false)
                 setQueryResponse(latestData.success.response.value)
                 setModalVisible(true)
                 return 0
             }
             if (latestData && "error" in latestData && latestData.error !== null) {
-                setJobId("").then()
+                setJobId("")
                 setIsLoading(false)
                 setRequestError(latestData.error.reason)
                 return 0
