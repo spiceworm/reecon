@@ -28,7 +28,7 @@ class ProducedBinarySerializer(serializers.Serializer):
 
     class Meta:
         model = ProducedBinary
-        exclude = ("id",)
+        fields = "__all__"
 
 
 class ProducedFloatSerializer(serializers.Serializer):
@@ -47,7 +47,7 @@ class ProducedFloatSerializer(serializers.Serializer):
 
     class Meta:
         model = ProducedFloat
-        exclude = ("id",)
+        fields = "__all__"
 
 
 class ProducedIntegerSerializer(serializers.Serializer):
@@ -66,7 +66,7 @@ class ProducedIntegerSerializer(serializers.Serializer):
 
     class Meta:
         model = ProducedInteger
-        exclude = ("id",)
+        fields = "__all__"
 
 
 class ProducedTextSerializer(serializers.Serializer):
@@ -85,7 +85,7 @@ class ProducedTextSerializer(serializers.Serializer):
 
     class Meta:
         model = ProducedText
-        exclude = ("id",)
+        fields = "__all__"
 
 
 class ProducedTextListSerializer(serializers.Serializer):
@@ -105,4 +105,4 @@ class ProducedTextListSerializer(serializers.Serializer):
 
     class Meta:
         model = ProducedTextList
-        exclude = ("id",)
+        fields = "__all__"

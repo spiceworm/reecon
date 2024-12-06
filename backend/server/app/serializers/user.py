@@ -7,4 +7,4 @@ __all__ = ("UserSerializer",)
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        exclude = ("groups", "email", "first_name", "id", "last_name", "password", "user_permissions")
+        exclude = ("groups", "email", "first_name", "last_name", "password", "user_permissions")

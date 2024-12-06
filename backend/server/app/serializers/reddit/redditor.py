@@ -56,7 +56,7 @@ class ProcessedRedditorSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Redditor
-        exclude = ("id",)
+        fields = "__all__"
 
     def get_data(self, redditor: Redditor) -> dict:
         """
@@ -75,7 +75,7 @@ class UnprocessableRedditorSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UnprocessableRedditor
-        exclude = ("id",)
+        fields = "__all__"
 
 
 class RedditorContextQuerySerializer(serializers.ModelSerializer):
@@ -91,13 +91,13 @@ class RedditorContextQuerySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RedditorContextQuery
-        exclude = ("id",)
+        fields = "__all__"
 
 
 class UnprocessableRedditorContextQuerySerializer(serializers.ModelSerializer):
     class Meta:
         model = UnprocessableRedditorContextQuery
-        exclude = ("id",)
+        fields = "__all__"
 
 
 class RedditorContextQueryCreateRequestSerializer(serializers.Serializer):
@@ -146,7 +146,7 @@ class RedditorDataSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RedditorData
-        exclude = ("id", "redditor")
+        exclude = ("redditor",)
 
 
 class RedditorDataRequestSerializer(serializers.Serializer):

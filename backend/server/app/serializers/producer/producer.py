@@ -30,7 +30,7 @@ class ProducedCategorySerializer(serializers.Serializer):
 
     class Meta:
         model = ProducerCategory
-        exclude = ("id",)
+        fields = "__all__"
 
 
 class ProducerSerializer(serializers.Serializer):
@@ -49,4 +49,4 @@ class ProducerSerializer(serializers.Serializer):
 
     class Meta:
         model = Producer
-        exclude = ("id",)
+        fields = "__all__"

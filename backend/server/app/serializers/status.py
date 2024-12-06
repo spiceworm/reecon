@@ -16,7 +16,4 @@ class StatusRequestSerializer(serializers.Serializer):
 class StatusMessageRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = StatusMessage
-        exclude = (
-            "active_is_computed",
-            "id",
-        )
+        exclude = ("active_is_computed",)

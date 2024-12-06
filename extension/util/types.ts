@@ -16,6 +16,7 @@ export interface ContentFilter {
 }
 
 export interface IgnoredRedditor {
+    id: number
     username: string
     reason: string
 }
@@ -30,18 +31,22 @@ export interface PendingThread {
 }
 
 interface ProducedFloat {
+    id: number
     value: number
 }
 
 interface ProducedInteger {
+    id: number
     value: number
 }
 
 interface ProducedText {
+    id: number
     value: string
 }
 
 interface ProducedTextList {
+    id: number
     value: string[]
 }
 
@@ -71,6 +76,7 @@ export interface SubmitThreadDataResponse {
 export interface RedditorContextQuery {
     created: Date
     context: Redditor
+    id: number
     prompt: string
     response: ProducedText
     submitter: User
@@ -80,6 +86,7 @@ export interface RedditorContextQuery {
 export interface ThreadContextQuery {
     created: Date
     context: Thread
+    id: number
     prompt: string
     response: ProducedText
     submitter: User
@@ -94,6 +101,7 @@ export interface ContextQueryResponse {
 export interface Redditor {
     created: Date
     data: RedditorData
+    id: number
     last_processed: Date
     submitter: User
     username: string
@@ -102,6 +110,7 @@ export interface Redditor {
 interface RedditorData {
     age: ProducedInteger
     created: Date
+    id: number
     iq: ProducedInteger
     interests: ProducedTextList
     sentiment_polarity: ProducedFloat
@@ -113,6 +122,7 @@ interface RedditorData {
 export interface StatusMessage {
     active: boolean
     category: string
+    id: number
     message: string
     name: string
     source: string
@@ -121,6 +131,7 @@ export interface StatusMessage {
 export interface Thread {
     created: Date
     data: ThreadData
+    id: number
     last_processed: Date
     path: string
     submitter: User
@@ -129,6 +140,7 @@ export interface Thread {
 
 interface ThreadData {
     created: Date
+    id: number
     keywords: ProducedTextList
     sentiment_polarity: ProducedFloat
     sentiment_subjectivity: ProducedFloat
@@ -138,20 +150,23 @@ interface ThreadData {
 
 export interface UnprocessableRedditor {
     created: Date
-    username: string
+    id: number
     reason: string
     submitter: User
+    username: string
 }
 
 export interface UnprocessableRedditorContextQuery {
     created: Date
-    username: string
+    id: number
     reason: string
     submitter: User
+    username: string
 }
 
 export interface UnprocessableThread {
     created: Date
+    id: number
     path: string
     reason: string
     submitter: User
@@ -160,6 +175,7 @@ export interface UnprocessableThread {
 
 export interface UnprocessableThreadContextQuery {
     created: Date
+    id: number
     path: string
     reason: string
     submitter: User
@@ -168,6 +184,7 @@ export interface UnprocessableThreadContextQuery {
 
 interface User {
     date_joined: Date
+    id: number
     is_active: boolean
     is_staff: boolean
     is_superuser: boolean

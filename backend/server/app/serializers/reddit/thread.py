@@ -51,7 +51,7 @@ class ProcessedThreadSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Thread
-        exclude = ("id",)
+        fields = "__all__"
 
     def get_data(self, thread: Thread) -> dict:
         """
@@ -73,7 +73,7 @@ class UnprocessableThreadSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UnprocessableThread
-        exclude = ("id",)
+        fields = "__all__"
 
 
 class ThreadContextQuerySerializer(serializers.ModelSerializer):
@@ -86,7 +86,7 @@ class ThreadContextQuerySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ThreadContextQuery
-        exclude = ("id",)
+        fields = "__all__"
 
 
 class UnprocessableThreadContextQuerySerializer(serializers.ModelSerializer):
@@ -96,7 +96,7 @@ class UnprocessableThreadContextQuerySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UnprocessableThreadContextQuery
-        exclude = ("id",)
+        fields = "__all__"
 
 
 class ThreadContextQueryCreateRequestSerializer(serializers.Serializer):
@@ -139,7 +139,7 @@ class ThreadDataSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ThreadData
-        exclude = ("id", "thread")
+        exclude = ("thread",)
 
 
 class ThreadDataRequestSerializer(serializers.Serializer):
