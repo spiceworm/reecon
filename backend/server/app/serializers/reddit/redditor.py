@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from reecon.models import (
+    IgnoredRedditor,
     Redditor,
     RedditorContextQuery,
     RedditorData,
@@ -29,14 +30,10 @@ __all__ = (
 )
 
 
-class IgnoredRedditorSerializer(serializers.Serializer):
-    reason = serializers.CharField(
-        read_only=True,
-    )
-    username = serializers.CharField(
-        max_length=32,
-        read_only=True,
-    )
+class IgnoredRedditorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = IgnoredRedditor
+        fields = "__all__"
 
 
 class PendingRedditorSerializer(serializers.Serializer):

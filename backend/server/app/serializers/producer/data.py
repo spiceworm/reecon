@@ -14,34 +14,24 @@ from .producer import (
 )
 
 
-class ProducedBinarySerializer(serializers.Serializer):
+class ProducedBinarySerializer(serializers.ModelSerializer):
     contributor = ContributorSerializer(
-        read_only=True,
-    )
-    created = serializers.DateTimeField(
         read_only=True,
     )
     producer = ProducerSerializer(
         read_only=True,
     )
-    # value = ?
 
     class Meta:
         model = ProducedBinary
         fields = "__all__"
 
 
-class ProducedFloatSerializer(serializers.Serializer):
+class ProducedFloatSerializer(serializers.ModelSerializer):
     contributor = ContributorSerializer(
         read_only=True,
     )
-    created = serializers.DateTimeField(
-        read_only=True,
-    )
     producer = ProducerSerializer(
-        read_only=True,
-    )
-    value = serializers.FloatField(
         read_only=True,
     )
 
@@ -50,17 +40,11 @@ class ProducedFloatSerializer(serializers.Serializer):
         fields = "__all__"
 
 
-class ProducedIntegerSerializer(serializers.Serializer):
+class ProducedIntegerSerializer(serializers.ModelSerializer):
     contributor = ContributorSerializer(
         read_only=True,
     )
-    created = serializers.DateTimeField(
-        read_only=True,
-    )
     producer = ProducerSerializer(
-        read_only=True,
-    )
-    value = serializers.IntegerField(
         read_only=True,
     )
 
@@ -69,17 +53,11 @@ class ProducedIntegerSerializer(serializers.Serializer):
         fields = "__all__"
 
 
-class ProducedTextSerializer(serializers.Serializer):
+class ProducedTextSerializer(serializers.ModelSerializer):
     contributor = ContributorSerializer(
         read_only=True,
     )
-    created = serializers.DateTimeField(
-        read_only=True,
-    )
     producer = ProducerSerializer(
-        read_only=True,
-    )
-    value = serializers.CharField(
         read_only=True,
     )
 
@@ -88,18 +66,11 @@ class ProducedTextSerializer(serializers.Serializer):
         fields = "__all__"
 
 
-class ProducedTextListSerializer(serializers.Serializer):
+class ProducedTextListSerializer(serializers.ModelSerializer):
     contributor = ContributorSerializer(
         read_only=True,
     )
-    created = serializers.DateTimeField(
-        read_only=True,
-    )
     producer = ProducerSerializer(
-        read_only=True,
-    )
-    value = serializers.ListField(
-        child=serializers.CharField(),
         read_only=True,
     )
 

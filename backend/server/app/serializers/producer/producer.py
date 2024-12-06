@@ -20,30 +20,14 @@ class ContributorSerializer(serializers.ModelSerializer):
         fields = ("username",)
 
 
-class ProducedCategorySerializer(serializers.Serializer):
-    description = serializers.CharField(
-        read_only=True,
-    )
-    name = serializers.CharField(
-        read_only=True,
-    )
-
+class ProducedCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ProducerCategory
         fields = "__all__"
 
 
-class ProducerSerializer(serializers.Serializer):
-    context_window = serializers.IntegerField(
-        read_only=True,
-    )
+class ProducerSerializer(serializers.ModelSerializer):
     category = ProducedCategorySerializer(
-        read_only=True,
-    )
-    description = serializers.CharField(
-        read_only=True,
-    )
-    name = serializers.CharField(
         read_only=True,
     )
 
