@@ -18,6 +18,7 @@ from .views.api import v1
 
 router = DefaultRouter()
 router.register(r"producers/llm", v1.LlmProducerViewSet, basename="producer-llm")
+router.register(r"producers/nlp", v1.NlpProducerViewSet, basename="producer-nlp")
 router.register(r"status/messages", v1.StatusMessagesViewSet, basename="status-messages")
 
 router.register(
