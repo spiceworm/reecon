@@ -77,8 +77,6 @@ export const ContextQueryForm = () => {
             setIsLoading(false)
         },
         refreshInterval: (latestData: types.ContextQueryResponse) => {
-            console.log(latestData)
-
             if (latestData && "success" in latestData && latestData.success !== null) {
                 setJobId("").then()
                 setIsLoading(false)
