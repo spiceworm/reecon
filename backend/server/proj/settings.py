@@ -339,24 +339,30 @@ CONSTANCE_CONFIG = collections.OrderedDict(
             "https://textblob.readthedocs.io/en/dev/",
             "nlp_select",
         ),
-        "REDDITOR_LLM_PROMPT_PREFIX": (
-            "The following pipe delimited messages are unrelated submissions posted by a person.",
-            "Text prepended to redditor LLM prompts.",
+        "REDDITOR_LLM_CONTEXT_QUERY_PROMPT": (
+            "The following pipe delimited messages are unrelated submissions posted by a person. ",
+            "Default prompt that populates the redditor context query form that can be modified by the user before "
+            "they submit the query for processing. Whatever they change it to is what will be sent to the LLM for "
+            "redditor context query processing.",
         ),
-        "REDDITOR_LLM_PROMPT": (
+        "REDDITOR_LLM_DATA_PROMPT": (
+            "The following pipe delimited messages are unrelated submissions posted by a person. "
             "Determine the age, a list of interests, and the IQ of that person based on their writing. "
             "Also generate a short summary that describes the author that uses 50 completion_tokens or less. "
             "Be as objective as possible.",
-            "Prompt sent to the LLM for redditor prompts.",
+            "Prompt sent to the LLM for redditor data processing.",
         ),
-        "THREAD_LLM_PROMPT_PREFIX": (
+        "THREAD_LLM_CONTEXT_QUERY_PROMPT": (
             "The following pipe delimited messages are unrelated submissions posted by multiple people.",
-            "Text prepended to thread LLM prompts.",
+            "Default prompt that populates the thread context query form that can be modified by the user before "
+            "they submit the query for processing. Whatever they change it to is what will be sent to the LLM for "
+            "thread context query processing.",
         ),
-        "THREAD_LLM_PROMPT": (
+        "THREAD_LLM_DATA_PROMPT": (
+            "The following pipe delimited messages are unrelated submissions posted by multiple people. "
             "Determine a list of keywords that describe the discussion. Also generate a brief summary of what "
             "is being discussed that uses 50 completion_tokens or less. Be as objective as possible.",
-            "Prompt sent to the LLM for thread prompts.",
+            "Prompt sent to the LLM for thread data processing.",
         ),
         "LLM_MAX_CONTEXT_WINDOW_FOR_INPUTS": (
             0.8,

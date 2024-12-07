@@ -9,8 +9,9 @@ __all__ = ("get_worker_env", "WorkerEnv")
 
 @dataclass
 class LlmEnv:
+    default_context_query_prompt: str
+    default_data_prompt: str
     prompt: str
-    prompt_prefix: str
     max_context_window_for_inputs: float = Field(
         ge=0.0,
         le=1.0,
@@ -95,8 +96,14 @@ def get_worker_env():
             ),
             llm=LlmEnv(
                 max_context_window_for_inputs=config.LLM_MAX_CONTEXT_WINDOW_FOR_INPUTS,
-                prompt=config.REDDITOR_LLM_PROMPT,
-                prompt_prefix=config.REDDITOR_LLM_PROMPT_PREFIX,
+                default_context_query_prompt=config.REDDITOR_LLM_CONTEXT_QUERY_PROMPT,
+                default_data_prompt=config.REDDITOR_LLM_DATA_PROMPT,
+                # `prompt` will be set in the redditor context-query and data API views. This is because
+                # for context-queries, the form submit by the user is pre-populated with the value of
+                # REDDITOR_LLM_CONTEXT_QUERY_PROMPT. The user can then modify that value before submitting the
+                # query for processing. The redditor data API view sets the `prompt` value in the same way for
+                # consistency even though the value is not dynamic like it is for context-queries.
+                prompt="",
             ),
             submission=RedditEntitySubmissionEnv(
                 min_submissions=config.REDDITOR_MIN_SUBMISSIONS,
@@ -105,8 +112,14 @@ def get_worker_env():
         thread=ThreadEnv(
             llm=LlmEnv(
                 max_context_window_for_inputs=config.LLM_MAX_CONTEXT_WINDOW_FOR_INPUTS,
-                prompt=config.THREAD_LLM_PROMPT,
-                prompt_prefix=config.THREAD_LLM_PROMPT_PREFIX,
+                default_context_query_prompt=config.THREAD_LLM_CONTEXT_QUERY_PROMPT,
+                default_data_prompt=config.THREAD_LLM_DATA_PROMPT,
+                # `prompt` will be set in the thread context-query and data API views. This is because
+                # for context-queries, the form submit by the user is pre-populated with the value of
+                # THREAD_LLM_CONTEXT_QUERY_PROMPT. The user can then modify that value before submitting the
+                # query for processing. The thread data API view sets the `prompt` value in the same way for
+                # consistency even though the value is not dynamic like it is for context-queries.
+                prompt="",
             ),
             submission=RedditEntitySubmissionEnv(
                 min_submissions=config.THREAD_MIN_SUBMISSIONS,

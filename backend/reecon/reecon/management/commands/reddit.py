@@ -89,10 +89,10 @@ class Command(management.base.BaseCommand):
             if options["service"] == "context-query":
                 service_cls = services.RedditorContextQueryService
                 if options["method"] in ("generate", "create-object"):
-                    env.redditor.llm.prompt = input("prompt: ")
-                    prompt = f"{env.redditor.llm.prompt_prefix} {env.redditor.llm.prompt}"
+                    env.redditor.llm.default_context_query_prompt += input("prompt: ")
+                    prompt = env.redditor.llm.prompt = env.redditor.llm.default_context_query_prompt
             else:
-                prompt = f"{env.redditor.llm.prompt_prefix} {env.redditor.llm.prompt}"
+                prompt = env.redditor.llm.prompt = env.redditor.llm.default_data_prompt
                 service_cls = services.RedditorDataService
         else:
             identifier = options["url"]
@@ -100,10 +100,10 @@ class Command(management.base.BaseCommand):
             if options["service"] == "context-query":
                 service_cls = services.ThreadContextQueryService
                 if options["method"] in ("generate", "create-object"):
-                    env.thread.llm.prompt = input("prompt: ")
-                    prompt = f"{env.thread.llm.prompt_prefix} {env.thread.llm.prompt}"
+                    env.thread.llm.default_context_query_prompt += input("prompt: ")
+                    prompt = env.thread.llm.prompt = env.thread.llm.default_context_query_prompt
             else:
-                prompt = f"{env.thread.llm.prompt_prefix} {env.thread.llm.prompt}"
+                prompt = env.thread.llm.prompt = env.thread.llm.default_data_prompt
                 service_cls = services.ThreadDataService
 
         service = service_cls(

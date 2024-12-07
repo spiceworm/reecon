@@ -174,6 +174,7 @@ class RedditorDataViewSet(GenericViewSet):
         nlp_producer = models.Producer.objects.get(name=config.NLP_NAME)
         submitter = request.user
         env = schemas.get_worker_env()
+        env.redditor.llm.prompt = env.redditor.llm.default_data_prompt
 
         if config.REDDITOR_DATA_PROCESSING_ENABLED:
             job_queue = django_rq.get_queue()
@@ -347,6 +348,7 @@ class ThreadDataViewSet(GenericViewSet):
         nlp_producer = models.Producer.objects.get(name=config.NLP_NAME)
         submitter = request.user
         env = schemas.get_worker_env()
+        env.thread.llm.prompt = env.thread.llm.default_data_prompt
 
         if config.THREAD_DATA_PROCESSING_ENABLED:
             job_queue = django_rq.get_queue()
