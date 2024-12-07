@@ -5,7 +5,7 @@ from rest_framework.views import Response
 from reecon.models import StatusMessage
 
 from ..mixins import ReadOnlyListModelViewSet
-from ....serializers import StatusMessageRequestSerializer, StatusRequestSerializer
+from ....serializers import StatusMessageResponseSerializer, StatusResponseSerializer
 
 
 __all__ = (
@@ -16,7 +16,7 @@ __all__ = (
 
 class StatusView(RetrieveAPIView):
     authentication_classes = ()
-    serializer_class = StatusRequestSerializer
+    serializer_class = StatusResponseSerializer
 
     def get(self, request, *args, **kwargs):
         data = {"status": "ok"}
@@ -27,4 +27,4 @@ class StatusView(RetrieveAPIView):
 
 class StatusMessagesViewSet(ReadOnlyListModelViewSet):
     queryset = StatusMessage.objects.all()
-    serializer_class = StatusMessageRequestSerializer
+    serializer_class = StatusMessageResponseSerializer

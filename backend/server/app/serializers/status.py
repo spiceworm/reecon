@@ -4,16 +4,16 @@ from reecon.models import StatusMessage
 
 
 __all__ = (
-    "StatusRequestSerializer",
-    "StatusMessageRequestSerializer",
+    "StatusResponseSerializer",
+    "StatusMessageResponseSerializer",
 )
 
 
-class StatusRequestSerializer(serializers.Serializer):
+class StatusResponseSerializer(serializers.Serializer):
     status = serializers.CharField(max_length=32, required=True)
 
 
-class StatusMessageRequestSerializer(serializers.ModelSerializer):
+class StatusMessageResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model = StatusMessage
         exclude = ("active_is_computed",)
