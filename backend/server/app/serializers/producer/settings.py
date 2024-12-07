@@ -1,9 +1,33 @@
 from rest_framework import serializers
 
+from .producer import ProducerSerializer
 from ..validators import validate_openai_api_key
 
 
-__all__ = ("ProducerSettingsSerializer",)
+__all__ = (
+    "ProducerDefaultSettingsSerializer",
+    "ProducerSettingsSerializer",
+)
+
+
+class LlmPromptsSerializer(serializers.Serializer):
+    redditor = serializers.CharField()
+    thread = serializers.CharField()
+
+
+class ProducerDefaultSettingsSerializer(serializers.Serializer):
+    llm = ProducerSerializer(
+        required=True,
+    )
+    llm_context_query_prompts = LlmPromptsSerializer(
+        required=True,
+    )
+    llm_data_prompts = LlmPromptsSerializer(
+        required=True,
+    )
+    nlp = ProducerSerializer(
+        required=True,
+    )
 
 
 class ProducerSettingSerializer(serializers.Serializer):

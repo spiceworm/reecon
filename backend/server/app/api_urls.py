@@ -32,6 +32,7 @@ router.register(r"reddit/thread/data", v1.ThreadDataViewSet, basename="reddit-th
 
 v1_endpoints = [
     path("", include(router.urls)),
+    path("producer/defaults", v1.ProducerDefaultSettingsView.as_view(), name="producer-default-settings"),
     path("status/", v1.StatusView.as_view(), name="status"),
 ]
 
