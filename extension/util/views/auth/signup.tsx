@@ -1,6 +1,6 @@
 import { signal } from "@preact/signals"
 import * as react from "react"
-import { Eye, EyeSlash } from "react-bootstrap-icons"
+import { ExclamationCircle, Eye, EyeSlash } from "react-bootstrap-icons"
 import { NavLink, useNavigate } from "react-router-dom"
 import { Button, Form, Input, InputGroup, Spinner, UncontrolledAlert } from "reactstrap"
 import useSWRImmutable from "swr/immutable"
@@ -49,7 +49,15 @@ export const Signup = ({ onSuccessRedirectPath }) => {
 
     return (
         <bases.Unauthenticated>
-            <p className={"text-center"}>Signup</p>
+            <p className={"text-center"}>
+                Signup{" "}
+                <ExclamationCircle
+                    title={
+                        "Password reset is currently only possible if your reecon username matches your reddit account username. " +
+                        "This is because a DM must be sent to /u/reecon-admin in order to retrieve a password reset link."
+                    }
+                />
+            </p>
 
             {!signupError ? null : <UncontrolledAlert color={"danger"}>{JSON.parse(signupError.message).detail}</UncontrolledAlert>}
             {!loginError ? null : <UncontrolledAlert color={"danger"}>{JSON.parse(loginError.message).detail}</UncontrolledAlert>}
