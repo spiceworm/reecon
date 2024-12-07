@@ -66,6 +66,14 @@ class RedditorUsername(models.Model):
         help_text="The username of the redditor.",
     )
 
+    @property
+    def identifier(self):
+        return self.username
+
+    @property
+    def source(self):
+        return f"https://old.reddit.com/user/{self.username}"
+
 
 class ThreadUrl(models.Model):
     class Meta:
@@ -78,8 +86,16 @@ class ThreadUrl(models.Model):
     )
 
     @property
+    def identifier(self):
+        return self.path
+
+    @property
     def path(self):
         return urlparse(self.url).path
+
+    @property
+    def source(self):
+        return f"https://old.reddit.com/{self.path}"
 
 
 class UnprocessableReason(models.Model):

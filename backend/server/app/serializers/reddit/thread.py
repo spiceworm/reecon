@@ -42,7 +42,13 @@ class ProcessedThreadSerializer(serializers.ModelSerializer):
         "get_data",
         read_only=True,
     )
+    identifier = serializers.CharField(
+        read_only=True,
+    )
     path = serializers.CharField(
+        read_only=True,
+    )
+    source = serializers.CharField(
         read_only=True,
     )
     submitter = UserSerializer(
@@ -64,7 +70,13 @@ class ProcessedThreadSerializer(serializers.ModelSerializer):
 
 
 class UnprocessableThreadSerializer(serializers.ModelSerializer):
+    identifier = serializers.CharField(
+        read_only=True,
+    )
     path = serializers.CharField(
+        read_only=True,
+    )
+    source = serializers.CharField(
         read_only=True,
     )
     submitter = UserSerializer(

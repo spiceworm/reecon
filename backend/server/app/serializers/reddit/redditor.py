@@ -31,6 +31,13 @@ __all__ = (
 
 
 class IgnoredRedditorSerializer(serializers.ModelSerializer):
+    identifier = serializers.CharField(
+        read_only=True,
+    )
+    source = serializers.CharField(
+        read_only=True,
+    )
+
     class Meta:
         model = IgnoredRedditor
         fields = "__all__"
@@ -45,6 +52,12 @@ class PendingRedditorSerializer(serializers.Serializer):
 class ProcessedRedditorSerializer(serializers.ModelSerializer):
     data = serializers.SerializerMethodField(
         "get_data",
+        read_only=True,
+    )
+    identifier = serializers.CharField(
+        read_only=True,
+    )
+    source = serializers.CharField(
         read_only=True,
     )
     submitter = UserSerializer(
@@ -66,6 +79,12 @@ class ProcessedRedditorSerializer(serializers.ModelSerializer):
 
 
 class UnprocessableRedditorSerializer(serializers.ModelSerializer):
+    identifier = serializers.CharField(
+        read_only=True,
+    )
+    source = serializers.CharField(
+        read_only=True,
+    )
     submitter = UserSerializer(
         read_only=True,
     )

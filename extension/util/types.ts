@@ -17,8 +17,10 @@ export interface ContentFilter {
 
 export interface IgnoredRedditor {
     id: number
-    username: string
+    identifier: string
     reason: string
+    source: string
+    username: string
 }
 
 export interface PendingRedditor {
@@ -102,7 +104,9 @@ export interface Redditor {
     created: Date
     data: RedditorData
     id: number
+    identifier: string
     last_processed: Date
+    source: string
     submitter: User
     username: string
 }
@@ -132,8 +136,10 @@ export interface Thread {
     created: Date
     data: ThreadData
     id: number
+    identifier: string
     last_processed: Date
     path: string
+    source: string
     submitter: User
     url: string
 }
@@ -151,7 +157,9 @@ interface ThreadData {
 export interface UnprocessableRedditor {
     created: Date
     id: number
+    identifier: string
     reason: string
+    source: string
     submitter: User
     username: string
 }
@@ -167,8 +175,10 @@ export interface UnprocessableRedditorContextQuery {
 export interface UnprocessableThread {
     created: Date
     id: number
+    identifier: string
     path: string
     reason: string
+    source: string
     submitter: User
     url: string
 }
