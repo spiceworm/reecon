@@ -220,7 +220,7 @@ def process_redditor_context_query(
     # Do not need to catch `UnprocessableRedditorError` here because it would have already been thrown when
     # `_ensure_redditor_context_query_processable` was called above.
     inputs = service.get_inputs()
-    generated = service.generate(inputs=inputs, prompt=env.redditor.llm.prompt)
+    generated = service.generate(inputs=inputs, prompt=env.redditor.llm.prompts.process_context_query)
     return service.create_object(generated=generated)
 
 
@@ -252,7 +252,7 @@ def process_redditor_data(
         log.info(e)
         return e.obj
     else:
-        generated = service.generate(inputs=inputs, prompt=env.redditor.llm.prompt)
+        generated = service.generate(inputs=inputs, prompt=env.redditor.llm.prompts.process_data)
         return service.create_object(generated=generated)
 
 
@@ -295,7 +295,7 @@ def process_thread_context_query(
     # Do not need to catch `UnprocessableThreadError` here because it would have already been thrown when
     # `_ensure_thread_context_query_processable` was called above.
     inputs = service.get_inputs()
-    generated = service.generate(inputs=inputs, prompt=env.thread.llm.prompt)
+    generated = service.generate(inputs=inputs, prompt=env.thread.llm.prompts.process_context_query)
     return service.create_object(generated=generated)
 
 
@@ -327,5 +327,5 @@ def process_thread_data(
         log.info(e)
         return e.obj
     else:
-        generated = service.generate(inputs=inputs, prompt=env.thread.llm.prompt)
+        generated = service.generate(inputs=inputs, prompt=env.thread.llm.prompts.process_data)
         return service.create_object(generated=generated)

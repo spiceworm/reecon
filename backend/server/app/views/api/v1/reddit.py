@@ -60,7 +60,7 @@ class RedditorContextQueryViewSet(GenericViewSet):
         nlp_producer = models.Producer.objects.get(name=config.NLP_NAME)
         submitter = request.user
         env = schemas.get_worker_env()
-        env.redditor.llm.prompt = prompt
+        env.redditor.llm.prompts.process_context_query = prompt
 
         if config.REDDITOR_CONTEXT_QUERY_PROCESSING_ENABLED:
             # Do not explicitly set a job id because context-query jobs should have unique IDs.
@@ -174,7 +174,6 @@ class RedditorDataViewSet(GenericViewSet):
         nlp_producer = models.Producer.objects.get(name=config.NLP_NAME)
         submitter = request.user
         env = schemas.get_worker_env()
-        env.redditor.llm.prompt = env.redditor.llm.default_data_prompt
 
         if config.REDDITOR_DATA_PROCESSING_ENABLED:
             job_queue = django_rq.get_queue()
@@ -238,7 +237,7 @@ class ThreadContextQueryViewSet(GenericViewSet):
         nlp_producer = models.Producer.objects.get(name=config.NLP_NAME)
         submitter = request.user
         env = schemas.get_worker_env()
-        env.thread.llm.prompt = prompt
+        env.thread.llm.prompts.process_context_query = prompt
 
         if config.THREAD_CONTEXT_QUERY_PROCESSING_ENABLED:
             # Do not explicitly set a job id because context-query jobs should have unique IDs.
@@ -348,7 +347,6 @@ class ThreadDataViewSet(GenericViewSet):
         nlp_producer = models.Producer.objects.get(name=config.NLP_NAME)
         submitter = request.user
         env = schemas.get_worker_env()
-        env.thread.llm.prompt = env.thread.llm.default_data_prompt
 
         if config.THREAD_DATA_PROCESSING_ENABLED:
             job_queue = django_rq.get_queue()

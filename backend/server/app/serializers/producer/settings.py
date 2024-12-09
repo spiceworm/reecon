@@ -5,27 +5,20 @@ from ..validators import validate_openai_api_key
 
 
 __all__ = (
-    "ProducerDefaultSettingsSerializer",
+    "ProducerDefaultsSerializer",
     "ProducerSettingsSerializer",
 )
 
 
-class LlmPromptsSerializer(serializers.Serializer):
-    redditor = serializers.CharField()
-    thread = serializers.CharField()
-
-
-class ProducerDefaultSettingsSerializer(serializers.Serializer):
+class ProducerDefaultsSerializer(serializers.Serializer):
     llm = ProducerSerializer(
         required=True,
     )
-    llm_context_query_prompts = LlmPromptsSerializer(
-        required=True,
-    )
-    llm_data_prompts = LlmPromptsSerializer(
-        required=True,
-    )
     nlp = ProducerSerializer(
+        required=True,
+    )
+    prompts = serializers.DictField(
+        child=serializers.CharField(),
         required=True,
     )
 

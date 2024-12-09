@@ -1,5 +1,6 @@
 import logging
 import os
+import readline
 from typing import List
 
 from constance import config
@@ -16,6 +17,17 @@ from ... import (
 
 
 log = logging.getLogger()
+
+
+def input_with_default(prompt, default=""):
+    """
+    Prompt the user with an optional editable default value.
+    """
+    readline.set_startup_hook(lambda: readline.insert_text(default))
+    try:
+        return input(prompt)
+    finally:
+        readline.set_startup_hook()
 
 
 class Command(management.base.BaseCommand):
@@ -89,10 +101,9 @@ class Command(management.base.BaseCommand):
             if options["service"] == "context-query":
                 service_cls = services.RedditorContextQueryService
                 if options["method"] in ("generate", "create-object"):
-                    env.redditor.llm.default_context_query_prompt += input("prompt: ")
-                    prompt = env.redditor.llm.prompt = env.redditor.llm.default_context_query_prompt
+                    prompt = input_with_default("prompt: ", env.redditor.llm.prompts.process_context_query)
             else:
-                prompt = env.redditor.llm.prompt = env.redditor.llm.default_data_prompt
+                prompt = env.redditor.llm.prompts.process_data
                 service_cls = services.RedditorDataService
         else:
             identifier = options["url"]
@@ -100,10 +111,9 @@ class Command(management.base.BaseCommand):
             if options["service"] == "context-query":
                 service_cls = services.ThreadContextQueryService
                 if options["method"] in ("generate", "create-object"):
-                    env.thread.llm.default_context_query_prompt += input("prompt: ")
-                    prompt = env.thread.llm.prompt = env.thread.llm.default_context_query_prompt
+                    prompt = input_with_default("prompt: ", env.thread.llm.prompts.process_context_query)
             else:
-                prompt = env.thread.llm.prompt = env.thread.llm.default_data_prompt
+                prompt = env.thread.llm.prompts.process_data
                 service_cls = services.ThreadDataService
 
         service = service_cls(

@@ -17,8 +17,8 @@ from .views.api import v1
 
 
 router = DefaultRouter()
-router.register(r"producers/llm", v1.LlmProducerViewSet, basename="producer-llm")
-router.register(r"producers/nlp", v1.NlpProducerViewSet, basename="producer-nlp")
+router.register(r"producers/llm", v1.LlmProducerViewSet, basename="producers-llm")
+router.register(r"producers/nlp", v1.NlpProducerViewSet, basename="producers-nlp")
 router.register(r"status/messages", v1.StatusMessagesViewSet, basename="status-messages")
 
 router.register(
@@ -32,7 +32,7 @@ router.register(r"reddit/thread/data", v1.ThreadDataViewSet, basename="reddit-th
 
 v1_endpoints = [
     path("", include(router.urls)),
-    path("producer/defaults", v1.ProducerDefaultSettingsView.as_view(), name="producer-default-settings"),
+    path("producers/defaults/", v1.ProducerDefaultsView.as_view(), name="producers-defaults"),
     path("status/", v1.StatusView.as_view(), name="status"),
 ]
 
