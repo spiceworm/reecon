@@ -162,7 +162,7 @@ class _RedditorService(_RedditService):
             for thread in praw_redditor.submissions.new():
                 if text := self.filter_submission(text=thread.selftext):
                     pending_inputs = "|".join(submissions | {text})
-                    pending_tokens = len(encoding.encode(pending_inputs))
+                    pending_tokens = len(encoding.encode(pending_inputs, disallowed_special=()))
                     if pending_tokens < max_input_tokens:
                         submissions.add(text)
                     else:
@@ -175,7 +175,7 @@ class _RedditorService(_RedditService):
                     continue
                 if text := self.filter_submission(text=comment.body):
                     pending_inputs = "|".join(submissions | {text})
-                    pending_tokens = len(encoding.encode(pending_inputs))
+                    pending_tokens = len(encoding.encode(pending_inputs, disallowed_special=()))
                     if pending_tokens < max_input_tokens:
                         submissions.add(text)
                     else:
@@ -231,7 +231,7 @@ class _ThreadService(_RedditService):
             # Get the thread selftext
             if text := self.filter_submission(text=praw_submission.selftext):
                 pending_inputs = "|".join(submissions | {text})
-                pending_tokens = len(encoding.encode(pending_inputs))
+                pending_tokens = len(encoding.encode(pending_inputs, disallowed_special=()))
                 if pending_tokens < max_input_tokens:
                     submissions.add(text)
 
@@ -243,7 +243,7 @@ class _ThreadService(_RedditService):
                 if comment.author and comment.author.name not in ignored_usernames:
                     if text := self.filter_submission(text=comment.body):
                         pending_inputs = "|".join(submissions | {text})
-                        pending_tokens = len(encoding.encode(pending_inputs))
+                        pending_tokens = len(encoding.encode(pending_inputs, disallowed_special=()))
                         if pending_tokens < max_input_tokens:
                             submissions.add(text)
                         else:
