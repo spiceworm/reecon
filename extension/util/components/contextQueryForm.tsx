@@ -35,16 +35,22 @@ export const ContextQueryForm = () => {
         { instance: storage.localStorage, key: constants.THREAD_CONTEXT_QUERY_PROCESSING_ENABLED },
         (v: boolean) => (v === undefined ? false : v)
     )
-    const [producerSettings] = useStorage({ instance: storage.localStorage, key: constants.PRODUCER_SETTINGS }, (v: types.ProducerSettings) =>
-        v === undefined ? constants.defaultProducerSettings : v
+    const [producerSettings] = useStorage(
+        {
+            instance: storage.localStorage,
+            key: constants.PRODUCER_SETTINGS
+        },
+        (v: types.ProducerSettings) => (v === undefined ? constants.defaultProducerSettings : v)
     )
     const [jobId, setJobId] = useState("")
 
     const [isLoading, setIsLoading] = useState(false)
     const [queryResponse, setQueryResponse] = useState(null)
-    const [modalVisible, setModalVisible] = useState(false)
+    const [responseModalVisible, setResponseModalVisible] = useState(false)
 
     const [contextQueryingDisabled, setContextQueryingDisabled] = useState(false)
+
+    const [producerDefaults, setProducerDefaults] = useState({} as types.ProducerDefaultsResponse)
 
     const [contextSelection, setContextSelection] = useState("Choose")
     const [contextInputValue, setContextInputValue] = useState("")
@@ -54,6 +60,12 @@ export const ContextQueryForm = () => {
     const [apiEndpoint, setApiEndpoint] = useState("")
     const [postBody, setPostBody] = useState(null)
     const [requestError, setRequestError] = useState(null)
+
+    useSWR("/api/v1/producers/defaults", api.authGet, {
+        onSuccess: async (data: types.ProducerDefaultsResponse, key, config) => {
+            setProducerDefaults(data)
+        }
+    })
 
     useSWR(postBody !== null ? [apiEndpoint] : null, ([urlPath]) => api.authPost(urlPath, postBody), {
         onError: async (error, key, config) => {
@@ -81,7 +93,7 @@ export const ContextQueryForm = () => {
                 setJobId("")
                 setIsLoading(false)
                 setQueryResponse(latestData.success.response.value)
-                setModalVisible(true)
+                setResponseModalVisible(true)
                 return 0
             }
             if (latestData && "error" in latestData && latestData.error !== null) {
@@ -99,19 +111,25 @@ export const ContextQueryForm = () => {
         setContextSelection(contextSelection)
 
         if (contextSelection === "redditor") {
+            setPromptInputValue(producerDefaults.prompts.process_redditor_context_query)
+
             if (redditorProcessingEnabled) {
                 setContextQueryingDisabled(false)
                 setContextInputPlaceholder("Redditor Username")
             } else {
                 setContextQueryingDisabled(true)
+                // TODO: the below message should appear in a toast and not in the input field
                 setContextInputPlaceholder("Redditor context query processing is disabled")
             }
         } else {
+            setPromptInputValue(producerDefaults.prompts.process_thread_context_query)
+
             if (threadProcessingEnabled) {
                 setContextQueryingDisabled(false)
                 setContextInputPlaceholder("Thread URL")
             } else {
                 setContextQueryingDisabled(true)
+                // TODO: the below message should appear in a toast and not in the input field
                 setContextInputPlaceholder("Thread context query processing is disabled")
             }
         }
@@ -122,6 +140,7 @@ export const ContextQueryForm = () => {
 
         if (contextSelection === "redditor") {
             setApiEndpoint("/api/v1/reddit/redditor/context-query/")
+            // TODO: include the selected LLM in the POST request
             setPostBody({
                 username: contextInputValue,
                 prompt: promptInputValue,
@@ -129,6 +148,7 @@ export const ContextQueryForm = () => {
             })
         } else {
             setApiEndpoint("/api/v1/reddit/thread/context-query/")
+            // TODO: include the selected LLM in the POST request
             setPostBody({
                 path: new URL(contextInputValue).pathname,
                 prompt: promptInputValue,
@@ -139,7 +159,7 @@ export const ContextQueryForm = () => {
         setIsLoading(true)
     }
 
-    const toggleModalVisibility = () => setModalVisible(!modalVisible)
+    const toggleResponseModalVisibility = () => setResponseModalVisible(!responseModalVisible)
 
     return (
         <>
@@ -184,6 +204,7 @@ export const ContextQueryForm = () => {
                                 onChange={(e) => setPromptInputValue(e.target.value)}
                                 required={true}
                                 type={"textarea"}
+                                value={promptInputValue}
                             />
                         </Col>
                     </FormGroup>
@@ -195,6 +216,12 @@ export const ContextQueryForm = () => {
                             "Submit"
                         ) : (
                             <>
+                                {/*
+                                TODO: show the spinner on a modal where we can display text about how the
+                                request will appear in their query history if it is taking too long and they
+                                do not want to sit and wait for a response. Showing it on a modal also prevents
+                                them from modifying the form and sending additional queries.
+                                */}
                                 <Spinner size={"sm"} />
                                 <span> Loading</span>
                             </>
@@ -203,8 +230,8 @@ export const ContextQueryForm = () => {
                 </div>
             </Form>
 
-            <Modal isOpen={modalVisible} toggle={toggleModalVisibility}>
-                <ModalHeader toggle={toggleModalVisibility} />
+            <Modal isOpen={responseModalVisible} toggle={toggleResponseModalVisibility}>
+                <ModalHeader toggle={toggleResponseModalVisibility} />
                 <ModalBody>{queryResponse}</ModalBody>
             </Modal>
         </>

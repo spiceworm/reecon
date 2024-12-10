@@ -33,23 +33,58 @@ export interface PendingThread {
 }
 
 interface ProducedFloat {
+    contributor: User
     id: number
+    producer: Producer
     value: number
 }
 
 interface ProducedInteger {
+    contributor: User
     id: number
+    producer: Producer
     value: number
 }
 
 interface ProducedText {
+    contributor: User
     id: number
+    producer: Producer
     value: string
 }
 
 interface ProducedTextList {
+    contributor: User
     id: number
+    producer: Producer
     value: string[]
+}
+
+export interface Producer {
+    category: ProducerCategory
+    context_window: number | null
+    created: Date
+    description: string
+    id: number
+    name: string
+}
+
+interface ProducerCategory {
+    created: Date
+    description: string
+    id: number
+    name: string
+}
+
+export interface ProducerDefaultsResponse {
+    llm: Producer
+    nlp: Producer
+    prompts: {
+        process_redditor_context_query: string
+        process_thread_context_query: string
+        process_redditor_data: string
+        process_thread_data: string
+    }
 }
 
 export interface ProducerSettings {
