@@ -18,9 +18,6 @@ import useSWR from "swr"
 import * as api from "~util/api"
 import type * as types from "~util/types"
 
-// TODO: add api endpoint to fetch producer config (llm options, default llm, nlp options, default nlp, default llm prefix)
-//    Use the response data to render an llm dropdown so the user can select the model. Render an llm prefix field that the user can change if desired.
-
 export const ContextQueryHistory = () => {
     const [redditorContextQueryHistory, setRedditorContextQueryHistory] = useState([])
     const [threadContextQueryHistory, setThreadContextQueryHistory] = useState([])
@@ -60,9 +57,12 @@ export const ContextQueryHistory = () => {
         setModalHeaderText(contextQuery.context.identifier)
 
         setModalHeaderTitle(
-            [`Created: ${contextQuery.created}`, `Inputs: ${contextQuery.total_inputs}`, `Submitter: ${contextQuery.submitter.username}`].join(
-                "\u000d"
-            )
+            [
+                `Created: ${contextQuery.created}`,
+                `Inputs: ${contextQuery.total_inputs}`,
+                `Submitter: ${contextQuery.submitter.username}`,
+                `Response LLM: ${contextQuery.response.producer.name}`
+            ].join("\u000d")
         )
 
         setModalBodyLines([contextQuery.prompt, contextQuery.response.value])

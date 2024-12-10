@@ -47,20 +47,22 @@ class RedditorContextQueryViewSet(GenericViewSet):
         submit_serializer = serializers.RedditorContextQueryCreateRequestSerializer(data=request.data)
         submit_serializer.is_valid(raise_exception=True)
 
-        username = submit_serializer.validated_data["username"]
+        llm_name = submit_serializer.validated_data["llm_name"]
+        nlp_name = submit_serializer.validated_data["nlp_name"]
         producer_settings = submit_serializer.validated_data["producer_settings"]
         prompt = submit_serializer.validated_data["prompt"]
+        username = submit_serializer.validated_data["username"]
 
         log.debug("Received %s: %s", username, prompt)
 
         llm_contributor = request.user
-        # TODO: allow user to specify model in producer_settings
-        llm_producer = models.Producer.objects.get(name=config.LLM_NAME)
+        llm_producer = models.Producer.objects.get(name=llm_name)
         nlp_contributor = User.objects.get(username="admin")
-        nlp_producer = models.Producer.objects.get(name=config.NLP_NAME)
+        nlp_producer = models.Producer.objects.get(name=nlp_name)
         submitter = request.user
         env = schemas.get_worker_env()
         env.redditor.llm.prompts.process_context_query = prompt
+
 
         if config.REDDITOR_CONTEXT_QUERY_PROCESSING_ENABLED:
             # Do not explicitly set a job id because context-query jobs should have unique IDs.
@@ -225,16 +227,19 @@ class ThreadContextQueryViewSet(GenericViewSet):
         submit_serializer = serializers.ThreadContextQueryCreateRequestSerializer(data=request.data)
         submit_serializer.is_valid(raise_exception=True)
 
-        url_path = submit_serializer.validated_data["path"]
+        llm_name = submit_serializer.validated_data["llm_name"]
+        nlp_name = submit_serializer.validated_data["nlp_name"]
         producer_settings = submit_serializer.validated_data["producer_settings"]
         prompt = submit_serializer.validated_data["prompt"]
+        url_path = submit_serializer.validated_data["path"]
+
         log.debug("Received %s: %s", url_path, prompt)
         thread_url = f"https://reddit.com{url_path}"
 
         llm_contributor = request.user
-        llm_producer = models.Producer.objects.get(name=config.LLM_NAME)
+        llm_producer = models.Producer.objects.get(name=llm_name)
         nlp_contributor = User.objects.get(username="admin")
-        nlp_producer = models.Producer.objects.get(name=config.NLP_NAME)
+        nlp_producer = models.Producer.objects.get(name=nlp_name)
         submitter = request.user
         env = schemas.get_worker_env()
         env.thread.llm.prompts.process_context_query = prompt

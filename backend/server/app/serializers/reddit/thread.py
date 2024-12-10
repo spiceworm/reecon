@@ -1,6 +1,8 @@
+from django.utils.functional import lazy
 from rest_framework import serializers
 
 from reecon.models import (
+    Producer,
     Thread,
     ThreadContextQuery,
     ThreadData,
@@ -8,13 +10,14 @@ from reecon.models import (
     UnprocessableThreadContextQuery,
 )
 
-from ..user import UserSerializer
 from ..producer import (
     ProducedFloatSerializer,
     ProducedTextSerializer,
     ProducedTextListSerializer,
     ProducerSettingsSerializer,
 )
+from ..user import UserSerializer
+from ... import util
 
 
 __all__ = (
@@ -112,9 +115,11 @@ class UnprocessableThreadContextQuerySerializer(serializers.ModelSerializer):
 
 
 class ThreadContextQueryCreateRequestSerializer(serializers.Serializer):
+    llm_name = serializers.ChoiceField(choices=lazy(util.get_llm_choices, tuple)())
+    nlp_name = serializers.ChoiceField(choices=lazy(util.get_nlp_choices, tuple)())
     path = serializers.CharField()
-    prompt = serializers.CharField()
     producer_settings = ProducerSettingsSerializer()
+    prompt = serializers.CharField()
 
 
 class ThreadContextQueryCreateResponseSerializer(serializers.Serializer):

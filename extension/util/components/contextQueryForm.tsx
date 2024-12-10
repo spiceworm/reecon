@@ -18,6 +18,7 @@ import {
     UncontrolledDropdown
 } from "reactstrap"
 import useSWR from "swr"
+import useSWRImmutable from "swr/immutable"
 
 import { useStorage } from "@plasmohq/storage/dist/hook"
 
@@ -52,6 +53,12 @@ export const ContextQueryForm = () => {
 
     const [producerDefaults, setProducerDefaults] = useState({} as types.ProducerDefaultsResponse)
 
+    const [llmSelection, setLlmSelection] = useState("")
+    const [llmProducers, setLlmProducers] = useState([] as types.Producer[])
+
+    const [nlpSelection, setNlpSelection] = useState("")
+    const [nlpProducers, setNlpProducers] = useState([] as types.Producer[])
+
     const [contextSelection, setContextSelection] = useState("Choose")
     const [contextInputValue, setContextInputValue] = useState("")
     const [contextInputPlaceholder, setContextInputPlaceholder] = useState("")
@@ -59,17 +66,40 @@ export const ContextQueryForm = () => {
 
     const [apiEndpoint, setApiEndpoint] = useState("")
     const [postBody, setPostBody] = useState(null)
-    const [requestError, setRequestError] = useState(null)
+    const [requestErrors, setRequestErrors] = useState([])
 
-    useSWR("/api/v1/producers/defaults", api.authGet, {
+    useSWRImmutable("/api/v1/producers/defaults", api.authGet, {
+        onError: async (error, key, config) => {
+            setRequestErrors(requestErrors.concat(JSON.parse(error.message).detail))
+        },
         onSuccess: async (data: types.ProducerDefaultsResponse, key, config) => {
+            setLlmSelection(data.llm.name)
+            setNlpSelection(data.nlp.name)
             setProducerDefaults(data)
+        }
+    })
+
+    useSWRImmutable("/api/v1/producers/llm/", api.authGet, {
+        onError: async (error, key, config) => {
+            setRequestErrors(requestErrors.concat(JSON.parse(error.message).detail))
+        },
+        onSuccess: async (data: types.Producer[], key, config) => {
+            setLlmProducers(data)
+        }
+    })
+
+    useSWRImmutable("/api/v1/producers/nlp/", api.authGet, {
+        onError: async (error, key, config) => {
+            setRequestErrors(requestErrors.concat(JSON.parse(error.message).detail))
+        },
+        onSuccess: async (data: types.Producer[], key, config) => {
+            setNlpProducers(data)
         }
     })
 
     useSWR(postBody !== null ? [apiEndpoint] : null, ([urlPath]) => api.authPost(urlPath, postBody), {
         onError: async (error, key, config) => {
-            setRequestError(JSON.parse(error.message).detail)
+            setRequestErrors(requestErrors.concat(JSON.parse(error.message).detail))
             setIsLoading(false)
         },
         onSuccess: async (data: types.SubmitContextQueryResponse, key, config) => {
@@ -85,10 +115,10 @@ export const ContextQueryForm = () => {
 
     useSWR(jobId.length > 0 ? [`${apiEndpoint}${jobId}`] : null, ([urlPath]) => api.authGet(urlPath), {
         onError: async (error, key, config) => {
-            setRequestError(JSON.parse(error.message).detail)
+            setRequestErrors(requestErrors.concat(JSON.parse(error.message).detail))
             setIsLoading(false)
         },
-        refreshInterval: (latestData: types.ContextQueryResponse) => {
+        refreshInterval: (latestData: types.RedditorContextQueryResponse | types.ThreadContextQueryResponse) => {
             if (latestData && "success" in latestData && latestData.success !== null) {
                 setJobId("")
                 setIsLoading(false)
@@ -99,7 +129,7 @@ export const ContextQueryForm = () => {
             if (latestData && "error" in latestData && latestData.error !== null) {
                 setJobId("")
                 setIsLoading(false)
-                setRequestError(latestData.error.reason)
+                setRequestErrors(requestErrors.concat(latestData.error.reason))
                 return 0
             }
             return 1000
@@ -135,24 +165,34 @@ export const ContextQueryForm = () => {
         }
     }
 
+    const onLlmChangeHandler = async (e) => {
+        setLlmSelection(e.target.innerText)
+    }
+
+    const onNlpChangeHandler = async (e) => {
+        setNlpSelection(e.target.innerText)
+    }
+
     const onSubmitHandler = (e) => {
         e.preventDefault()
 
         if (contextSelection === "redditor") {
             setApiEndpoint("/api/v1/reddit/redditor/context-query/")
-            // TODO: include the selected LLM in the POST request
             setPostBody({
-                username: contextInputValue,
+                llm_name: llmSelection,
+                nlp_name: nlpSelection,
+                producer_settings: producerSettings,
                 prompt: promptInputValue,
-                producer_settings: producerSettings
+                username: contextInputValue
             })
         } else {
             setApiEndpoint("/api/v1/reddit/thread/context-query/")
-            // TODO: include the selected LLM in the POST request
             setPostBody({
+                llm_name: llmSelection,
+                nlp_name: nlpSelection,
                 path: new URL(contextInputValue).pathname,
-                prompt: promptInputValue,
-                producer_settings: producerSettings
+                producer_settings: producerSettings,
+                prompt: promptInputValue
             })
         }
 
@@ -163,10 +203,62 @@ export const ContextQueryForm = () => {
 
     return (
         <>
-            {requestError ? <UncontrolledAlert color={"danger"}>{requestError}</UncontrolledAlert> : null}
+            {requestErrors.map((requestError: string, idx: number) => (
+                <UncontrolledAlert color={"danger"} key={idx}>
+                    {requestError}
+                </UncontrolledAlert>
+            ))}
 
             <Form onSubmit={onSubmitHandler}>
                 <div className={"pt-2"}>
+                    <FormGroup row>
+                        <Label for={"contextQueryLlm"} lg={1}>
+                            LLM
+                        </Label>
+                        <Col lg={11}>
+                            <InputGroup id={"contextQueryLlm"}>
+                                <UncontrolledDropdown>
+                                    <DropdownToggle caret>{llmSelection} </DropdownToggle>
+                                    <DropdownMenu>
+                                        {llmProducers
+                                            ? llmProducers.map((llmProducer: types.Producer, idx: number) => {
+                                                  return (
+                                                      <DropdownItem key={idx} onClick={onLlmChangeHandler}>
+                                                          {llmProducer.name}
+                                                      </DropdownItem>
+                                                  )
+                                              })
+                                            : null}
+                                    </DropdownMenu>
+                                </UncontrolledDropdown>
+                            </InputGroup>
+                        </Col>
+                    </FormGroup>
+
+                    <FormGroup row>
+                        <Label for={"contextQueryNlp"} lg={1}>
+                            NLP
+                        </Label>
+                        <Col lg={11}>
+                            <InputGroup id={"contextQueryNlp"}>
+                                <UncontrolledDropdown>
+                                    <DropdownToggle caret>{nlpSelection} </DropdownToggle>
+                                    <DropdownMenu>
+                                        {nlpProducers
+                                            ? nlpProducers.map((nlpProducer: types.Producer, idx: number) => {
+                                                  return (
+                                                      <DropdownItem key={idx} onClick={onNlpChangeHandler}>
+                                                          {nlpProducer.name}
+                                                      </DropdownItem>
+                                                  )
+                                              })
+                                            : null}
+                                    </DropdownMenu>
+                                </UncontrolledDropdown>
+                            </InputGroup>
+                        </Col>
+                    </FormGroup>
+
                     <FormGroup row>
                         <Label for={"contextQueryContext"} lg={1}>
                             Context

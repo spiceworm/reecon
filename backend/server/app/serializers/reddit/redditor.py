@@ -1,7 +1,9 @@
+from django.utils.functional import lazy
 from rest_framework import serializers
 
 from reecon.models import (
     IgnoredRedditor,
+    Producer,
     Redditor,
     RedditorContextQuery,
     RedditorData,
@@ -9,7 +11,6 @@ from reecon.models import (
     UnprocessableRedditorContextQuery,
 )
 
-from ..user import UserSerializer
 from ..producer import (
     ProducedFloatSerializer,
     ProducedIntegerSerializer,
@@ -17,6 +18,8 @@ from ..producer import (
     ProducedTextListSerializer,
     ProducerSettingsSerializer,
 )
+from ..user import UserSerializer
+from ... import util
 
 
 __all__ = (
@@ -117,9 +120,11 @@ class UnprocessableRedditorContextQuerySerializer(serializers.ModelSerializer):
 
 
 class RedditorContextQueryCreateRequestSerializer(serializers.Serializer):
-    username = serializers.CharField()
-    prompt = serializers.CharField()
+    llm_name = serializers.ChoiceField(choices=lazy(util.get_llm_choices, tuple)())
+    nlp_name = serializers.ChoiceField(choices=lazy(util.get_nlp_choices, tuple)())
     producer_settings = ProducerSettingsSerializer()
+    prompt = serializers.CharField()
+    username = serializers.CharField()
 
 
 class RedditorContextQueryCreateResponseSerializer(serializers.Serializer):
