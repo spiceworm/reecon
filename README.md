@@ -120,8 +120,6 @@ $ . ~/venv/reecon/bin/activate
 - Make annotated data render nicer
 - Make use of RQ priority queues (would need to configure a worker host for each queue)
     - Unprocessed redditors/threads go in medium priority, reprocessing redditors/threads go in low priority, context queries go in high priority
-- Order reddit inputs by date and update LLM prompt to say that posts are arranged from oldest to newest. This makes the age stat more accurate
-    because if the account is old, older comments will reflect a younger age than their current age.
 - Implement password reset bot for reecon-admin
     - User sends DM that says "forgot password" and bot responds back with a password reset link
 - Lookup how extension updates are performed and stored keys are impacted (new and existing ones)

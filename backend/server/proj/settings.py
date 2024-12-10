@@ -338,13 +338,15 @@ CONSTANCE_CONFIG = collections.OrderedDict(
             "nlp_select",
         ),
         "REDDITOR_LLM_CONTEXT_QUERY_PROMPT": (
-            "The following pipe delimited messages are unrelated submissions posted by a person. ",
+            "The following pipe delimited messages are unrelated submissions posted by a person ordered from newest "
+            "to oldest. ",
             "Default prompt that populates the redditor context query form that can be modified by the user before "
             "they submit the query for processing. Whatever they change it to is what will be sent to the LLM for "
             "redditor context query processing.",
         ),
         "REDDITOR_LLM_DATA_PROMPT": (
-            "The following pipe delimited messages are unrelated submissions posted by a person. "
+            "The following pipe delimited messages are unrelated submissions posted by a person ordered from newest "
+            "to oldest. "
             "Determine the age, a list of interests, and the IQ of that person based on their writing. "
             "Also generate a short summary that describes the author that uses 50 completion_tokens or less. "
             "Be as objective as possible.",

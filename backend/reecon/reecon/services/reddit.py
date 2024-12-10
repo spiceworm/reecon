@@ -137,7 +137,7 @@ class _RedditorService(_RedditService):
         wait=wait_random_exponential(min=1, max=60),
     )
     def get_inputs(self) -> List[str]:
-        submissions: Set[str] = set()
+        submissions: List[str] = []
         praw_redditor: PrawRedditor = self.reddit_client.redditor(name=self.identifier)
 
         context_window = self.llm_producer.context_window
@@ -161,12 +161,13 @@ class _RedditorService(_RedditService):
             thread: Submission
             for thread in praw_redditor.submissions.new():
                 if text := self.filter_submission(text=thread.selftext):
-                    pending_inputs = "|".join(submissions | {text})
-                    pending_tokens = len(encoding.encode(pending_inputs, disallowed_special=()))
-                    if pending_tokens < max_input_tokens:
-                        submissions.add(text)
-                    else:
-                        break
+                    if text not in submissions:
+                        pending_inputs = "|".join(submissions + [text])
+                        pending_tokens = len(encoding.encode(pending_inputs, disallowed_special=()))
+                        if pending_tokens < max_input_tokens:
+                            submissions.append(text)
+                        else:
+                            break
 
             # Get the body of comments submitted by the user.
             comment: Comment
@@ -174,12 +175,13 @@ class _RedditorService(_RedditService):
                 if isinstance(comment, MoreComments):
                     continue
                 if text := self.filter_submission(text=comment.body):
-                    pending_inputs = "|".join(submissions | {text})
-                    pending_tokens = len(encoding.encode(pending_inputs, disallowed_special=()))
-                    if pending_tokens < max_input_tokens:
-                        submissions.add(text)
-                    else:
-                        break
+                    if text not in submissions:
+                        pending_inputs = "|".join(submissions + [text])
+                        pending_tokens = len(encoding.encode(pending_inputs, disallowed_special=()))
+                        if pending_tokens < max_input_tokens:
+                            submissions.append(text)
+                        else:
+                            break
         except (Forbidden, NotFound) as e:
             raise self.unprocessable_entity(str(e))
 
@@ -188,7 +190,7 @@ class _RedditorService(_RedditService):
             raise self.unprocessable_entity(
                 f"Less than {min_submissions} submissions available for processing (found {len(submissions)})"
             )
-        return list(submissions)
+        return submissions
 
     def unprocessable_entity(self, reason):
         obj, _ = models.UnprocessableRedditor.objects.update_or_create(
@@ -215,7 +217,7 @@ class _ThreadService(_RedditService):
         wait=wait_random_exponential(min=1, max=60),
     )
     def get_inputs(self) -> List[str]:
-        submissions: Set[str] = set()
+        submissions: List[str] = []
         ignored_usernames = set(models.IgnoredRedditor.objects.values_list("username", flat=True))
 
         try:
@@ -230,10 +232,11 @@ class _ThreadService(_RedditService):
         try:
             # Get the thread selftext
             if text := self.filter_submission(text=praw_submission.selftext):
-                pending_inputs = "|".join(submissions | {text})
-                pending_tokens = len(encoding.encode(pending_inputs, disallowed_special=()))
-                if pending_tokens < max_input_tokens:
-                    submissions.add(text)
+                if text not in submissions:
+                    pending_inputs = "|".join(submissions + [text])
+                    pending_tokens = len(encoding.encode(pending_inputs, disallowed_special=()))
+                    if pending_tokens < max_input_tokens:
+                        submissions.append(text)
 
             # Get thread comments
             comment: Comment
@@ -242,12 +245,13 @@ class _ThreadService(_RedditService):
                     continue
                 if comment.author and comment.author.name not in ignored_usernames:
                     if text := self.filter_submission(text=comment.body):
-                        pending_inputs = "|".join(submissions | {text})
-                        pending_tokens = len(encoding.encode(pending_inputs, disallowed_special=()))
-                        if pending_tokens < max_input_tokens:
-                            submissions.add(text)
-                        else:
-                            break
+                        if text not in submissions:
+                            pending_inputs = "|".join(submissions + [text])
+                            pending_tokens = len(encoding.encode(pending_inputs, disallowed_special=()))
+                            if pending_tokens < max_input_tokens:
+                                submissions.append(text)
+                            else:
+                                break
         except NotFound as e:
             raise self.unprocessable_entity(str(e))
 
@@ -256,7 +260,7 @@ class _ThreadService(_RedditService):
             raise self.unprocessable_entity(
                 f"Less than {min_submissions} submissions available for processing (found {len(submissions)})"
             )
-        return list(submissions)
+        return submissions
 
     def unprocessable_entity(self, reason):
         obj, _ = models.UnprocessableThread.objects.update_or_create(
