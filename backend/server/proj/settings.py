@@ -347,9 +347,9 @@ CONSTANCE_CONFIG = collections.OrderedDict(
         "REDDITOR_LLM_DATA_PROMPT": (
             "The following pipe delimited messages are unrelated submissions posted by a person ordered from newest "
             "to oldest. "
-            "Determine the age, a list of interests, and the IQ of that person based on their writing. "
-            "Also generate a short summary that describes the author that uses 50 completion_tokens or less. "
-            "Be as objective as possible.",
+            "Determine the age, a list of interests ordered from most to least relevant, and the IQ of the person "
+            "based on their writing. Also generate a short summary that describes the author that uses 100 "
+            "completion_tokens or less. Be as objective as possible.",
             "Prompt sent to the LLM for redditor data processing.",
         ),
         "THREAD_LLM_CONTEXT_QUERY_PROMPT": (
@@ -359,9 +359,10 @@ CONSTANCE_CONFIG = collections.OrderedDict(
             "thread context query processing.",
         ),
         "THREAD_LLM_DATA_PROMPT": (
-            "The following pipe delimited messages are unrelated submissions posted by multiple people. "
-            "Determine a list of keywords that describe the discussion. Also generate a brief summary of what "
-            "is being discussed that uses 50 completion_tokens or less. Be as objective as possible.",
+            "The following pipe delimited messages are unrelated submissions posted by multiple people. Determine "
+            "a list of keywords that describe the discussion ordered from most to least relevant. Also generate a "
+            "brief summary of what is being discussed that uses 100 completion_tokens or less. Be as objective as "
+            "possible.",
             "Prompt sent to the LLM for thread data processing.",
         ),
         "LLM_MAX_CONTEXT_WINDOW_FOR_INPUTS": (
