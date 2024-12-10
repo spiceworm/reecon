@@ -1,3 +1,107 @@
+interface ContextQuery {
+    created: Date
+    id: number
+    prompt: string
+    response: ProducedText
+    submitter: User
+    total_inputs: number
+}
+
+interface ProducedData {
+    contributor: User
+    id: number
+    producer: Producer
+}
+
+interface ProducedFloat extends ProducedData {
+    value: number
+}
+
+interface ProducedInteger extends ProducedData {
+    value: number
+}
+
+interface ProducedText extends ProducedData {
+    value: string
+}
+
+interface ProducedTextList extends ProducedData {
+    value: string[]
+}
+
+interface ProducerCategory {
+    created: Date
+    description: string
+    id: number
+    name: string
+}
+
+interface RedditData {
+    created: Date
+    id: number
+    sentiment_polarity: ProducedFloat
+    sentiment_subjectivity: ProducedFloat
+    summary: ProducedText
+    total_inputs: number
+}
+
+interface RedditEntity {
+    created: Date
+    id: number
+    identifier: string
+    last_processed: Date
+    source: string
+    submitter: User
+}
+
+interface RedditorData extends RedditData {
+    age: ProducedInteger
+    iq: ProducedInteger
+    interests: ProducedTextList
+}
+
+interface StatusMessage {
+    active: boolean
+    category: string
+    message: string
+    name: string
+    source: string
+}
+
+interface ThreadData extends RedditData {
+    keywords: ProducedTextList
+}
+
+interface UnprocessableRedditContextQuery {
+    created: Date
+    id: number
+    reason: string
+    submitter: User
+}
+
+interface UnprocessableRedditEntity {
+    created: Date
+    id: number
+    identifier: string
+    reason: string
+    source: string
+    submitter: User
+}
+
+interface User {
+    date_joined: Date
+    id: number
+    is_active: boolean
+    is_staff: boolean
+    is_superuser: boolean
+    last_login: Date | null
+    username: string
+}
+
+export interface ApiStatusMessage extends StatusMessage {
+    id: number
+}
+
 export interface Auth {
     access: string
     refresh: string
@@ -14,6 +118,8 @@ export interface ContentFilter {
     iq: number
     sentiment: number
 }
+
+export interface ExtensionStatusMessage extends StatusMessage {}
 
 export interface IgnoredRedditor {
     id: number
@@ -32,44 +138,9 @@ export interface PendingThread {
     url: string
 }
 
-interface ProducedFloat {
-    contributor: User
-    id: number
-    producer: Producer
-    value: number
-}
-
-interface ProducedInteger {
-    contributor: User
-    id: number
-    producer: Producer
-    value: number
-}
-
-interface ProducedText {
-    contributor: User
-    id: number
-    producer: Producer
-    value: string
-}
-
-interface ProducedTextList {
-    contributor: User
-    id: number
-    producer: Producer
-    value: string[]
-}
-
 export interface Producer {
     category: ProducerCategory
     context_window: number | null
-    created: Date
-    description: string
-    id: number
-    name: string
-}
-
-interface ProducerCategory {
     created: Date
     description: string
     id: number
@@ -93,6 +164,20 @@ export interface ProducerSettings {
     }
 }
 
+export interface Redditor extends RedditEntity {
+    data: RedditorData
+    username: string
+}
+
+export interface RedditorContextQuery extends ContextQuery {
+    context: Redditor
+}
+
+export interface RedditorContextQueryResponse {
+    error: UnprocessableRedditorContextQuery | null
+    success: RedditorContextQuery | null
+}
+
 export interface SubmitContextQueryResponse {
     job_id: string
 }
@@ -110,134 +195,35 @@ export interface SubmitThreadDataResponse {
     unprocessable: UnprocessableThread[]
 }
 
-export interface RedditorContextQuery {
-    created: Date
-    context: Redditor
-    id: number
-    prompt: string
-    response: ProducedText
-    submitter: User
-    total_inputs: number
-}
-
-export interface ThreadContextQuery {
-    created: Date
-    context: Thread
-    id: number
-    prompt: string
-    response: ProducedText
-    submitter: User
-    total_inputs: number
-}
-
-export interface ContextQueryResponse {
-    error: UnprocessableRedditorContextQuery | UnprocessableThreadContextQuery | null
-    success: RedditorContextQuery | ThreadContextQuery | null
-}
-
-export interface Redditor {
-    created: Date
-    data: RedditorData
-    id: number
-    identifier: string
-    last_processed: Date
-    source: string
-    submitter: User
-    username: string
-}
-
-interface RedditorData {
-    age: ProducedInteger
-    created: Date
-    id: number
-    iq: ProducedInteger
-    interests: ProducedTextList
-    sentiment_polarity: ProducedFloat
-    sentiment_subjectivity: ProducedFloat
-    summary: ProducedText
-    total_inputs: number
-}
-
-interface StatusMessage {
-    active: boolean
-    category: string
-    message: string
-    name: string
-    source: string
-}
-
-export interface ApiStatusMessage extends StatusMessage {
-    id: number
-}
-
-export interface ExtensionStatusMessage extends StatusMessage {}
-
-export interface Thread {
-    created: Date
+export interface Thread extends RedditEntity {
     data: ThreadData
-    id: number
-    identifier: string
-    last_processed: Date
     path: string
-    source: string
-    submitter: User
     url: string
 }
 
-interface ThreadData {
-    created: Date
-    id: number
-    keywords: ProducedTextList
-    sentiment_polarity: ProducedFloat
-    sentiment_subjectivity: ProducedFloat
-    summary: ProducedText
-    total_inputs: number
+export interface ThreadContextQuery extends ContextQuery {
+    context: Thread
 }
 
-export interface UnprocessableRedditor {
-    created: Date
-    id: number
-    identifier: string
-    reason: string
-    source: string
-    submitter: User
+export interface ThreadContextQueryResponse {
+    error: UnprocessableThreadContextQuery | null
+    success: ThreadContextQuery | null
+}
+
+export interface UnprocessableRedditor extends UnprocessableRedditEntity {
     username: string
 }
 
-export interface UnprocessableRedditorContextQuery {
-    created: Date
-    id: number
-    reason: string
-    submitter: User
+export interface UnprocessableRedditorContextQuery extends UnprocessableRedditContextQuery {
     username: string
 }
 
-export interface UnprocessableThread {
-    created: Date
-    id: number
-    identifier: string
+export interface UnprocessableThread extends UnprocessableRedditEntity {
     path: string
-    reason: string
-    source: string
-    submitter: User
     url: string
 }
 
-export interface UnprocessableThreadContextQuery {
-    created: Date
-    id: number
+export interface UnprocessableThreadContextQuery extends UnprocessableRedditContextQuery {
     path: string
-    reason: string
-    submitter: User
     url: string
-}
-
-interface User {
-    date_joined: Date
-    id: number
-    is_active: boolean
-    is_staff: boolean
-    is_superuser: boolean
-    last_login: Date | null
-    username: string
 }
