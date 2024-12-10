@@ -16,6 +16,7 @@ import {
 import useSWR from "swr"
 
 import * as api from "~util/api"
+import * as markdown from "~util/components/markdown"
 import type * as types from "~util/types"
 
 export const ContextQueryHistory = () => {
@@ -126,7 +127,7 @@ export const ContextQueryHistory = () => {
                     {modalBodyLines.map((line: string, idx: number) => (
                         <>
                             {idx !== 0 ? <br /> : null}
-                            <p key={idx}>{line}</p>
+                            <markdown.Markdown key={idx}>{line}</markdown.Markdown>
                         </>
                     ))}
                 </ModalBody>

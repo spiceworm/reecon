@@ -23,6 +23,7 @@ import useSWRImmutable from "swr/immutable"
 import { useStorage } from "@plasmohq/storage/dist/hook"
 
 import * as api from "~util/api"
+import * as markdown from "~util/components/markdown"
 import * as constants from "~util/constants"
 import * as storage from "~util/storage"
 import type * as types from "~util/types"
@@ -46,7 +47,7 @@ export const ContextQueryForm = () => {
     const [jobId, setJobId] = useState("")
 
     const [isLoading, setIsLoading] = useState(false)
-    const [queryResponse, setQueryResponse] = useState(null)
+    const [queryResponse, setQueryResponse] = useState("")
     const [responseModalVisible, setResponseModalVisible] = useState(false)
 
     const [contextQueryingDisabled, setContextQueryingDisabled] = useState(false)
@@ -324,7 +325,9 @@ export const ContextQueryForm = () => {
 
             <Modal isOpen={responseModalVisible} toggle={toggleResponseModalVisibility}>
                 <ModalHeader toggle={toggleResponseModalVisibility} />
-                <ModalBody>{queryResponse}</ModalBody>
+                <ModalBody>
+                    <markdown.Markdown>{queryResponse}</markdown.Markdown>
+                </ModalBody>
             </Modal>
         </>
     )
