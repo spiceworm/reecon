@@ -158,14 +158,19 @@ interface RedditorData {
     total_inputs: number
 }
 
-export interface StatusMessage {
+interface StatusMessage {
     active: boolean
     category: string
-    id: number
     message: string
     name: string
     source: string
 }
+
+export interface ApiStatusMessage extends StatusMessage {
+    id: number
+}
+
+export interface ExtensionStatusMessage extends StatusMessage {}
 
 export interface Thread {
     created: Date

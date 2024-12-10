@@ -16,7 +16,7 @@ export const Authenticated = ({ children }) => {
 
     const { error, isLoading } = useSWR("updateApiStatusMessages", api.updateApiStatusMessages)
 
-    const [statusMessages] = useStorage({ instance: storage.localStorage, key: constants.STATUS_MESSAGES }, (v: types.StatusMessage[]) =>
+    const [statusMessages] = useStorage({ instance: storage.localStorage, key: constants.STATUS_MESSAGES }, (v: (types.ApiStatusMessage | types.ExtensionStatusMessage)[]) =>
         v === undefined ? [] : v
     )
     const [_, setAuth] = useStorage({ instance: storage.localStorage, key: constants.AUTH })
@@ -26,7 +26,7 @@ export const Authenticated = ({ children }) => {
         navigate("/auth/login", { replace: true })
     }
 
-    const activeStatusMessage = statusMessages.filter((message: types.StatusMessage) => message.active)
+    const activeStatusMessage = statusMessages.filter((message: types.ApiStatusMessage | types.ExtensionStatusMessage) => message.active)
 
     return (
         <bases.Unauthenticated>

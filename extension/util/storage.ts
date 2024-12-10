@@ -42,8 +42,8 @@ export const getActiveContentFilter = async (): Promise<types.ContentFilter> => 
     return (await _get(constants.ACTIVE_CONTENT_FILTER)) as Promise<types.ContentFilter>
 }
 
-const getApiStatusMessages = async (): Promise<types.StatusMessage[]> => {
-    return (await _get(constants.API_STATUS_MESSAGES)) as Promise<types.StatusMessage[]>
+const getApiStatusMessages = async (): Promise<types.ApiStatusMessage[]> => {
+    return (await _get(constants.API_STATUS_MESSAGES)) as Promise<types.ApiStatusMessage[]>
 }
 
 export const getAuth = async (): Promise<types.Auth | null> => {
@@ -73,8 +73,8 @@ export const getDisableExtension = async (): Promise<boolean> => {
     return (await _get(constants.DISABLE_EXTENSION)) as boolean
 }
 
-const getExtensionStatusMessages = async (): Promise<types.StatusMessage[]> => {
-    return (await _get(constants.EXTENSION_STATUS_MESSAGES)) as Promise<types.StatusMessage[]>
+const getExtensionStatusMessages = async (): Promise<types.ExtensionStatusMessage[]> => {
+    return (await _get(constants.EXTENSION_STATUS_MESSAGES)) as Promise<types.ExtensionStatusMessage[]>
 }
 
 export const getHideBadSentimentThreads = async (): Promise<boolean> => {
@@ -119,7 +119,7 @@ export const setActiveContentFilter = async (url: string): Promise<void> => {
     }
 }
 
-export const setApiStatusMessages = async (messages: types.StatusMessage[]): Promise<void> => {
+export const setApiStatusMessages = async (messages: types.ApiStatusMessage[]): Promise<void> => {
     await _set(constants.API_STATUS_MESSAGES, messages)
 }
 
@@ -128,7 +128,7 @@ export const setAuth = async (auth: types.Auth): Promise<void> => {
 }
 
 export const setExtensionStatusMessage = async (messageName: string, active: boolean, messageText: string = ""): Promise<void> => {
-    let extensionStatusMessages: types.StatusMessage[] = await _get(constants.EXTENSION_STATUS_MESSAGES)
+    let extensionStatusMessages: types.ExtensionStatusMessage[] = await _get(constants.EXTENSION_STATUS_MESSAGES)
 
     for (let message of extensionStatusMessages) {
         if (message.name === messageName) {
@@ -143,7 +143,7 @@ export const setExtensionStatusMessage = async (messageName: string, active: boo
     await _set(constants.EXTENSION_STATUS_MESSAGES, extensionStatusMessages)
 }
 
-const setStatusMessages = async (messages: types.StatusMessage[]): Promise<void> => {
+const setStatusMessages = async (messages: (types.ApiStatusMessage | types.ExtensionStatusMessage)[]): Promise<void> => {
     await _set(constants.STATUS_MESSAGES, messages)
 }
 
@@ -170,7 +170,7 @@ localStorage.watch({
 
         await setStatusMessages(newValue.concat(await getExtensionStatusMessages()))
 
-        for (const message of newValue as types.StatusMessage[]) {
+        for (const message of newValue as (types.ApiStatusMessage | types.ExtensionStatusMessage)[]) {
             if (message.name === "redditorContextQueryProcessingDisabled") {
                 await _set(constants.REDDITOR_CONTEXT_QUERY_PROCESSING_ENABLED, !message.active)
             } else if (message.name === "redditorDataProcessingDisabled") {

@@ -30,7 +30,7 @@ export const defaultProducerSettings: types.ProducerSettings = {
     }
 }
 
-export const extensionStatusMessages: types.StatusMessage[] = [
+export const extensionStatusMessages: types.ExtensionStatusMessage[] = [
     {
         active: false,
         category: "danger",
