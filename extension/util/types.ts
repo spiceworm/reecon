@@ -116,7 +116,8 @@ export interface ContentFilter {
     context: string
     filterType: string
     iq: number
-    sentiment: number
+    sentimentPolarity: number
+    sentimentSubjectivity: number
 }
 
 export interface ExtensionStatusMessage extends StatusMessage {}

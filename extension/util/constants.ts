@@ -20,7 +20,8 @@ export const defaultContentFilter: types.ContentFilter = {
     age: 0,
     context: "Default",
     iq: 0,
-    sentiment: 0.05,
+    sentimentPolarity: 0.05,
+    sentimentSubjectivity: 0.5,
     filterType: "default"
 }
 

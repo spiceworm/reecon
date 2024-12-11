@@ -10,7 +10,6 @@ export const execute = async () => {
     }
 
     if (await storage.shouldExecuteContentScript()) {
-        // TODO: show visual queue in the browser that the content script got executed
         lastExecution = Date.now()
 
         const contentFilter = await storage.getActiveContentFilter()

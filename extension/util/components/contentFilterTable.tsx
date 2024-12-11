@@ -111,8 +111,17 @@ const columns = [
             type: "number"
         }
     }),
-    columnHelper.accessor("sentiment", {
-        header: "Sentiment",
+    columnHelper.accessor("sentimentPolarity", {
+        header: "Polarity",
+        cell: Cell,
+        meta: {
+            element: "input",
+            type: "number",
+            step: "0.001"
+        }
+    }),
+    columnHelper.accessor("sentimentSubjectivity", {
+        header: "Subjectivity",
         cell: Cell,
         meta: {
             element: "input",
@@ -131,7 +140,8 @@ const defaultColumnVisibility = {
     context: true,
     age: true,
     iq: true,
-    sentiment: true,
+    sentimentPolarity: true,
+    sentimentSubjectivity: true,
     action: true
 }
 
@@ -161,7 +171,8 @@ export const ContentFilterTable = ({ columnVisibility = defaultColumnVisibility,
                     context: "",
                     filterType: "custom",
                     iq: defaultFilter.iq,
-                    sentiment: defaultFilter.sentiment
+                    sentimentPolarity: defaultFilter.sentimentPolarity,
+                    sentimentSubjectivity: defaultFilter.sentimentSubjectivity
                 }
                 await setData([...data, newContentFilter])
             },

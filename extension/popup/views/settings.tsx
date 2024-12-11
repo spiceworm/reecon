@@ -63,7 +63,8 @@ export const Settings = () => {
                     context: true,
                     age: true,
                     iq: true,
-                    sentiment: true,
+                    sentimentPolarity: true,
+                    sentimentSubjectivity: true,
                     action: false
                 }}
                 footerVisible={false}
