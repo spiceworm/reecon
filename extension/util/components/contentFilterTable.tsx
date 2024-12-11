@@ -28,12 +28,9 @@ const Cell = ({ getValue, row, column, table }) => {
         }
     }, [cellValue])
 
-    const onBlur = () => {
-        table.options.meta.updateData(row.index, column.id, value)
-    }
-
     const onChange = (e) => {
         setValue(e.target.value)
+        table.options.meta.updateData(row.index, column.id, e.target.value)
     }
 
     if (columnMeta.element === "input") {
@@ -47,7 +44,6 @@ const Cell = ({ getValue, row, column, table }) => {
                 <Input
                     disabled={isReadOnlyContextCell}
                     key={`row-${row.index}-col-${column.id}-input`}
-                    onBlur={onBlur}
                     onChange={onChange}
                     readOnly={isReadOnlyContextCell}
                     step={columnMeta.step ? columnMeta.step : null}
