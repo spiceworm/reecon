@@ -169,10 +169,6 @@ export const ContextQueryForm = () => {
         setLlmSelection(e.target.innerText)
     }
 
-    const onNlpChangeHandler = async (e) => {
-        setNlpSelection(e.target.innerText)
-    }
-
     const onSubmitHandler = (e) => {
         e.preventDefault()
 
@@ -225,30 +221,6 @@ export const ContextQueryForm = () => {
                                                   return (
                                                       <DropdownItem key={idx} onClick={onLlmChangeHandler}>
                                                           {llmProducer.name}
-                                                      </DropdownItem>
-                                                  )
-                                              })
-                                            : null}
-                                    </DropdownMenu>
-                                </UncontrolledDropdown>
-                            </InputGroup>
-                        </Col>
-                    </FormGroup>
-
-                    <FormGroup row>
-                        <Label for={"contextQueryNlp"} lg={1}>
-                            NLP
-                        </Label>
-                        <Col lg={11}>
-                            <InputGroup id={"contextQueryNlp"}>
-                                <UncontrolledDropdown disabled={isLoading || contextQueryingDisabled}>
-                                    <DropdownToggle caret>{nlpSelection} </DropdownToggle>
-                                    <DropdownMenu>
-                                        {nlpProducers
-                                            ? nlpProducers.map((nlpProducer: types.Producer, idx: number) => {
-                                                  return (
-                                                      <DropdownItem key={idx} onClick={onNlpChangeHandler}>
-                                                          {nlpProducer.name}
                                                       </DropdownItem>
                                                   )
                                               })
