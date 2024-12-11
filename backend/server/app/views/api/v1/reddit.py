@@ -55,16 +55,10 @@ class RedditorContextQueryViewSet(GenericViewSet):
 
         log.debug("Received %s: %s", username, prompt)
 
-        llm_contributor = request.user
-        llm_producer = models.Producer.objects.get(name=llm_name)
-        nlp_contributor = User.objects.get(username="admin")
-        nlp_producer = models.Producer.objects.get(name=nlp_name)
-        submitter = request.user
-        env = schemas.get_worker_env()
-        env.redditor.llm.prompts.process_context_query = prompt
-
-
         if config.REDDITOR_CONTEXT_QUERY_PROCESSING_ENABLED:
+            env = schemas.get_worker_env()
+            env.redditor.llm.prompts.process_context_query = prompt
+
             # Do not explicitly set a job id because context-query jobs should have unique IDs.
             # Multiple users could submit a context query for the same redditor, but each query
             # will create a new job.
@@ -73,12 +67,14 @@ class RedditorContextQueryViewSet(GenericViewSet):
                 at_front=True,
                 kwargs={
                     "redditor_username": username,
-                    "llm_contributor": llm_contributor,
-                    "llm_producer": llm_producer,
-                    "nlp_contributor": nlp_contributor,
-                    "nlp_producer": nlp_producer,
+                    "llm_contributor": request.user,
+                    "llm_context_query_producer": models.Producer.objects.get(name=llm_name),
+                    "llm_data_producer": models.Producer.objects.get(name=config.LLM_NAME),
+                    "nlp_contributor": User.objects.get(username="admin"),
+                    "nlp_context_query_producer": models.Producer.objects.get(name=nlp_name),
+                    "nlp_data_producer": models.Producer.objects.get(name=config.NLP_NAME),
                     "producer_settings": producer_settings,
-                    "submitter": submitter,
+                    "submitter": request.user,
                     "env": env,
                 },
             )
@@ -234,17 +230,11 @@ class ThreadContextQueryViewSet(GenericViewSet):
         url_path = submit_serializer.validated_data["path"]
 
         log.debug("Received %s: %s", url_path, prompt)
-        thread_url = f"https://reddit.com{url_path}"
-
-        llm_contributor = request.user
-        llm_producer = models.Producer.objects.get(name=llm_name)
-        nlp_contributor = User.objects.get(username="admin")
-        nlp_producer = models.Producer.objects.get(name=nlp_name)
-        submitter = request.user
-        env = schemas.get_worker_env()
-        env.thread.llm.prompts.process_context_query = prompt
 
         if config.THREAD_CONTEXT_QUERY_PROCESSING_ENABLED:
+            env = schemas.get_worker_env()
+            env.thread.llm.prompts.process_context_query = prompt
+
             # Do not explicitly set a job id because context-query jobs should have unique IDs.
             # Multiple users could submit a context query for the same thread, but each query
             # will create a new job.
@@ -252,13 +242,15 @@ class ThreadContextQueryViewSet(GenericViewSet):
                 "app.worker.process_thread_context_query",  # this function is defined in the worker app
                 at_front=True,
                 kwargs={
-                    "thread_url": thread_url,
-                    "llm_contributor": llm_contributor,
-                    "llm_producer": llm_producer,
-                    "nlp_contributor": nlp_contributor,
-                    "nlp_producer": nlp_producer,
+                    "thread_url": f"https://reddit.com{url_path}",
+                    "llm_contributor": request.user,
+                    "llm_context_query_producer": models.Producer.objects.get(name=llm_name),
+                    "llm_data_producer": models.Producer.objects.get(name=config.LLM_NAME),
+                    "nlp_contributor": User.objects.get(username="admin"),
+                    "nlp_context_query_producer": models.Producer.objects.get(name=nlp_name),
+                    "nlp_data_producer": models.Producer.objects.get(name=config.NLP_NAME),
                     "producer_settings": producer_settings,
-                    "submitter": submitter,
+                    "submitter": request.user,
                     "env": env,
                 },
             )
