@@ -272,12 +272,14 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 def get_llm_choices():
     # Importing a model cannot happen at the top of the file.
     from app import util
+
     return util.get_llm_choices()
 
 
 def get_nlp_choices():
     # Importing a model cannot happen at the top of the file.
     from app import util
+
     return util.get_nlp_choices()
 
 

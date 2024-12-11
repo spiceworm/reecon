@@ -84,11 +84,11 @@ class RedditorContextQueryViewSet(GenericViewSet):
             job_id = ""
             log.debug("Redditor context query processing is disabled")
 
-        data = {
-            "job_id": job_id,
-        }
-
-        response_serializer = serializers.RedditorContextQueryCreateResponseSerializer(instance=data)
+        response_serializer = serializers.RedditorContextQueryCreateResponseSerializer(
+            instance={
+                "job_id": job_id,
+            }
+        )
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
     @extend_schema(
@@ -113,11 +113,12 @@ class RedditorContextQueryViewSet(GenericViewSet):
 
         if job.is_finished:
             obj: models.RedditorContextQuery | models.UnprocessableRedditorContextQuery = job.return_value()
-            data = {
-                "error": obj if isinstance(obj, models.UnprocessableRedditorContextQuery) else None,
-                "success": obj if isinstance(obj, models.RedditorContextQuery) else None,
-            }
-            response_serializer = serializers.RedditorContextQueryRetrieveResponseSerializer(instance=data)
+            response_serializer = serializers.RedditorContextQueryRetrieveResponseSerializer(
+                instance={
+                    "error": obj if isinstance(obj, models.UnprocessableRedditorContextQuery) else None,
+                    "success": obj if isinstance(obj, models.RedditorContextQuery) else None,
+                }
+            )
             return Response(response_serializer.data, status=status.HTTP_200_OK)
         return Response({}, status=status.HTTP_202_ACCEPTED)
 
@@ -166,14 +167,12 @@ class RedditorDataViewSet(GenericViewSet):
         )
         pending_redditors = []
 
-        llm_contributor = request.user
-        llm_producer = models.Producer.objects.get(name=config.LLM_NAME)
-        nlp_contributor = User.objects.get(username="admin")
-        nlp_producer = models.Producer.objects.get(name=config.NLP_NAME)
-        submitter = request.user
-        env = schemas.get_worker_env()
-
         if config.REDDITOR_DATA_PROCESSING_ENABLED:
+            llm_producer = models.Producer.objects.get(name=config.LLM_NAME)
+            nlp_contributor = User.objects.get(username="admin")
+            nlp_producer = models.Producer.objects.get(name=config.NLP_NAME)
+            env = schemas.get_worker_env()
+
             job_queue = django_rq.get_queue()
             existing_job_ids = set(job_queue.get_job_ids())
 
@@ -186,12 +185,12 @@ class RedditorDataViewSet(GenericViewSet):
                         "app.worker.process_redditor_data",  # this function is defined in the worker app
                         kwargs={
                             "redditor_username": redditor_username,
-                            "llm_contributor": llm_contributor,
+                            "llm_contributor": request.user,
                             "llm_producer": llm_producer,
                             "nlp_contributor": nlp_contributor,
                             "nlp_producer": nlp_producer,
                             "producer_settings": producer_settings,
-                            "submitter": submitter,
+                            "submitter": request.user,
                             "env": env,
                         },
                         job_id=job_id,
@@ -201,14 +200,14 @@ class RedditorDataViewSet(GenericViewSet):
         else:
             log.debug("Redditor data processing is disabled")
 
-        data = {
-            "ignored": ignored_redditors,
-            "pending": pending_redditors,
-            "processed": known_redditors,
-            "unprocessable": unprocessable_redditors,
-        }
-
-        response_serializer = serializers.RedditorDataResponseSerializer(instance=data)
+        response_serializer = serializers.RedditorDataResponseSerializer(
+            instance={
+                "ignored": ignored_redditors,
+                "pending": pending_redditors,
+                "processed": known_redditors,
+                "unprocessable": unprocessable_redditors,
+            }
+        )
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -260,11 +259,11 @@ class ThreadContextQueryViewSet(GenericViewSet):
             job_id = ""
             log.debug("Thread context query processing is disabled")
 
-        data = {
-            "job_id": job_id,
-        }
-
-        response_serializer = serializers.ThreadContextQueryCreateResponseSerializer(instance=data)
+        response_serializer = serializers.ThreadContextQueryCreateResponseSerializer(
+            instance={
+                "job_id": job_id,
+            }
+        )
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
     @extend_schema(
@@ -289,11 +288,12 @@ class ThreadContextQueryViewSet(GenericViewSet):
 
         if job.is_finished:
             obj: models.ThreadContextQuery | models.UnprocessableThreadContextQuery = job.return_value()
-            data = {
-                "error": obj if isinstance(obj, models.UnprocessableThreadContextQuery) else None,
-                "success": obj if isinstance(obj, models.ThreadContextQuery) else None,
-            }
-            response_serializer = serializers.ThreadContextQueryRetrieveResponseSerializer(instance=data)
+            response_serializer = serializers.ThreadContextQueryRetrieveResponseSerializer(
+                instance={
+                    "error": obj if isinstance(obj, models.UnprocessableThreadContextQuery) else None,
+                    "success": obj if isinstance(obj, models.ThreadContextQuery) else None,
+                }
+            )
             return Response(response_serializer.data, status=status.HTTP_200_OK)
         return Response({}, status=status.HTTP_202_ACCEPTED)
 
@@ -338,14 +338,12 @@ class ThreadDataViewSet(GenericViewSet):
         pending_urls = set(thread_urls) - known_urls - fresh_urls - unprocessable_urls
         pending_threads = []
 
-        llm_contributor = request.user
-        llm_producer = models.Producer.objects.get(name=config.LLM_NAME)
-        nlp_contributor = User.objects.get(username="admin")
-        nlp_producer = models.Producer.objects.get(name=config.NLP_NAME)
-        submitter = request.user
-        env = schemas.get_worker_env()
-
         if config.THREAD_DATA_PROCESSING_ENABLED:
+            llm_producer = models.Producer.objects.get(name=config.LLM_NAME)
+            nlp_contributor = User.objects.get(username="admin")
+            nlp_producer = models.Producer.objects.get(name=config.NLP_NAME)
+            env = schemas.get_worker_env()
+
             job_queue = django_rq.get_queue()
             existing_job_ids = set(job_queue.get_job_ids())
 
@@ -365,12 +363,12 @@ class ThreadDataViewSet(GenericViewSet):
                         "app.worker.process_thread_data",  # this function is defined in the worker app
                         kwargs={
                             "thread_url": thread_url,
-                            "llm_contributor": llm_contributor,
+                            "llm_contributor": request.user,
                             "llm_producer": llm_producer,
                             "nlp_contributor": nlp_contributor,
                             "nlp_producer": nlp_producer,
                             "producer_settings": producer_settings,
-                            "submitter": submitter,
+                            "submitter": request.user,
                             "env": env,
                         },
                         job_id=job_id,
@@ -380,11 +378,11 @@ class ThreadDataViewSet(GenericViewSet):
         else:
             log.debug("Thread data processing is disabled")
 
-        data = {
-            "pending": pending_threads,
-            "processed": known_threads,
-            "unprocessable": unprocessable_threads,
-        }
-
-        response_serializer = serializers.ThreadDataResponseSerializer(instance=data)
+        response_serializer = serializers.ThreadDataResponseSerializer(
+            instance={
+                "pending": pending_threads,
+                "processed": known_threads,
+                "unprocessable": unprocessable_threads,
+            }
+        )
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)

@@ -47,7 +47,7 @@ class ProducerDefaultsView(RetrieveAPIView):
                 "process_redditor_data": config.REDDITOR_LLM_DATA_PROMPT,
                 "process_thread_context_query": config.THREAD_LLM_CONTEXT_QUERY_PROMPT,
                 "process_thread_data": config.THREAD_LLM_DATA_PROMPT,
-            }
+            },
         }
         serializer = self.get_serializer(instance=data)
         return Response(serializer.data, status=status.HTTP_200_OK)
