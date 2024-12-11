@@ -218,7 +218,7 @@ export const ContextQueryForm = () => {
                         </Label>
                         <Col lg={11}>
                             <InputGroup id={"contextQueryLlm"}>
-                                <UncontrolledDropdown>
+                                <UncontrolledDropdown disabled={isLoading || contextQueryingDisabled}>
                                     <DropdownToggle caret>{llmSelection} </DropdownToggle>
                                     <DropdownMenu>
                                         {llmProducers
@@ -242,7 +242,7 @@ export const ContextQueryForm = () => {
                         </Label>
                         <Col lg={11}>
                             <InputGroup id={"contextQueryNlp"}>
-                                <UncontrolledDropdown>
+                                <UncontrolledDropdown disabled={isLoading || contextQueryingDisabled}>
                                     <DropdownToggle caret>{nlpSelection} </DropdownToggle>
                                     <DropdownMenu>
                                         {nlpProducers
@@ -266,7 +266,9 @@ export const ContextQueryForm = () => {
                         </Label>
                         <Col lg={11}>
                             <InputGroup>
-                                <UncontrolledDropdown>
+                                {/* This should not be disabled if `contextQueryingDisabled` because queries may be
+                                disabled for redditors but not threads and vice versa */}
+                                <UncontrolledDropdown disabled={isLoading}>
                                     <DropdownToggle caret>{contextSelection} </DropdownToggle>
                                     <DropdownMenu>
                                         <DropdownItem onClick={onContextChangeHandler}>redditor</DropdownItem>
@@ -275,7 +277,7 @@ export const ContextQueryForm = () => {
                                 </UncontrolledDropdown>
                                 <Input
                                     id={"contextQueryContext"}
-                                    disabled={contextQueryingDisabled}
+                                    disabled={isLoading || contextQueryingDisabled}
                                     onChange={(e) => setContextInputValue(e.target.value)}
                                     placeholder={contextInputPlaceholder}
                                     required={true}
@@ -292,7 +294,7 @@ export const ContextQueryForm = () => {
                         </Label>
                         <Col lg={11}>
                             <Input
-                                disabled={contextQueryingDisabled}
+                                disabled={isLoading || contextQueryingDisabled}
                                 id={"contextQueryPrompt"}
                                 onChange={(e) => setPromptInputValue(e.target.value)}
                                 required={true}
@@ -323,7 +325,7 @@ export const ContextQueryForm = () => {
                 </div>
             </Form>
 
-            <Modal isOpen={responseModalVisible} toggle={toggleResponseModalVisibility}>
+            <Modal isOpen={responseModalVisible} size={"xl"} toggle={toggleResponseModalVisibility}>
                 <ModalHeader toggle={toggleResponseModalVisibility} />
                 <ModalBody>
                     <markdown.Markdown>{queryResponse}</markdown.Markdown>
