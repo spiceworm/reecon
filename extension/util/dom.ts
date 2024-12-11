@@ -34,13 +34,17 @@ export const annotateProcessedThreads = async (processedThreads: types.Thread[],
         let dataSpan = document.createElement("span")
         dataSpan.setAttribute("name", dataSpanName)
 
-        const processed = thread.created
-        const keywords = thread.data.keywords.value
         const sentiment_polarity = thread.data.sentiment_polarity.value
-        const sentiment_subjectivity = thread.data.sentiment_subjectivity.value
-        const summary = thread.data.summary.value
-        const total_inputs = thread.data.total_inputs
-        dataSpan.title = `processed: ${processed}\u000dkeywords: ${keywords}\u000dtotal_inputs: ${total_inputs}\u000dpolarity: ${sentiment_polarity}\u000dsubjectivity: ${sentiment_subjectivity}\u000dsummary: ${summary}\u000d\u000d${JSON.stringify(thread.data, null, 4)}`
+
+        dataSpan.title = [
+            `processed: ${thread.data.created}`,
+            `keywords: ${thread.data.keywords.value}`,
+            `sentiment_polarity: ${sentiment_polarity}`,
+            `sentiment_subjectivity: ${thread.data.sentiment_subjectivity.value}`,
+            `total_inputs: ${thread.data.total_inputs}`,
+            `summary: ${thread.data.summary.value}`
+        ].join("\u000d")
+
         dataSpan.innerText = " 🔮"
 
         getThreadTitleElement(thread.path).insertAdjacentElement("beforeend", dataSpan)
@@ -152,11 +156,18 @@ export const annotateProcessedRedditors = async (processedRedditors: types.Reddi
 
             const age = processedRedditor.data.age.value
             const iq = processedRedditor.data.iq.value
-            const sentiment_polarity = processedRedditor.data.sentiment_polarity.value
-            const sentiment_subjectivity = processedRedditor.data.sentiment_subjectivity.value
-            const summary = processedRedditor.data.summary.value
-            const total_inputs = processedRedditor.data.total_inputs
-            dataSpan.title = `total_inputs: ${total_inputs}\u000dage: ${age}\u000diq: ${iq}\u000dpolarity: ${sentiment_polarity}\u000dsubjectivity: ${sentiment_subjectivity}\u000dsummary: ${summary}\u000d\u000d${JSON.stringify(processedRedditor.data, null, 4)}`
+
+            dataSpan.title = [
+                `processed: ${processedRedditor.data.created}`,
+                `age: ${age}`,
+                `iq: ${iq}`,
+                `interests ${processedRedditor.data.interests.value}`,
+                `sentiment_polarity: ${processedRedditor.data.sentiment_polarity.value}`,
+                `sentiment_subjectivity: ${processedRedditor.data.sentiment_subjectivity.value}`,
+                `total_inputs: ${processedRedditor.data.total_inputs}`,
+                `summary: ${processedRedditor.data.summary.value}`
+            ].join("\u000d")
+
             dataSpan.innerText = ` [age=${age}, iq=${iq}]`
 
             for (let linkElement of usernameElementsMap[username]) {
