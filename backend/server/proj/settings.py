@@ -373,7 +373,7 @@ CONSTANCE_CONFIG = collections.OrderedDict(
             "that can be used for inputs.",
         ),
         "SUBMISSION_FILTER_MAX_LENGTH": (
-            2000,
+            3000,
             "The maximum number of characters allowed for the text of a single submission to be included in "
             "processing. This is the length of the text after filtering. Applying a limit to the maximum number "
             "of characters helps exclude text copied from other sources.",
