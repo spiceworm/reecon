@@ -130,7 +130,12 @@ export const setActiveContentFilter = async (url: string): Promise<void> => {
     }
 
     if (!matchingContextFilterFound) {
-        await _set(constants.ACTIVE_CONTENT_FILTER, constants.defaultContentFilter)
+        for (const contentFilter of (await _get(constants.CONTENT_FILTERS)) as types.ContentFilter[]) {
+            if (contentFilter.context === constants.defaultContentFilter.context) {
+                await _set(constants.ACTIVE_CONTENT_FILTER, contentFilter)
+                break
+            }
+        }
     }
 }
 
