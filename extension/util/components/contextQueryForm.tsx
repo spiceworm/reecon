@@ -18,7 +18,6 @@ import {
     UncontrolledDropdown
 } from "reactstrap"
 import useSWR from "swr"
-import useSWRImmutable from "swr/immutable"
 
 import { useStorage } from "@plasmohq/storage/dist/hook"
 
@@ -69,7 +68,7 @@ export const ContextQueryForm = () => {
     const [postBody, setPostBody] = useState(null)
     const [requestErrors, setRequestErrors] = useState([])
 
-    useSWRImmutable("/api/v1/producers/defaults", api.authGet, {
+    useSWR("/api/v1/producers/defaults", api.authGet, {
         onError: async (error, key, config) => {
             setRequestErrors(requestErrors.concat(JSON.parse(error.message).detail))
         },
@@ -80,7 +79,7 @@ export const ContextQueryForm = () => {
         }
     })
 
-    useSWRImmutable("/api/v1/producers/llm/", api.authGet, {
+    useSWR(llmProducers.length === 0 ? "/api/v1/producers/llm/" : null, api.authGet, {
         onError: async (error, key, config) => {
             setRequestErrors(requestErrors.concat(JSON.parse(error.message).detail))
         },
@@ -89,7 +88,7 @@ export const ContextQueryForm = () => {
         }
     })
 
-    useSWRImmutable("/api/v1/producers/nlp/", api.authGet, {
+    useSWR(nlpProducers.length === 0 ? "/api/v1/producers/nlp/" : null, api.authGet, {
         onError: async (error, key, config) => {
             setRequestErrors(requestErrors.concat(JSON.parse(error.message).detail))
         },
