@@ -72,6 +72,25 @@ const ActionCell = ({ row, table }) => {
     }
 }
 
+const HeaderCell = ({ name, storageKey, table }) => {
+    const [isChecked, setIsChecked] = useStorage({ instance: storage.localStorage, key: storageKey }, (v: boolean) => (v === undefined ? false : v))
+
+    if (table.options.meta.headerControlsVisible) {
+        return (
+            <span>
+                {name}{" "}
+                <Input
+                    checked={isChecked}
+                    onChange={(e) => setIsChecked(e.target.checked)}
+                    title={`${name} content filter is ${isChecked ? "enabled" : "disabled"}`}
+                    type={"checkbox"}
+                />
+            </span>
+        )
+    }
+    return name
+}
+
 const FooterCell = ({ table }) => {
     return (
         <div className={"d-flex justify-content-center"}>
@@ -92,7 +111,7 @@ const columns = [
         }
     }),
     columnHelper.accessor("age", {
-        header: "Age",
+        header: ({ table }) => <HeaderCell name={"Age"} storageKey={constants.AGE_CONTENT_FILTER_ENABLED} table={table} />,
         cell: Cell,
         meta: {
             element: "input",
@@ -100,7 +119,7 @@ const columns = [
         }
     }),
     columnHelper.accessor("iq", {
-        header: "IQ",
+        header: ({ table }) => <HeaderCell name={"IQ"} storageKey={constants.IQ_CONTENT_FILTER_ENABLED} table={table} />,
         cell: Cell,
         meta: {
             element: "input",
@@ -108,7 +127,7 @@ const columns = [
         }
     }),
     columnHelper.accessor("sentimentPolarity", {
-        header: "Polarity",
+        header: ({ table }) => <HeaderCell name={"Polarity"} storageKey={constants.SENTIMENT_POLARITY_CONTENT_FILTER_ENABLED} table={table} />,
         cell: Cell,
         meta: {
             element: "input",
@@ -117,7 +136,9 @@ const columns = [
         }
     }),
     columnHelper.accessor("sentimentSubjectivity", {
-        header: "Subjectivity",
+        header: ({ table }) => (
+            <HeaderCell name={"Subjectivity"} storageKey={constants.SENTIMENT_SUBJECTIVITY_CONTENT_FILTER_ENABLED} table={table} />
+        ),
         cell: Cell,
         meta: {
             element: "input",
@@ -141,7 +162,12 @@ const defaultColumnVisibility = {
     action: true
 }
 
-export const ContentFilterTable = ({ columnVisibility = defaultColumnVisibility, columnFilters = defaultColumnFilters, footerVisible = true }) => {
+export const ContentFilterTable = ({
+    columnVisibility = defaultColumnVisibility,
+    columnFilters = defaultColumnFilters,
+    footerVisible = true,
+    headerControlsVisible = false
+}) => {
     const [data, setData] = useStorage<types.ContentFilter[]>(
         { instance: storage.localStorage, key: constants.CONTENT_FILTERS },
         (v: types.ContentFilter[]) => (v === undefined ? ([] as types.ContentFilter[]) : v)
@@ -172,6 +198,7 @@ export const ContentFilterTable = ({ columnVisibility = defaultColumnVisibility,
                 }
                 await setData([...data, newContentFilter])
             },
+            headerControlsVisible: headerControlsVisible,
             removeRow: async (rowIndex: number) => {
                 data.splice(rowIndex, 1)
                 await setData([...data])

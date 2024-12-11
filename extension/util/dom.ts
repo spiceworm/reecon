@@ -50,7 +50,7 @@ export const annotateProcessedThreads = async (processedThreads: types.Thread[],
         getThreadTitleElement(thread.path).insertAdjacentElement("beforeend", dataSpan)
 
         if (sentiment_polarity < contentFilter.sentimentPolarity) {
-            if (await storage.getHideBadSentimentThreads()) {
+            if (await storage.getSentimentPolarityContentFilterEnabled()) {
                 threadRow.style.display = "none"
             } else {
                 threadRow.style.display = "block"

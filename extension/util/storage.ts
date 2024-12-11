@@ -21,17 +21,20 @@ const _set = async (key: string, value: any): Promise<void> => {
 export const init = async (): Promise<void> => {
     await localStorage.setMany({
         [constants.ACTIVE_CONTENT_FILTER]: constants.defaultContentFilter,
+        [constants.AGE_CONTENT_FILTER_ENABLED]: false,
         [constants.API_STATUS_MESSAGES]: [],
         [constants.AUTH]: null,
         [constants.CONTENT_FILTERS]: [constants.defaultContentFilter],
         [constants.DEFAULT_FILTER]: constants.defaultContentFilter,
         [constants.DISABLE_EXTENSION]: false,
         [constants.EXTENSION_STATUS_MESSAGES]: constants.extensionStatusMessages,
-        [constants.HIDE_BAD_SENTIMENT_THREADS]: false,
+        [constants.IQ_CONTENT_FILTER_ENABLED]: false,
         [constants.OPENAI_API_KEY]: "",
         [constants.PRODUCER_SETTINGS]: constants.defaultProducerSettings,
         [constants.REDDITOR_CONTEXT_QUERY_PROCESSING_ENABLED]: false,
         [constants.REDDITOR_DATA_PROCESSING_ENABLED]: false,
+        [constants.SENTIMENT_POLARITY_CONTENT_FILTER_ENABLED]: false,
+        [constants.SENTIMENT_SUBJECTIVITY_CONTENT_FILTER_ENABLED]: false,
         [constants.STATUS_MESSAGES]: [],
         [constants.THREAD_CONTEXT_QUERY_PROCESSING_ENABLED]: false,
         [constants.THREAD_DATA_PROCESSING_ENABLED]: false
@@ -44,6 +47,10 @@ export const getActiveContentFilter = async (): Promise<types.ContentFilter> => 
 
 const getApiStatusMessages = async (): Promise<types.ApiStatusMessage[]> => {
     return (await _get(constants.API_STATUS_MESSAGES)) as Promise<types.ApiStatusMessage[]>
+}
+
+export const getAgeContentFilterEnabled = async (): Promise<boolean> => {
+    return (await _get(constants.AGE_CONTENT_FILTER_ENABLED)) as boolean
 }
 
 export const getAuth = async (): Promise<types.Auth | null> => {
@@ -77,8 +84,8 @@ const getExtensionStatusMessages = async (): Promise<types.ExtensionStatusMessag
     return (await _get(constants.EXTENSION_STATUS_MESSAGES)) as Promise<types.ExtensionStatusMessage[]>
 }
 
-export const getHideBadSentimentThreads = async (): Promise<boolean> => {
-    return (await _get(constants.HIDE_BAD_SENTIMENT_THREADS)) as boolean
+export const getIqContentFilterEnabled = async (): Promise<boolean> => {
+    return (await _get(constants.IQ_CONTENT_FILTER_ENABLED)) as boolean
 }
 
 export const getProducerSettings = async (): Promise<types.ProducerSettings> => {
@@ -87,6 +94,14 @@ export const getProducerSettings = async (): Promise<types.ProducerSettings> => 
 
 export const getRedditorDataProcessingEnabled = async (): Promise<boolean> => {
     return (await _get(constants.REDDITOR_DATA_PROCESSING_ENABLED)) as boolean
+}
+
+export const getSentimentPolarityContentFilterEnabled = async (): Promise<boolean> => {
+    return (await _get(constants.SENTIMENT_POLARITY_CONTENT_FILTER_ENABLED)) as boolean
+}
+
+export const getSentimentSubjectivityContentFilterEnabled = async (): Promise<boolean> => {
+    return (await _get(constants.SENTIMENT_SUBJECTIVITY_CONTENT_FILTER_ENABLED)) as boolean
 }
 
 export const getThreadDataProcessingEnabled = async (): Promise<boolean> => {

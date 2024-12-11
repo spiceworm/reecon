@@ -15,13 +15,6 @@ export const Settings = () => {
     const [disableExtension, setDisableExtension] = useStorage({ instance: storage.localStorage, key: constants.DISABLE_EXTENSION }, (v: boolean) =>
         v === undefined ? false : v
     )
-    const [hideBadSentimentThreads, setHideBadSentimentThreads] = useStorage(
-        {
-            instance: storage.localStorage,
-            key: constants.HIDE_BAD_SENTIMENT_THREADS
-        },
-        (v: boolean) => (v === undefined ? false : v)
-    )
 
     const handleAllSettingsBtnClick = async (e) => {
         await chrome.tabs.create({ url: "/tabs/index.html" })
@@ -39,16 +32,6 @@ export const Settings = () => {
                         type="checkbox"
                     />
                     <Label for={"disableExtension"}>Disable reecon</Label>
-                </div>
-                <div className={"form-check"}>
-                    <Input
-                        className={"form-check-input"}
-                        checked={hideBadSentimentThreads}
-                        id={"hideBadSentimentThreads"}
-                        onChange={(e) => setHideBadSentimentThreads(e.target.checked)}
-                        type="checkbox"
-                    />
-                    <Label for={"hideBadSentimentThreads"}>Hide threads with bad sentiment</Label>
                 </div>
             </Form>
 
@@ -68,6 +51,7 @@ export const Settings = () => {
                     action: false
                 }}
                 footerVisible={false}
+                headerControlsVisible={true}
             />
 
             <div className={"d-flex justify-content-center"}>
