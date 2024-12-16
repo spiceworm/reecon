@@ -20,6 +20,7 @@ class UnprocessableEntityError(RedditError):
 
 class UnprocessableRedditorError(UnprocessableEntityError):
     def __init__(self, username: str, reason: str, obj: models.UnprocessableRedditor):
+        super().__init__(reason)
         self.username = username
         self.reason = reason
         self.obj = obj
@@ -27,6 +28,7 @@ class UnprocessableRedditorError(UnprocessableEntityError):
 
 class UnprocessableThreadError(UnprocessableEntityError):
     def __init__(self, url: str, reason: str, obj: models.UnprocessableThread):
+        super().__init__(reason)
         self.url = url
         self.reason = reason
         self.obj = obj

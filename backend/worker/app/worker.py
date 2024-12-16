@@ -251,7 +251,7 @@ def process_redditor_data(
     try:
         inputs = service.get_inputs()
     except exceptions.UnprocessableRedditorError as e:
-        log.info(e)
+        log.debug(e)
         return e.obj
     else:
         generated = service.generate(inputs=inputs, prompt=env.redditor.llm.prompts.process_data)
@@ -328,7 +328,7 @@ def process_thread_data(
     try:
         inputs = service.get_inputs()
     except exceptions.UnprocessableThreadError as e:
-        log.info(e)
+        log.debug(e)
         return e.obj
     else:
         generated = service.generate(inputs=inputs, prompt=env.thread.llm.prompts.process_data)

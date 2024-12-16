@@ -1,10 +1,7 @@
 import abc
 import datetime as dt
 import logging
-from typing import (
-    List,
-    Set,
-)
+from typing import List
 
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -86,6 +83,9 @@ class _RedditService(abc.ABC):
     def get_inputs(self, *args, **kwargs):
         pass
 
+    # FIXME: I dont this works as expected. The output of `./manage.py redditor redditor Pythagaris data get-inputs`
+    #    shows some values that I would have expected to be filtered out because of their length or length after removing
+    #    URLs.
     def filter_submission(self, *, text: str) -> str:
         if not text or text == "[deleted]":
             return ""
