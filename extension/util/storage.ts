@@ -2,6 +2,7 @@ import { Storage } from "@plasmohq/storage"
 
 import * as api from "~util/api"
 import * as constants from "~util/constants"
+import * as backgroundMessage from "~util/messages"
 import * as misc from "~util/misc"
 import type * as types from "~util/types"
 
@@ -178,10 +179,15 @@ export const shouldExecuteContentScript = async (): Promise<boolean> => {
 
     const producerSettings = await getProducerSettings()
 
-    // NOTE: this is hardcoded to only care if the openai key exists for now
-    const producerApiKeysExist = producerSettings.openai.api_key.length > 0
+    // NOTE: producer API key checks are currently hardcoded to only care about the openai key for now
+    let producerApiKeyIsUsable = false
 
-    return auth !== null && !disableExtension && producerApiKeysExist
+    const producerApiKeysExist = producerSettings.openai.api_key.length > 0
+    if (producerApiKeysExist) {
+        producerApiKeyIsUsable = await backgroundMessage.openAiApiKeyIsUsable(producerSettings.openai.api_key)
+    }
+
+    return auth !== null && !disableExtension && producerApiKeyIsUsable
 }
 
 localStorage.watch({

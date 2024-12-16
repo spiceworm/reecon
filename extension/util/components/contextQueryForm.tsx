@@ -24,6 +24,7 @@ import { useStorage } from "@plasmohq/storage/dist/hook"
 import * as api from "~util/api"
 import * as markdown from "~util/components/markdown"
 import * as constants from "~util/constants"
+import * as backgroundMessage from "~util/messages"
 import * as storage from "~util/storage"
 import type * as types from "~util/types"
 
@@ -66,6 +67,7 @@ export const ContextQueryForm = () => {
 
     const [apiEndpoint, setApiEndpoint] = useState("")
     const [postBody, setPostBody] = useState(null)
+    const [formErrors, setFormErrors] = useState([])
     const [requestErrors, setRequestErrors] = useState([])
 
     useSWR("/api/v1/producers/defaults", api.authGet, {
@@ -169,36 +171,49 @@ export const ContextQueryForm = () => {
         setLlmSelection(e.target.innerText)
     }
 
-    const onSubmitHandler = (e) => {
+    const onSubmitHandler = async (e) => {
         e.preventDefault()
 
-        if (contextSelection === "redditor") {
-            setApiEndpoint("/api/v1/reddit/redditor/context-query/")
-            setPostBody({
-                llm_name: llmSelection,
-                nlp_name: nlpSelection,
-                producer_settings: producerSettings,
-                prompt: promptInputValue,
-                username: contextInputValue
-            })
-        } else {
-            setApiEndpoint("/api/v1/reddit/thread/context-query/")
-            setPostBody({
-                llm_name: llmSelection,
-                nlp_name: nlpSelection,
-                path: new URL(contextInputValue).pathname,
-                producer_settings: producerSettings,
-                prompt: promptInputValue
-            })
-        }
+        const producerApiKeyIsUsable = await backgroundMessage.openAiApiKeyIsUsable(producerSettings.openai.api_key)
 
-        setIsLoading(true)
+        if (producerApiKeyIsUsable) {
+            if (contextSelection === "redditor") {
+                setApiEndpoint("/api/v1/reddit/redditor/context-query/")
+                setPostBody({
+                    llm_name: llmSelection,
+                    nlp_name: nlpSelection,
+                    producer_settings: producerSettings,
+                    prompt: promptInputValue,
+                    username: contextInputValue
+                })
+            } else {
+                setApiEndpoint("/api/v1/reddit/thread/context-query/")
+                setPostBody({
+                    llm_name: llmSelection,
+                    nlp_name: nlpSelection,
+                    path: new URL(contextInputValue).pathname,
+                    producer_settings: producerSettings,
+                    prompt: promptInputValue
+                })
+            }
+
+            setFormErrors([])
+            setIsLoading(true)
+        } else {
+            setFormErrors(["The provided OpenAI api key is not usable in it's current state."])
+        }
     }
 
     const toggleResponseModalVisibility = () => setResponseModalVisible(!responseModalVisible)
 
     return (
         <>
+            {formErrors.map((formError: string, idx: number) => (
+                <UncontrolledAlert color={"danger"} key={idx}>
+                    {formError}
+                </UncontrolledAlert>
+            ))}
+
             {requestErrors.map((requestError: string, idx: number) => (
                 <UncontrolledAlert color={"danger"} key={idx}>
                     {requestError}

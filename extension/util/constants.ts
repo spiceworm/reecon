@@ -62,5 +62,12 @@ export const extensionStatusMessages: types.ExtensionStatusMessage[] = [
         message: "Missing OpenAI API key. Processing will not occur until user's key is added to settings page.",
         name: "missingOpenAiApiKey",
         source: "extension"
+    },
+    {
+        active: false,
+        category: "danger",
+        message: "", // set from the error message returned after attempting a test chat with the openai api
+        name: "unusableOpenAiApiKey",
+        source: "extension"
     }
 ]

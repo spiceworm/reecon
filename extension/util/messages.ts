@@ -2,6 +2,19 @@ import { sendToBackground } from "@plasmohq/messaging"
 
 import type * as types from "~util/types"
 
+export const openAiApiKeyIsUsable = async (apiKey: string): Promise<boolean> => {
+    const resp = await sendToBackground({
+        name: "misc",
+        body: {
+            action: "openAiApiKeyIsUsable",
+            kwargs: {
+                apiKey: apiKey
+            }
+        }
+    })
+    return resp.message as boolean
+}
+
 export const processRedditorData = async (producerSettings: object, usernames: string[]) => {
     const resp = await sendToBackground({
         name: "reddit",
