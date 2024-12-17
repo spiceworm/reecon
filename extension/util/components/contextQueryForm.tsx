@@ -30,16 +30,16 @@ import type * as types from "~util/types"
 
 export const ContextQueryForm = () => {
     const [redditorProcessingEnabled] = useStorage(
-        { instance: storage.localStorage, key: constants.REDDITOR_CONTEXT_QUERY_PROCESSING_ENABLED },
+        { instance: storage.extLocalStorage, key: constants.REDDITOR_CONTEXT_QUERY_PROCESSING_ENABLED },
         (v: boolean) => (v === undefined ? false : v)
     )
     const [threadProcessingEnabled] = useStorage(
-        { instance: storage.localStorage, key: constants.THREAD_CONTEXT_QUERY_PROCESSING_ENABLED },
+        { instance: storage.extLocalStorage, key: constants.THREAD_CONTEXT_QUERY_PROCESSING_ENABLED },
         (v: boolean) => (v === undefined ? false : v)
     )
     const [producerSettings] = useStorage(
         {
-            instance: storage.localStorage,
+            instance: storage.extLocalStorage,
             key: constants.PRODUCER_SETTINGS
         },
         (v: types.ProducerSettings) => (v === undefined ? constants.defaultProducerSettings : v)

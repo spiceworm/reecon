@@ -17,10 +17,10 @@ export const Authenticated = ({ children }) => {
     const { error, isLoading } = useSWR("updateApiStatusMessages", api.updateApiStatusMessages)
 
     const [statusMessages] = useStorage(
-        { instance: storage.localStorage, key: constants.STATUS_MESSAGES },
+        { instance: storage.extLocalStorage, key: constants.STATUS_MESSAGES },
         (v: (types.ApiStatusMessage | types.ExtensionStatusMessage)[]) => (v === undefined ? [] : v)
     )
-    const [_, setAuth] = useStorage({ instance: storage.localStorage, key: constants.AUTH })
+    const [_, setAuth] = useStorage({ instance: storage.extLocalStorage, key: constants.AUTH })
 
     const logoutClickHandler = async (e) => {
         await setAuth(null)

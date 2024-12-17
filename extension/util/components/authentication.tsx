@@ -7,7 +7,7 @@ import * as storage from "~util/storage"
 
 export const RequireAuthentication = ({ children }) => {
     const [auth] = useStorage({
-        instance: storage.localStorage,
+        instance: storage.extLocalStorage,
         key: constants.AUTH
     })
 

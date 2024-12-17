@@ -16,7 +16,7 @@ const signupPassword = signal("")
 const signupUsername = signal("")
 
 export const Signup = ({ onSuccessRedirectPath }) => {
-    const [_, setAuth] = useStorage({ instance: storage.localStorage, key: constants.AUTH })
+    const [_, setAuth] = useStorage({ instance: storage.extLocalStorage, key: constants.AUTH })
     const [passwordVisible, setPasswordVisible] = react.useState(false)
     const [signupCredentials, setSignupCredentials] = react.useState(null)
     const navigate = useNavigate()

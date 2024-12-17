@@ -73,7 +73,11 @@ const ActionCell = ({ row, table }) => {
 }
 
 const HeaderCell = ({ name, storageKey, table }) => {
-    const [isChecked, setIsChecked] = useStorage({ instance: storage.localStorage, key: storageKey }, (v: boolean) => (v === undefined ? false : v))
+    const [isChecked, setIsChecked] = useStorage({ instance: storage.extLocalStorage, key: storageKey }, (v: boolean) => (v === undefined ? false : v))
+
+    const onChangeHandler = async (e) => {
+        await setIsChecked(e.target.checked)
+    }
 
     if (table.options.meta.headerControlsVisible) {
         return (
@@ -81,7 +85,7 @@ const HeaderCell = ({ name, storageKey, table }) => {
                 {name}{" "}
                 <Input
                     checked={isChecked}
-                    onChange={(e) => setIsChecked(e.target.checked)}
+                    onChange={onChangeHandler}
                     title={`${name} content filter is ${isChecked ? "enabled" : "disabled"}`}
                     type={"checkbox"}
                 />
@@ -169,12 +173,12 @@ export const ContentFilterTable = ({
     headerControlsVisible = false
 }) => {
     const [data, setData] = useStorage<types.ContentFilter[]>(
-        { instance: storage.localStorage, key: constants.CONTENT_FILTERS },
+        { instance: storage.extLocalStorage, key: constants.CONTENT_FILTERS },
         (v: types.ContentFilter[]) => (v === undefined ? ([] as types.ContentFilter[]) : v)
     )
 
     const [defaultFilter, setDefaultFilter] = useStorage<types.ContentFilter>(
-        { instance: storage.localStorage, key: constants.DEFAULT_FILTER },
+        { instance: storage.extLocalStorage, key: constants.DEFAULT_FILTER },
         (v: types.ContentFilter) => (v === undefined ? ({} as types.ContentFilter) : v)
     )
 

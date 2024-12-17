@@ -6,21 +6,25 @@ import * as backgroundMessage from "~util/messages"
 import * as misc from "~util/misc"
 import type * as types from "~util/types"
 
-// The only time `localStorage` should be accessed outside this file is when `useStorage` hook needs to point to it.
-export const localStorage = new Storage({
+// The only time `extLocalStorage` should be accessed outside this file is when `useStorage` hook needs to point to it.
+export const extLocalStorage = new Storage({
     area: "local"
 })
 
-const _get = async (key: string): Promise<any> => {
-    return (await localStorage.get(key)) as any
+export const get = async (key: string): Promise<any> => {
+    return await extLocalStorage.get(key)
 }
 
-const _set = async (key: string, value: any): Promise<void> => {
-    await localStorage.set(key, value)
+export const set = async (key: string, value: any): Promise<void> => {
+    await extLocalStorage.set(key, value)
+}
+
+export const setMany = async (items: Record<string, any>): Promise<void> => {
+    await extLocalStorage.setMany(items)
 }
 
 export const init = async (): Promise<void> => {
-    await localStorage.setMany({
+    await setMany({
         [constants.ACTIVE_CONTENT_FILTER]: constants.defaultContentFilter,
         [constants.AGE_CONTENT_FILTER_ENABLED]: false,
         [constants.API_STATUS_MESSAGES]: [],
@@ -43,19 +47,19 @@ export const init = async (): Promise<void> => {
 }
 
 export const getActiveContentFilter = async (): Promise<types.ContentFilter> => {
-    return (await _get(constants.ACTIVE_CONTENT_FILTER)) as Promise<types.ContentFilter>
+    return (await get(constants.ACTIVE_CONTENT_FILTER)) as Promise<types.ContentFilter>
 }
 
 const getApiStatusMessages = async (): Promise<types.ApiStatusMessage[]> => {
-    return (await _get(constants.API_STATUS_MESSAGES)) as Promise<types.ApiStatusMessage[]>
+    return (await get(constants.API_STATUS_MESSAGES)) as Promise<types.ApiStatusMessage[]>
 }
 
 export const getAgeContentFilterEnabled = async (): Promise<boolean> => {
-    return (await _get(constants.AGE_CONTENT_FILTER_ENABLED)) as boolean
+    return (await get(constants.AGE_CONTENT_FILTER_ENABLED)) as boolean
 }
 
 export const getAuth = async (): Promise<types.Auth | null> => {
-    const auth: types.Auth = await _get(constants.AUTH)
+    const auth: types.Auth = await get(constants.AUTH)
 
     if (!auth || !auth?.access || !auth?.refresh) {
         await setAuth(null)
@@ -78,35 +82,35 @@ export const getAuth = async (): Promise<types.Auth | null> => {
 }
 
 export const getDisableExtension = async (): Promise<boolean> => {
-    return (await _get(constants.DISABLE_EXTENSION)) as boolean
+    return (await get(constants.DISABLE_EXTENSION)) as boolean
 }
 
 const getExtensionStatusMessages = async (): Promise<types.ExtensionStatusMessage[]> => {
-    return (await _get(constants.EXTENSION_STATUS_MESSAGES)) as Promise<types.ExtensionStatusMessage[]>
+    return (await get(constants.EXTENSION_STATUS_MESSAGES)) as Promise<types.ExtensionStatusMessage[]>
 }
 
 export const getIqContentFilterEnabled = async (): Promise<boolean> => {
-    return (await _get(constants.IQ_CONTENT_FILTER_ENABLED)) as boolean
+    return (await get(constants.IQ_CONTENT_FILTER_ENABLED)) as boolean
 }
 
 export const getProducerSettings = async (): Promise<types.ProducerSettings> => {
-    return (await _get(constants.PRODUCER_SETTINGS)) as types.ProducerSettings
+    return (await get(constants.PRODUCER_SETTINGS)) as types.ProducerSettings
 }
 
 export const getRedditorDataProcessingEnabled = async (): Promise<boolean> => {
-    return (await _get(constants.REDDITOR_DATA_PROCESSING_ENABLED)) as boolean
+    return (await get(constants.REDDITOR_DATA_PROCESSING_ENABLED)) as boolean
 }
 
 export const getSentimentPolarityContentFilterEnabled = async (): Promise<boolean> => {
-    return (await _get(constants.SENTIMENT_POLARITY_CONTENT_FILTER_ENABLED)) as boolean
+    return (await get(constants.SENTIMENT_POLARITY_CONTENT_FILTER_ENABLED)) as boolean
 }
 
 export const getSentimentSubjectivityContentFilterEnabled = async (): Promise<boolean> => {
-    return (await _get(constants.SENTIMENT_SUBJECTIVITY_CONTENT_FILTER_ENABLED)) as boolean
+    return (await get(constants.SENTIMENT_SUBJECTIVITY_CONTENT_FILTER_ENABLED)) as boolean
 }
 
 export const getThreadDataProcessingEnabled = async (): Promise<boolean> => {
-    return (await _get(constants.THREAD_DATA_PROCESSING_ENABLED)) as boolean
+    return (await get(constants.THREAD_DATA_PROCESSING_ENABLED)) as boolean
 }
 
 export const setActiveContentFilter = async (url: string): Promise<void> => {
@@ -122,18 +126,18 @@ export const setActiveContentFilter = async (url: string): Promise<void> => {
 
     let matchingContextFilterFound = false
 
-    for (const contentFilter of (await _get(constants.CONTENT_FILTERS)) as types.ContentFilter[]) {
+    for (const contentFilter of (await get(constants.CONTENT_FILTERS)) as types.ContentFilter[]) {
         if (contentFilter.context === newContext) {
-            await _set(constants.ACTIVE_CONTENT_FILTER, contentFilter)
+            await set(constants.ACTIVE_CONTENT_FILTER, contentFilter)
             matchingContextFilterFound = true
             break
         }
     }
 
     if (!matchingContextFilterFound) {
-        for (const contentFilter of (await _get(constants.CONTENT_FILTERS)) as types.ContentFilter[]) {
+        for (const contentFilter of (await get(constants.CONTENT_FILTERS)) as types.ContentFilter[]) {
             if (contentFilter.context === constants.defaultContentFilter.context) {
-                await _set(constants.ACTIVE_CONTENT_FILTER, contentFilter)
+                await set(constants.ACTIVE_CONTENT_FILTER, contentFilter)
                 break
             }
         }
@@ -141,15 +145,15 @@ export const setActiveContentFilter = async (url: string): Promise<void> => {
 }
 
 export const setApiStatusMessages = async (messages: types.ApiStatusMessage[]): Promise<void> => {
-    await _set(constants.API_STATUS_MESSAGES, messages)
+    await set(constants.API_STATUS_MESSAGES, messages)
 }
 
 export const setAuth = async (auth: types.Auth): Promise<void> => {
-    await _set(constants.AUTH, auth)
+    await set(constants.AUTH, auth)
 }
 
 export const setExtensionStatusMessage = async (messageName: string, active: boolean, messageText: string = ""): Promise<void> => {
-    let extensionStatusMessages: types.ExtensionStatusMessage[] = await _get(constants.EXTENSION_STATUS_MESSAGES)
+    let extensionStatusMessages: types.ExtensionStatusMessage[] = await get(constants.EXTENSION_STATUS_MESSAGES)
 
     for (let message of extensionStatusMessages) {
         if (message.name === messageName) {
@@ -161,11 +165,11 @@ export const setExtensionStatusMessage = async (messageName: string, active: boo
         }
     }
 
-    await _set(constants.EXTENSION_STATUS_MESSAGES, extensionStatusMessages)
+    await set(constants.EXTENSION_STATUS_MESSAGES, extensionStatusMessages)
 }
 
 const setStatusMessages = async (messages: (types.ApiStatusMessage | types.ExtensionStatusMessage)[]): Promise<void> => {
-    await _set(constants.STATUS_MESSAGES, messages)
+    await set(constants.STATUS_MESSAGES, messages)
 }
 
 export const shouldExecuteContentScript = async (): Promise<boolean> => {
@@ -190,7 +194,7 @@ export const shouldExecuteContentScript = async (): Promise<boolean> => {
     return auth !== null && !disableExtension && producerApiKeyIsUsable
 }
 
-localStorage.watch({
+extLocalStorage.watch({
     [constants.API_STATUS_MESSAGES]: async (storageChange) => {
         const { oldValue, newValue } = storageChange
 
@@ -198,13 +202,13 @@ localStorage.watch({
 
         for (const message of newValue as (types.ApiStatusMessage | types.ExtensionStatusMessage)[]) {
             if (message.name === "redditorContextQueryProcessingDisabled") {
-                await _set(constants.REDDITOR_CONTEXT_QUERY_PROCESSING_ENABLED, !message.active)
+                await set(constants.REDDITOR_CONTEXT_QUERY_PROCESSING_ENABLED, !message.active)
             } else if (message.name === "redditorDataProcessingDisabled") {
-                await _set(constants.REDDITOR_DATA_PROCESSING_ENABLED, !message.active)
+                await set(constants.REDDITOR_DATA_PROCESSING_ENABLED, !message.active)
             } else if (message.name === "threadContextQueryProcessingDisabled") {
-                await _set(constants.THREAD_CONTEXT_QUERY_PROCESSING_ENABLED, !message.active)
+                await set(constants.THREAD_CONTEXT_QUERY_PROCESSING_ENABLED, !message.active)
             } else if (message.name === "threadDataProcessingDisabled") {
-                await _set(constants.THREAD_DATA_PROCESSING_ENABLED, !message.active)
+                await set(constants.THREAD_DATA_PROCESSING_ENABLED, !message.active)
             }
         }
     },
@@ -238,7 +242,7 @@ localStorage.watch({
 
         let producerSettings = await getProducerSettings()
         producerSettings.openai.api_key = newValue
-        await _set(constants.PRODUCER_SETTINGS, producerSettings)
+        await set(constants.PRODUCER_SETTINGS, producerSettings)
 
         await setExtensionStatusMessage("missingOpenAiApiKey", newValue.length === 0)
     }

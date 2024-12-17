@@ -15,7 +15,7 @@ import { Login } from "~util/views/auth/login"
 import { Signup } from "~util/views/auth/signup"
 
 export default function OptionsPage() {
-    const [producerSettings] = useStorage({ instance: storage.localStorage, key: constants.PRODUCER_SETTINGS }, (v: types.ProducerSettings) =>
+    const [producerSettings] = useStorage({ instance: storage.extLocalStorage, key: constants.PRODUCER_SETTINGS }, (v: types.ProducerSettings) =>
         v === undefined ? constants.defaultProducerSettings : v
     )
 

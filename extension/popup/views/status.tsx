@@ -9,7 +9,7 @@ import type * as types from "~util/types"
 
 export const Status = () => {
     const [statusMessages] = useStorage(
-        { instance: storage.localStorage, key: constants.STATUS_MESSAGES },
+        { instance: storage.extLocalStorage, key: constants.STATUS_MESSAGES },
         (v: (types.ApiStatusMessage | types.ExtensionStatusMessage)[]) => (v === undefined ? [] : v)
     )
 
