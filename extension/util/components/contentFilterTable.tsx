@@ -19,8 +19,7 @@ const Cell = ({ getValue, row, column, table }) => {
     const [value, setValue] = useState(cellValue)
 
     const isContextCell = column.columnDef.accessorKey === "context"
-    const isSpecialCell = isContextCell && row.original.filterType === "default"
-    const isReadOnlyContextCell = isContextCell && (isSpecialCell || cellValue.length > 0)
+    const isDefaultContextCell = isContextCell && row.original.filterType === "default"
 
     useEffect(() => {
         if (cellValue !== value) {
@@ -28,7 +27,7 @@ const Cell = ({ getValue, row, column, table }) => {
         }
     }, [cellValue])
 
-    const onChange = (e) => {
+    const onChangeHandler = (e) => {
         setValue(e.target.value)
         table.options.meta.updateData(row.index, column.id, e.target.value)
     }
@@ -36,16 +35,16 @@ const Cell = ({ getValue, row, column, table }) => {
     if (columnMeta.element === "input") {
         return (
             <InputGroup key={`row-${row.index}-col-${column.id}-ig`}>
-                {isContextCell && !isSpecialCell ? (
+                {isContextCell && !isDefaultContextCell ? (
                     <span className={"input-group-text"} key={`row-${row.index}-col-${column.id}-span`}>
                         /r/
                     </span>
                 ) : null}
                 <Input
-                    disabled={isReadOnlyContextCell}
+                    disabled={isDefaultContextCell}
                     key={`row-${row.index}-col-${column.id}-input`}
-                    onChange={onChange}
-                    readOnly={isReadOnlyContextCell}
+                    onChange={onChangeHandler}
+                    readOnly={isDefaultContextCell}
                     step={columnMeta.step ? columnMeta.step : null}
                     title={value}
                     type={columnMeta.type}
