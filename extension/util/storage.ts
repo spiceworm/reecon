@@ -2,7 +2,7 @@ import { Storage } from "@plasmohq/storage"
 
 import * as api from "~util/api"
 import * as constants from "~util/constants"
-import * as backgroundMessage from "~util/messages"
+import * as backgroundMessage from "~util/backgroundMessages"
 import * as misc from "~util/misc"
 import type * as types from "~util/types"
 

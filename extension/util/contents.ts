@@ -1,5 +1,5 @@
 import * as dom from "~util/dom"
-import * as backgroundMessage from "~util/messages"
+import * as backgroundMessage from "~util/backgroundMessages"
 import * as storage from "~util/storage"
 
 let lastExecution = null
