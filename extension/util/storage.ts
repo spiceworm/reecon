@@ -12,15 +12,15 @@ export const extLocalStorage = new Storage({
 })
 
 export const get = async (key: string): Promise<any> => {
-    return await extLocalStorage.get(key)
+    return extLocalStorage.get(key)
 }
 
 export const set = async (key: string, value: any): Promise<void> => {
-    return await extLocalStorage.set(key, value)
+    return extLocalStorage.set(key, value)
 }
 
 export const setMany = async (items: Record<string, any>): Promise<void> => {
-    return await extLocalStorage.setMany(items)
+    return extLocalStorage.setMany(items)
 }
 
 export const init = async (): Promise<void> => {
@@ -47,15 +47,15 @@ export const init = async (): Promise<void> => {
 }
 
 export const getActiveContentFilter = async (): Promise<types.ContentFilter> => {
-    return (await get(constants.ACTIVE_CONTENT_FILTER)) as Promise<types.ContentFilter>
+    return get(constants.ACTIVE_CONTENT_FILTER)
 }
 
 const getApiStatusMessages = async (): Promise<types.ApiStatusMessage[]> => {
-    return (await get(constants.API_STATUS_MESSAGES)) as Promise<types.ApiStatusMessage[]>
+    return get(constants.API_STATUS_MESSAGES)
 }
 
 export const getAgeContentFilterEnabled = async (): Promise<boolean> => {
-    return (await get(constants.AGE_CONTENT_FILTER_ENABLED)) as boolean
+    return get(constants.AGE_CONTENT_FILTER_ENABLED)
 }
 
 export const getAuth = async (): Promise<types.Auth | null> => {
@@ -82,35 +82,35 @@ export const getAuth = async (): Promise<types.Auth | null> => {
 }
 
 export const getDisableExtension = async (): Promise<boolean> => {
-    return (await get(constants.DISABLE_EXTENSION)) as boolean
+    return get(constants.DISABLE_EXTENSION)
 }
 
 const getExtensionStatusMessages = async (): Promise<types.ExtensionStatusMessage[]> => {
-    return (await get(constants.EXTENSION_STATUS_MESSAGES)) as Promise<types.ExtensionStatusMessage[]>
+    return get(constants.EXTENSION_STATUS_MESSAGES)
 }
 
 export const getIqContentFilterEnabled = async (): Promise<boolean> => {
-    return (await get(constants.IQ_CONTENT_FILTER_ENABLED)) as boolean
+    return get(constants.IQ_CONTENT_FILTER_ENABLED)
 }
 
 export const getProducerSettings = async (): Promise<types.ProducerSettings> => {
-    return (await get(constants.PRODUCER_SETTINGS)) as types.ProducerSettings
+    return get(constants.PRODUCER_SETTINGS)
 }
 
 export const getRedditorDataProcessingEnabled = async (): Promise<boolean> => {
-    return (await get(constants.REDDITOR_DATA_PROCESSING_ENABLED)) as boolean
+    return get(constants.REDDITOR_DATA_PROCESSING_ENABLED)
 }
 
 export const getSentimentPolarityContentFilterEnabled = async (): Promise<boolean> => {
-    return (await get(constants.SENTIMENT_POLARITY_CONTENT_FILTER_ENABLED)) as boolean
+    return get(constants.SENTIMENT_POLARITY_CONTENT_FILTER_ENABLED)
 }
 
 export const getSentimentSubjectivityContentFilterEnabled = async (): Promise<boolean> => {
-    return (await get(constants.SENTIMENT_SUBJECTIVITY_CONTENT_FILTER_ENABLED)) as boolean
+    return get(constants.SENTIMENT_SUBJECTIVITY_CONTENT_FILTER_ENABLED)
 }
 
 export const getThreadDataProcessingEnabled = async (): Promise<boolean> => {
-    return (await get(constants.THREAD_DATA_PROCESSING_ENABLED)) as boolean
+    return get(constants.THREAD_DATA_PROCESSING_ENABLED)
 }
 
 export const setActiveContentFilter = async (url: string): Promise<void> => {
@@ -145,11 +145,11 @@ export const setActiveContentFilter = async (url: string): Promise<void> => {
 }
 
 export const setApiStatusMessages = async (messages: types.ApiStatusMessage[]): Promise<void> => {
-    await set(constants.API_STATUS_MESSAGES, messages)
+    return set(constants.API_STATUS_MESSAGES, messages)
 }
 
 export const setAuth = async (auth: types.Auth): Promise<void> => {
-    await set(constants.AUTH, auth)
+    return set(constants.AUTH, auth)
 }
 
 export const setExtensionStatusMessage = async (messageName: string, active: boolean, messageText: string = ""): Promise<void> => {
@@ -165,11 +165,11 @@ export const setExtensionStatusMessage = async (messageName: string, active: boo
         }
     }
 
-    await set(constants.EXTENSION_STATUS_MESSAGES, extensionStatusMessages)
+    return set(constants.EXTENSION_STATUS_MESSAGES, extensionStatusMessages)
 }
 
 const setStatusMessages = async (messages: (types.ApiStatusMessage | types.ExtensionStatusMessage)[]): Promise<void> => {
-    await set(constants.STATUS_MESSAGES, messages)
+    return set(constants.STATUS_MESSAGES, messages)
 }
 
 export const shouldExecuteContentScript = async (): Promise<boolean> => {
