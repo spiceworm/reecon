@@ -120,6 +120,39 @@ export interface ContentFilter {
     sentimentSubjectivity: number
 }
 
+export interface CachedRecord {
+    expires: string
+    value: any
+}
+
+export interface CachedIgnoredRedditor extends CachedRecord {
+    value: IgnoredRedditor
+}
+
+export interface CachedPendingRedditor extends CachedRecord {
+    value: PendingRedditor
+}
+
+export interface CachedProcessedRedditor extends CachedRecord {
+    value: Redditor
+}
+
+export interface CachedUnprocessableRedditor extends CachedRecord {
+    value: UnprocessableRedditor
+}
+
+export interface CachedPendingThread extends CachedRecord {
+    value: PendingThread
+}
+
+export interface CachedProcessedThread extends CachedRecord {
+    value: Thread
+}
+
+export interface CachedUnprocessableThread extends CachedRecord {
+    value: UnprocessableThread
+}
+
 export interface ExtensionStatusMessage extends StatusMessage {}
 
 export interface IgnoredRedditor {

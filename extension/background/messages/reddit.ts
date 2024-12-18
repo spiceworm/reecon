@@ -1,136 +1,165 @@
-import lscache from "lscache"
-
 import type { PlasmoMessaging } from "@plasmohq/messaging"
 
 import * as api from "~util/api"
+import * as cache from "~util/storageCache"
 import type * as types from "~util/types"
 
 // set difference until Set.prototype.difference` is available
 const difference = <T>(a: Set<T>, b: Set<T>) => new Set([...a].filter((x) => !b.has(x)))
 
 const processRedditorData = async (producerSettings: types.ProducerSettings, usernames: string[]): Promise<types.SubmitRedditorDataResponse> => {
-    const IGNORED_BUCKET = "redditors-ignored"
-    const PENDING_BUCKET = "redditors-pending"
-    const PROCESSED_BUCKET = "redditors-processed"
-    const UNPROCESSABLE_BUCKET = "redditors-unprocessable"
+    let allCachedIgnored = await cache.getIgnoredRedditors()
+    const cachedIgnored = usernames.map((username) => allCachedIgnored[username]).filter((obj) => obj !== undefined)
 
-    lscache.setBucket(IGNORED_BUCKET)
-    lscache.flushExpired()
-    const cachedIgnored: types.IgnoredRedditor[] = usernames
-        .map((username) => lscache.get(username))
-        .filter((redditor: types.IgnoredRedditor) => redditor !== null)
+    let allCachedPending = await cache.getPendingRedditors()
+    let cachedPending = usernames.map((username) => allCachedPending[username]).filter((obj) => obj !== undefined)
 
-    lscache.setBucket(PENDING_BUCKET)
-    lscache.flushExpired()
-    const cachedPending: types.PendingRedditor[] = usernames
-        .map((username) => lscache.get(username))
-        .filter((redditor: types.PendingRedditor) => redditor !== null)
+    let allCachedProcessed = await cache.getProcessedRedditors()
+    let cachedProcessed = usernames.map((username) => allCachedProcessed[username]).filter((obj) => obj !== undefined)
 
-    lscache.setBucket(PROCESSED_BUCKET)
-    lscache.flushExpired()
-    const cachedProcessed: types.Redditor[] = usernames
-        .map((username) => lscache.get(username))
-        .filter((redditor: types.Redditor) => redditor !== null)
+    let allCachedUnprocessable = await cache.getUnprocessableRedditors()
+    let cachedUnprocessable = usernames.map((username) => allCachedUnprocessable[username]).filter((obj) => obj !== undefined)
 
-    lscache.setBucket(UNPROCESSABLE_BUCKET)
-    lscache.flushExpired()
-    const cachedUnprocessable: types.UnprocessableRedditor[] = usernames
-        .map((username) => lscache.get(username))
-        .filter((redditor: types.UnprocessableRedditor) => redditor !== null)
-
-    const cachedUsernames = []
-        .concat(...cachedIgnored, ...cachedPending, ...cachedProcessed, ...cachedUnprocessable)
-        .map((redditorObj: types.IgnoredRedditor | types.Redditor | types.UnprocessableRedditor) => redditorObj.username)
+    const cachedUsernames = [...cachedIgnored, ...cachedPending, ...cachedProcessed, ...cachedUnprocessable].map(
+        (obj: types.CachedIgnoredRedditor | types.CachedPendingRedditor | types.CachedProcessedRedditor | types.CachedUnprocessableRedditor) =>
+            obj.value.username
+    )
 
     const usernamesToProcess = [...difference(new Set(usernames), new Set(cachedUsernames))]
 
-    if (usernamesToProcess.length === 0) {
-        return {
-            ignored: cachedIgnored,
-            pending: cachedPending,
-            processed: cachedProcessed,
-            unprocessable: cachedUnprocessable
-        }
-    } else {
+    if (usernamesToProcess.length > 0) {
         let response: types.SubmitRedditorDataResponse = await api.authPost("/api/v1/reddit/redditor/data/", {
             producer_settings: producerSettings,
             usernames: usernamesToProcess
         })
 
-        lscache.setBucket(IGNORED_BUCKET)
-        response.ignored.map((redditor) => lscache.set(redditor.username, redditor, process.env.PLASMO_PUBLIC_REDDITOR_CACHE_EXP_MINUTES))
+        response.ignored.map((obj) => {
+            const expires = new Date()
+            expires.setMinutes(expires.getMinutes() + parseInt(process.env.PLASMO_PUBLIC_IGNORED_REDDITOR_CACHE_EXP_MINUTES))
+            allCachedIgnored[obj.username] = { expires: expires.toString(), value: obj } as types.CachedIgnoredRedditor
 
-        lscache.setBucket(PENDING_BUCKET)
-        response.pending.map((redditor) => lscache.set(redditor.username, redditor, 1))
+            // ignored is a finalized state, delete from pending cache
+            delete allCachedPending[obj.username]
+            delete cachedPending[obj.username]
+        })
 
-        lscache.setBucket(PROCESSED_BUCKET)
-        response.processed.map((redditor) => lscache.set(redditor.username, redditor, process.env.PLASMO_PUBLIC_REDDITOR_CACHE_EXP_MINUTES))
+        response.pending.map((obj) => {
+            const expires = new Date()
+            expires.setMinutes(expires.getMinutes() + parseInt(process.env.PLASMO_PUBLIC_PENDING_REDDITOR_CACHE_EXP_MINUTES))
+            allCachedPending[obj.username] = { expires: expires.toString(), value: obj } as types.CachedPendingRedditor
+        })
 
-        lscache.setBucket(UNPROCESSABLE_BUCKET)
-        response.unprocessable.map((redditor) => lscache.set(redditor.username, redditor, process.env.PLASMO_PUBLIC_REDDITOR_CACHE_EXP_MINUTES))
+        response.processed.map((obj) => {
+            const expires = new Date()
+            expires.setMinutes(expires.getMinutes() + parseInt(process.env.PLASMO_PUBLIC_PROCESSED_REDDITOR_CACHE_EXP_MINUTES))
+            allCachedProcessed[obj.username] = { expires: expires.toString(), value: obj } as types.CachedProcessedRedditor
 
-        response.ignored.push(...cachedIgnored)
-        response.pending.push(...cachedPending)
-        response.processed.push(...cachedProcessed)
-        response.unprocessable.push(...cachedUnprocessable)
+            // processed is a finalized state, delete from pending and unprocessable caches
+            delete allCachedPending[obj.username]
+            delete allCachedUnprocessable[obj.username]
+            delete cachedPending[obj.username]
+            delete cachedUnprocessable[obj.username]
+        })
 
-        return response
+        response.unprocessable.map((obj) => {
+            const expires = new Date()
+            expires.setMinutes(expires.getMinutes() + parseInt(process.env.PLASMO_PUBLIC_UNPROCESSABLE_REDDITOR_CACHE_EXP_MINUTES))
+            allCachedUnprocessable[obj.username] = { expires: expires.toString(), value: obj } as types.CachedUnprocessableRedditor
+
+            // unprocessable is a medium term temporary state, delete from pending cache
+            delete allCachedPending[obj.username]
+            delete cachedPending[obj.username]
+        })
+
+        await Promise.all([
+            cache.setIgnoredRedditors(allCachedIgnored),
+            cache.setPendingRedditors(allCachedPending),
+            cache.setProcessedRedditors(allCachedProcessed),
+            cache.setUnprocessableRedditors(allCachedUnprocessable)
+        ])
+
+        return {
+            ignored: [...response.ignored, ...cachedIgnored.map((obj) => obj.value)],
+            pending: [...response.pending, ...cachedPending.map((obj) => obj.value)],
+            processed: [...response.processed, ...cachedProcessed.map((obj) => obj.value)],
+            unprocessable: [...response.unprocessable, ...cachedUnprocessable.map((obj) => obj.value)]
+        }
+    } else {
+        return {
+            ignored: cachedIgnored.map((obj) => obj.value),
+            pending: cachedPending.map((obj) => obj.value),
+            processed: cachedProcessed.map((obj) => obj.value),
+            unprocessable: cachedUnprocessable.map((obj) => obj.value)
+        }
     }
 }
 
 const processThreadData = async (producerSettings: types.ProducerSettings, urlPaths: string[]): Promise<types.SubmitThreadDataResponse> => {
-    const PENDING_BUCKET = "threads-pending"
-    const PROCESSED_BUCKET = "threads-processed"
-    const UNPROCESSABLE_BUCKET = "threads-unprocessable"
+    let allCachedPending = await cache.getPendingThreads()
+    let cachedPending = urlPaths.map((urlPath) => allCachedPending[urlPath]).filter((obj) => obj !== undefined)
 
-    lscache.setBucket(PENDING_BUCKET)
-    lscache.flushExpired()
-    const cachedPending: types.PendingThread[] = urlPaths
-        .map((urlPath) => lscache.get(urlPath))
-        .filter((thread: types.PendingThread) => thread !== null)
+    let allCachedProcessed = await cache.getProcessedThreads()
+    let cachedProcessed = urlPaths.map((urlPath) => allCachedProcessed[urlPath]).filter((obj) => obj !== undefined)
 
-    lscache.setBucket(PROCESSED_BUCKET)
-    lscache.flushExpired()
-    const cachedProcessed: types.Thread[] = urlPaths.map((urlPath) => lscache.get(urlPath)).filter((thread: types.Thread) => thread !== null)
+    let allCachedUnprocessable = await cache.getUnprocessableThreads()
+    let cachedUnprocessable = urlPaths.map((urlPath) => allCachedUnprocessable[urlPath]).filter((obj) => obj !== undefined)
 
-    lscache.setBucket(UNPROCESSABLE_BUCKET)
-    lscache.flushExpired()
-    const cachedUnprocessable: types.UnprocessableThread[] = urlPaths
-        .map((urlPath) => lscache.get(urlPath))
-        .filter((thread: types.UnprocessableThread) => thread !== null)
-
-    const cachedUrlPaths = []
-        .concat(...cachedPending, ...cachedProcessed, ...cachedUnprocessable)
-        .map((threadObj: types.PendingThread | types.Thread | types.UnprocessableThread) => threadObj.path)
+    const cachedUrlPaths = [...cachedPending, ...cachedProcessed, ...cachedUnprocessable].map(
+        (obj: types.CachedPendingThread | types.CachedProcessedThread | types.CachedUnprocessableThread) => obj.value.path
+    )
 
     const urlPathsToProcess = [...difference(new Set(urlPaths), new Set(cachedUrlPaths))]
 
-    if (urlPathsToProcess.length === 0) {
-        return {
-            pending: cachedPending,
-            processed: cachedProcessed,
-            unprocessable: cachedUnprocessable
-        }
-    } else {
+    if (urlPathsToProcess.length > 0) {
         let response: types.SubmitThreadDataResponse = await api.authPost("/api/v1/reddit/thread/data/", {
             producer_settings: producerSettings,
             paths: urlPathsToProcess
         })
 
-        lscache.setBucket(PENDING_BUCKET)
-        response.pending.map((thread) => lscache.set(thread.path, thread, 1))
+        response.pending.map((obj) => {
+            const expires = new Date()
+            expires.setMinutes(expires.getMinutes() + parseInt(process.env.PLASMO_PUBLIC_PENDING_THREAD_CACHE_EXP_MINUTES))
+            allCachedPending[obj.path] = { expires: expires.toString(), value: obj } as types.CachedPendingThread
+        })
 
-        lscache.setBucket(PROCESSED_BUCKET)
-        response.processed.map((thread) => lscache.set(thread.path, thread, process.env.PLASMO_PUBLIC_THREAD_CACHE_EXP_MINUTES))
+        response.processed.map((obj) => {
+            const expires = new Date()
+            expires.setMinutes(expires.getMinutes() + parseInt(process.env.PLASMO_PUBLIC_PROCESSED_THREAD_CACHE_EXP_MINUTES))
+            allCachedProcessed[obj.path] = { expires: expires.toString(), value: obj } as types.CachedProcessedThread
 
-        lscache.setBucket(UNPROCESSABLE_BUCKET)
-        response.unprocessable.map((thread) => lscache.set(thread.path, thread, 5))
+            // processed is a finalized state, delete from pending and unprocessable caches
+            delete allCachedPending[obj.path]
+            delete allCachedUnprocessable[obj.path]
+            delete cachedPending[obj.path]
+            delete cachedUnprocessable[obj.path]
+        })
 
-        response.pending.push(...cachedPending)
-        response.processed.push(...cachedProcessed)
-        response.unprocessable.push(...cachedUnprocessable)
+        response.unprocessable.map((obj) => {
+            const expires = new Date()
+            expires.setMinutes(expires.getMinutes() + parseInt(process.env.PLASMO_PUBLIC_UNPROCESSABLE_THREAD_CACHE_EXP_MINUTES))
+            allCachedUnprocessable[obj.path] = { expires: expires.toString(), value: obj } as types.CachedUnprocessableThread
 
-        return response
+            // unprocessable is a medium term temporary state, delete from pending cache
+            delete allCachedPending[obj.path]
+            delete cachedPending[obj.path]
+        })
+
+        await Promise.all([
+            cache.setPendingThreads(allCachedPending),
+            cache.setProcessedThreads(allCachedProcessed),
+            cache.setUnprocessableThreads(allCachedUnprocessable)
+        ])
+        return {
+            pending: [...response.pending, ...cachedPending.map((obj) => obj.value)],
+            processed: [...response.processed, ...cachedProcessed.map((obj) => obj.value)],
+            unprocessable: [...response.unprocessable, ...cachedUnprocessable.map((obj) => obj.value)]
+        }
+    } else {
+        return {
+            pending: cachedPending.map((obj) => obj.value),
+            processed: cachedProcessed.map((obj) => obj.value),
+            unprocessable: cachedUnprocessable.map((obj) => obj.value)
+        }
     }
 }
 

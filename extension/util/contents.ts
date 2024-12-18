@@ -5,7 +5,7 @@ import * as storage from "~util/storage"
 let lastExecution = null
 
 export const execute = async () => {
-    if (lastExecution !== null && Date.now() - lastExecution < 100) {
+    if (lastExecution !== null && Date.now() - lastExecution < 1000) {
         return
     }
 

@@ -19,6 +19,14 @@ export const STATUS_MESSAGES = "_statusMessages"
 export const THREAD_CONTEXT_QUERY_PROCESSING_ENABLED = "_threadContextQueryProcessingEnabled"
 export const THREAD_DATA_PROCESSING_ENABLED = "_threadDataProcessingEnabled"
 
+export const CACHED_PENDING_REDDITORS = "_cachedPendingRedditors"
+export const CACHED_PROCESSED_REDDITORS = "_cachedProcessedRedditors"
+export const CACHED_IGNORED_REDDITORS = "_cachedIgnoredRedditors"
+export const CACHED_UNPROCESSABLE_REDDITORS = "_cachedUnprocessableRedditors"
+export const CACHED_PENDING_THREADS = "_cachedPendingThreads"
+export const CACHED_PROCESSED_THREADS = "_cachedProcessedThreads"
+export const CACHED_UNPROCESSABLE_THREADS = "_cachedUnprocessableThreads"
+
 export const defaultContentFilter: types.ContentFilter = {
     age: 0,
     context: "Default",

@@ -1,4 +1,5 @@
 import * as storage from "~util/storage"
+import * as cache from "~util/storageCache"
 
 chrome.tabs.onActivated.addListener(async (tabActiveInfo) => {
     const tabs = await chrome.tabs.query({ active: true, currentWindow: true })
@@ -13,6 +14,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
 chrome.runtime.onInstalled.addListener(async (installDetails) => {
     if (installDetails.reason === chrome.runtime.OnInstalledReason.INSTALL) {
+        await cache.init()
         await storage.init()
     }
 })

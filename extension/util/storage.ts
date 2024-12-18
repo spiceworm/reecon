@@ -16,11 +16,11 @@ export const get = async (key: string): Promise<any> => {
 }
 
 export const set = async (key: string, value: any): Promise<void> => {
-    await extLocalStorage.set(key, value)
+    return await extLocalStorage.set(key, value)
 }
 
 export const setMany = async (items: Record<string, any>): Promise<void> => {
-    await extLocalStorage.setMany(items)
+    return await extLocalStorage.setMany(items)
 }
 
 export const init = async (): Promise<void> => {

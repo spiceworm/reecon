@@ -12,8 +12,9 @@ export const Settings = () => {
     const [activeContentFilter] = useStorage({ instance: storage.extLocalStorage, key: constants.ACTIVE_CONTENT_FILTER }, (v: types.ContentFilter) =>
         v === undefined ? constants.defaultContentFilter : v
     )
-    const [disableExtension, setDisableExtension] = useStorage({ instance: storage.extLocalStorage, key: constants.DISABLE_EXTENSION }, (v: boolean) =>
-        v === undefined ? false : v
+    const [disableExtension, setDisableExtension] = useStorage(
+        { instance: storage.extLocalStorage, key: constants.DISABLE_EXTENSION },
+        (v: boolean) => (v === undefined ? false : v)
     )
 
     const handleAllSettingsBtnClick = async (e) => {
