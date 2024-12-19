@@ -1,8 +1,8 @@
 import { Storage } from "@plasmohq/storage"
 
 import * as api from "~util/api"
-import * as constants from "~util/constants"
 import * as backgroundMessage from "~util/backgroundMessages"
+import * as constants from "~util/constants"
 import * as misc from "~util/misc"
 import type * as types from "~util/types"
 
@@ -226,6 +226,15 @@ extLocalStorage.watch({
                 await chrome.action.setBadgeBackgroundColor({ color: null })
             }
         }
+    },
+    [constants.CONTENT_FILTERS]: async (storageChange) => {
+        const { oldValue, newValue } = storageChange
+
+        newValue.map(async (contentFilter: types.ContentFilter) => {
+            if (contentFilter.filterType === constants.defaultContentFilter.filterType) {
+                return await set(constants.DEFAULT_FILTER, contentFilter)
+            }
+        })
     },
     [constants.DISABLE_EXTENSION]: async (storageChange) => {
         const { oldValue, newValue } = storageChange

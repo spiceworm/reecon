@@ -27,6 +27,9 @@ export const CACHED_PENDING_THREADS = "_cachedPendingThreads"
 export const CACHED_PROCESSED_THREADS = "_cachedProcessedThreads"
 export const CACHED_UNPROCESSABLE_THREADS = "_cachedUnprocessableThreads"
 
+// Do not reference the `defaultContentFilter` object as a whole. If you do, updates to the default filter
+// in storage will not be reflected because this is a static value. This exists mainly to initialize the
+// default filter in storage and to prevent hardcoding string values.
 export const defaultContentFilter: types.ContentFilter = {
     age: 0,
     context: "Default",

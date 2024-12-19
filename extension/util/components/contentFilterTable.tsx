@@ -176,9 +176,9 @@ export const ContentFilterTable = ({
         (v: types.ContentFilter[]) => (v === undefined ? ([] as types.ContentFilter[]) : v)
     )
 
-    const [defaultFilter, setDefaultFilter] = useStorage<types.ContentFilter>(
+    const [defaultFilter] = useStorage<types.ContentFilter>(
         { instance: storage.extLocalStorage, key: constants.DEFAULT_FILTER },
-        (v: types.ContentFilter) => (v === undefined ? ({} as types.ContentFilter) : v)
+        (v) => (v === undefined ? ({} as types.ContentFilter) : v)
     )
 
     const table = useReactTable({
@@ -207,11 +207,6 @@ export const ContentFilterTable = ({
                 await setData([...data])
             },
             updateData: async (rowIndex: number, columnId: string, value: string) => {
-                if (rowIndex === 0) {
-                    defaultFilter[columnId] = value
-                    await setDefaultFilter(defaultFilter)
-                }
-
                 data[rowIndex][columnId] = value
                 await setData([...data])
             }
