@@ -5,7 +5,7 @@ hiredis==3.1.0
 openai==1.58.1
 praw==7.8.1
 psycopg[c]==3.2.3
-pydantic==2.10.3
+pydantic==2.10.4
 python-decouple==3.8
 tenacity==9.0.0
 textblob==0.18.0.post0
