@@ -35,6 +35,7 @@ export const annotateProcessedThreads = async (processedThreads: types.Thread[],
         dataSpan.setAttribute("name", dataSpanName)
 
         const sentiment_polarity = thread.data.sentiment_polarity.value
+        const sentiment_subjectivity = thread.data.sentiment_subjectivity.value
 
         dataSpan.title = [
             `processed: ${thread.data.created}`,
@@ -51,6 +52,13 @@ export const annotateProcessedThreads = async (processedThreads: types.Thread[],
 
         if (sentiment_polarity < contentFilter.sentimentPolarity) {
             if (await storage.getSentimentPolarityContentFilterEnabled()) {
+                threadRow.style.display = "none"
+            } else {
+                threadRow.style.display = "block"
+                dataSpan.innerText = " 🚨"
+            }
+        } else if (sentiment_subjectivity < contentFilter.sentimentSubjectivity) {
+            if (await storage.getSentimentSubjectivityContentFilterEnabled()) {
                 threadRow.style.display = "none"
             } else {
                 threadRow.style.display = "block"
@@ -100,6 +108,8 @@ export const annotateIgnoredRedditors = async (
             dataSpan.style.color = "yellow"
             dataSpan.title = `reason: ${ignoredRedditor.reason}`
             dataSpan.innerText = " [ignored]"
+
+            // TODO: add option to collapse comments from ignored redditors
 
             for (let linkElement of usernameElementsMap[username]) {
                 linkElement.parentElement.insertAdjacentElement("beforeend", dataSpan.cloneNode(true))
@@ -199,6 +209,8 @@ export const annotateUnprocessableRedditors = async (
             dataSpan.title = `reason: ${unprocessableRedditor.reason}`
             dataSpan.innerText = " [unprocessable]"
 
+            // TODO: add option to collapse comments from unprocessable redditors
+
             for (let linkElement of usernameElementsMap[username]) {
                 linkElement.parentElement.insertAdjacentElement("beforeend", dataSpan.cloneNode(true))
             }
@@ -206,31 +218,49 @@ export const annotateUnprocessableRedditors = async (
     }
 }
 
-const getThreadRowElement = (urlPath: string) => {
-    return document.querySelector(`[data-permalink="${urlPath}"]`) as HTMLDivElement
+const getThreadRowElement = (urlPath: string): HTMLDivElement => {
+    return document.querySelector(`[data-permalink="${urlPath}"]`)
 }
 
-const getThreadRowElements = () => {
-    return document.querySelectorAll("[data-permalink]:not(.comment, .ad-container)") as NodeListOf<HTMLDivElement>
+const getThreadRowElements = (): NodeListOf<HTMLDivElement> => {
+    return document.querySelectorAll("[data-permalink]:not(.comment, .ad-container)")
 }
 
-const getThreadTitleElement = (urlPath: string) => {
-    return getThreadRowElement(urlPath).querySelector('[data-event-action="title"]') as HTMLLinkElement
+const getThreadTitleElement = (urlPath: string): HTMLLinkElement => {
+    return getThreadRowElement(urlPath).querySelector('[data-event-action="title"]')
 }
 
-export const getThreadUrlPaths = () => {
-    return [...getThreadRowElements()].map((el) => el.getAttribute("data-permalink")) as string[]
+export const getThreadUrlPaths = (): string[] => {
+    return [...getThreadRowElements()].map((el) => el.getAttribute("data-permalink"))
 }
 
-const getUsernameElements = () => {
+const getUsernameElements = (): HTMLCollectionOf<HTMLLinkElement> => {
     return document.getElementsByClassName("author") as HTMLCollectionOf<HTMLLinkElement>
 }
 
-export const getUsernameElementsMap = () => {
-    let usernameElements = {}
+export const getUsernameElementsMap = (): Record<string, HTMLLinkElement[]> => {
+    let usernameElements: Record<string, HTMLLinkElement[]> = {}
     for (const el of getUsernameElements()) {
         const username = el.innerText
         username in usernameElements ? usernameElements[username].push(el) : (usernameElements[username] = [el])
     }
     return usernameElements
+}
+
+export const setCommentVisibility = (hiddenUsernames: Set<string>, shownUsernames: Set<string>) => {
+    Object.entries(getUsernameElementsMap()).map(([username, linkElements]) => {
+        linkElements.map((linkElement) => {
+            const commentRow: HTMLDivElement | null = linkElement.closest('div[data-type="comment"]')
+
+            if (commentRow !== null) {
+                if (hiddenUsernames.has(username)) {
+                    commentRow.classList.remove("noncollapsed")
+                    commentRow.classList.add("collapsed")
+                } else if (shownUsernames.has(username)) {
+                    commentRow.classList.remove("collapsed")
+                    commentRow.classList.add("noncollapsed")
+                }
+            }
+        })
+    })
 }
