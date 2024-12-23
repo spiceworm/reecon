@@ -1,7 +1,7 @@
 import * as storage from "~util/storage"
 import type * as types from "~util/types"
 
-export const annotatePendingThreads = async (pendingThreads: types.PendingThread[], contentFilter: types.ContentFilter) => {
+export const annotatePendingThreads = async (pendingThreads: types.PendingThread[], contentFilter: types.CommentContentFilter) => {
     for (const thread of pendingThreads) {
         const dataSpanPrefix = `${process.env.PLASMO_PUBLIC_APP_NAME}-${thread.path}`
         const dataSpanName = `${dataSpanPrefix}-pendingThread`
@@ -20,7 +20,7 @@ export const annotatePendingThreads = async (pendingThreads: types.PendingThread
     }
 }
 
-export const annotateProcessedThreads = async (processedThreads: types.Thread[], contentFilter: types.ContentFilter) => {
+export const annotateProcessedThreads = async (processedThreads: types.Thread[], contentFilter: types.CommentContentFilter) => {
     for (const thread of processedThreads) {
         const threadRow = getThreadRowElement(thread.path)
         const dataSpanPrefix = `${process.env.PLASMO_PUBLIC_APP_NAME}-${thread.path}`
@@ -68,7 +68,7 @@ export const annotateProcessedThreads = async (processedThreads: types.Thread[],
     }
 }
 
-export const annotateUnprocessableThreads = async (unprocessableThreads: types.UnprocessableThread[], contentFilter: types.ContentFilter) => {
+export const annotateUnprocessableThreads = async (unprocessableThreads: types.UnprocessableThread[], contentFilter: types.CommentContentFilter) => {
     for (const thread of unprocessableThreads) {
         const dataSpanPrefix = `${process.env.PLASMO_PUBLIC_APP_NAME}-${thread.path}`
         const dataSpanName = `${dataSpanPrefix}-unprocessableThread`
@@ -90,7 +90,7 @@ export const annotateUnprocessableThreads = async (unprocessableThreads: types.U
 export const annotateIgnoredRedditors = async (
     ignoredRedditors: types.IgnoredRedditor[],
     usernameElementsMap,
-    contentFilter: types.ContentFilter
+    contentFilter: types.CommentContentFilter
 ) => {
     for (const ignoredRedditor of ignoredRedditors) {
         const username = ignoredRedditor.username
@@ -121,7 +121,7 @@ export const annotateIgnoredRedditors = async (
 export const annotatePendingRedditors = async (
     pendingRedditors: types.PendingRedditor[],
     usernameElementsMap,
-    contentFilter: types.ContentFilter
+    contentFilter: types.CommentContentFilter
 ) => {
     for (const pendingRedditor of pendingRedditors) {
         const username = pendingRedditor.username
@@ -148,7 +148,7 @@ export const annotatePendingRedditors = async (
     }
 }
 
-export const annotateProcessedRedditors = async (processedRedditors: types.Redditor[], usernameElementsMap, contentFilter: types.ContentFilter) => {
+export const annotateProcessedRedditors = async (processedRedditors: types.Redditor[], usernameElementsMap, contentFilter: types.CommentContentFilter) => {
     for (const processedRedditor of processedRedditors) {
         const username = processedRedditor.username
         const dataSpanPrefix = `${process.env.PLASMO_PUBLIC_APP_NAME}-${username}`
@@ -190,7 +190,7 @@ export const annotateProcessedRedditors = async (processedRedditors: types.Reddi
 export const annotateUnprocessableRedditors = async (
     unprocessableRedditors: types.UnprocessableRedditor[],
     usernameElementsMap,
-    contentFilter: types.ContentFilter
+    contentFilter: types.CommentContentFilter
 ) => {
     for (const unprocessableRedditor of unprocessableRedditors) {
         const username = unprocessableRedditor.username

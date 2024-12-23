@@ -1,11 +1,11 @@
 import type * as types from "~util/types"
 
-export const ACTIVE_CONTENT_FILTER = "_activeContentFilter"
+export const ACTIVE_COMMENT_CONTENT_FILTER = "_activeCommentContentFilter"
 export const AGE_CONTENT_FILTER_ENABLED = "_ageContentFilterEnabled"
 export const API_STATUS_MESSAGES = "_apiStatusMessages"
 export const AUTH = "_auth"
-export const CONTENT_FILTERS = "_contentFilters"
-export const DEFAULT_FILTER = "_defaultFilter"
+export const COMMENT_CONTENT_FILTERS = "_commentContentFilters"
+export const DEFAULT_COMMENT_FILTER = "_defaultCommentFilter"
 export const DISABLE_EXTENSION = "_disableExtension"
 export const EXTENSION_STATUS_MESSAGES = "_extensionStatusMessages"
 export const IQ_CONTENT_FILTER_ENABLED = "_iqContentFilterEnabled"
@@ -27,10 +27,10 @@ export const CACHED_PENDING_THREADS = "_cachedPendingThreads"
 export const CACHED_PROCESSED_THREADS = "_cachedProcessedThreads"
 export const CACHED_UNPROCESSABLE_THREADS = "_cachedUnprocessableThreads"
 
-// Do not reference the `defaultContentFilter` object as a whole. If you do, updates to the default filter
-// in storage will not be reflected because this is a static value. This exists mainly to initialize the
-// default filter in storage and to prevent hardcoding string values.
-export const defaultContentFilter: types.ContentFilter = {
+// Do not reference the `defaultCommentContentFilter` object as a whole. If you do, updates to the default filter
+// in storage will not be reflected because this is a static value. This exists mainly to initialize the default
+// filter in storage and to prevent hardcoding string values.
+export const defaultCommentContentFilter: types.CommentContentFilter = {
     age: 0,
     context: "Default",
     iq: 0,

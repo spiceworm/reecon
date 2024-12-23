@@ -14,12 +14,12 @@ export const config: PlasmoCSConfig = {
 }
 
 const CommentFilters = () => {
-    const [activeContentFilter] = useStorage<types.ContentFilter>(
+    const [activeContentFilter] = useStorage<types.CommentContentFilter>(
         {
             instance: storage.extLocalStorage,
-            key: constants.ACTIVE_CONTENT_FILTER
+            key: constants.ACTIVE_COMMENT_CONTENT_FILTER
         },
-        (v) => (v === undefined ? constants.defaultContentFilter : v)
+        (v) => (v === undefined ? constants.defaultCommentContentFilter : v)
     )
 
     const [ageFilterEnabled] = useStorage<boolean>(

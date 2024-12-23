@@ -25,12 +25,12 @@ export const setMany = async (items: Record<string, any>): Promise<void> => {
 
 export const init = async (): Promise<void> => {
     await setMany({
-        [constants.ACTIVE_CONTENT_FILTER]: constants.defaultContentFilter,
+        [constants.ACTIVE_COMMENT_CONTENT_FILTER]: constants.defaultCommentContentFilter,
         [constants.AGE_CONTENT_FILTER_ENABLED]: false,
         [constants.API_STATUS_MESSAGES]: [],
         [constants.AUTH]: null,
-        [constants.CONTENT_FILTERS]: [constants.defaultContentFilter],
-        [constants.DEFAULT_FILTER]: constants.defaultContentFilter,
+        [constants.COMMENT_CONTENT_FILTERS]: [constants.defaultCommentContentFilter],
+        [constants.DEFAULT_COMMENT_FILTER]: constants.defaultCommentContentFilter,
         [constants.DISABLE_EXTENSION]: false,
         [constants.EXTENSION_STATUS_MESSAGES]: constants.extensionStatusMessages,
         [constants.IQ_CONTENT_FILTER_ENABLED]: false,
@@ -46,8 +46,8 @@ export const init = async (): Promise<void> => {
     })
 }
 
-export const getActiveContentFilter = async (): Promise<types.ContentFilter> => {
-    return get(constants.ACTIVE_CONTENT_FILTER)
+export const getActiveCommentContentFilter = async (): Promise<types.CommentContentFilter> => {
+    return get(constants.ACTIVE_COMMENT_CONTENT_FILTER)
 }
 
 const getApiStatusMessages = async (): Promise<types.ApiStatusMessage[]> => {
@@ -116,28 +116,28 @@ export const getThreadDataProcessingEnabled = async (): Promise<boolean> => {
 export const setActiveContentFilter = async (url: string): Promise<void> => {
     const _url = new URL(url)
 
-    let newContext: string = constants.defaultContentFilter.context
+    let newContext: string = constants.defaultCommentContentFilter.context
 
     if (_url.hostname.endsWith("reddit.com")) {
         // `context` will be the subreddit name if we are viewing a sub or an empty string if viewing home
         newContext = _url.pathname.split("/r/").at(-1).split("/")[0]
-        newContext = newContext === "" ? constants.defaultContentFilter.context : newContext
+        newContext = newContext === "" ? constants.defaultCommentContentFilter.context : newContext
     }
 
     let matchingContextFilterFound = false
 
-    for (const contentFilter of (await get(constants.CONTENT_FILTERS)) as types.ContentFilter[]) {
+    for (const contentFilter of (await get(constants.COMMENT_CONTENT_FILTERS)) as types.CommentContentFilter[]) {
         if (contentFilter.context === newContext) {
-            await set(constants.ACTIVE_CONTENT_FILTER, contentFilter)
+            await set(constants.ACTIVE_COMMENT_CONTENT_FILTER, contentFilter)
             matchingContextFilterFound = true
             break
         }
     }
 
     if (!matchingContextFilterFound) {
-        for (const contentFilter of (await get(constants.CONTENT_FILTERS)) as types.ContentFilter[]) {
-            if (contentFilter.context === constants.defaultContentFilter.context) {
-                await set(constants.ACTIVE_CONTENT_FILTER, contentFilter)
+        for (const contentFilter of (await get(constants.COMMENT_CONTENT_FILTERS)) as types.CommentContentFilter[]) {
+            if (contentFilter.context === constants.defaultCommentContentFilter.context) {
+                await set(constants.ACTIVE_COMMENT_CONTENT_FILTER, contentFilter)
                 break
             }
         }
@@ -227,12 +227,12 @@ extLocalStorage.watch({
             }
         }
     },
-    [constants.CONTENT_FILTERS]: async (storageChange) => {
+    [constants.COMMENT_CONTENT_FILTERS]: async (storageChange) => {
         const { oldValue, newValue } = storageChange
 
-        newValue.map(async (contentFilter: types.ContentFilter) => {
-            if (contentFilter.filterType === constants.defaultContentFilter.filterType) {
-                return await set(constants.DEFAULT_FILTER, contentFilter)
+        newValue.map(async (contentFilter: types.CommentContentFilter) => {
+            if (contentFilter.filterType === constants.defaultCommentContentFilter.filterType) {
+                return await set(constants.DEFAULT_COMMENT_FILTER, contentFilter)
             }
         })
     },

@@ -9,8 +9,8 @@ import * as storage from "~util/storage"
 import type * as types from "~util/types"
 
 export const Settings = () => {
-    const [activeContentFilter] = useStorage({ instance: storage.extLocalStorage, key: constants.ACTIVE_CONTENT_FILTER }, (v: types.ContentFilter) =>
-        v === undefined ? constants.defaultContentFilter : v
+    const [activeContentFilter] = useStorage({ instance: storage.extLocalStorage, key: constants.ACTIVE_COMMENT_CONTENT_FILTER }, (v: types.CommentContentFilter) =>
+        v === undefined ? constants.defaultCommentContentFilter : v
     )
     const [disableExtension, setDisableExtension] = useStorage(
         { instance: storage.extLocalStorage, key: constants.DISABLE_EXTENSION },

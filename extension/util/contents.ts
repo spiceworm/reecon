@@ -12,7 +12,8 @@ export const execute = async () => {
     if (await storage.shouldExecuteContentScript()) {
         lastExecution = Date.now()
 
-        const contentFilter = await storage.getActiveContentFilter()
+        // TODO: Do not pass content filter to annotate functions. All filtering is done via separate content scripts
+        const contentFilter = await storage.getActiveCommentContentFilter()
         const producerSettings = await storage.getProducerSettings()
 
         if (await storage.getThreadDataProcessingEnabled()) {

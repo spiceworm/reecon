@@ -9,12 +9,11 @@ import { useStorage } from "@plasmohq/storage/dist/hook"
 
 import * as constants from "~util/constants"
 import * as errors from "~util/errors"
-import * as misc from "~util/misc"
 import * as storage from "~util/storage"
 import type * as types from "~util/types"
 import * as validators from "~util/validators"
 
-const columnHelper = createColumnHelper<types.ContentFilter>()
+const columnHelper = createColumnHelper<types.CommentContentFilter>()
 
 const Cell = ({ getValue, row, column, table }) => {
     const initialValue = getValue()
@@ -24,7 +23,7 @@ const Cell = ({ getValue, row, column, table }) => {
     const [renderValue, setRenderValue] = useState(initialValue)
 
     const isContextCell = column.columnDef.id === "context"
-    const isDefaultContextCell = isContextCell && row.original.filterType === constants.defaultContentFilter.filterType
+    const isDefaultContextCell = isContextCell && row.original.filterType === constants.defaultCommentContentFilter.filterType
 
     useEffect(() => {
         // When a new row is added, validate the new row values so a validation error is triggered for the empty
@@ -116,7 +115,7 @@ const ActionCell = ({ row, table }) => {
                         <Pencil />
                     </Button>
                 )}
-                {row.original.filterType !== constants.defaultContentFilter.filterType ? (
+                {row.original.filterType !== constants.defaultCommentContentFilter.filterType ? (
                     <Button
                         color={"danger"}
                         // Do not allow deletion if validation errors exist anywhere in the table because deleting
@@ -279,16 +278,16 @@ export const ContentFilterTable = ({
     footerVisible = true,
     headerControlsVisible = false
 }) => {
-    const [contentFilters, setContentFilters, { isLoading }] = useStorage<types.ContentFilter[]>(
-        { instance: storage.extLocalStorage, key: constants.CONTENT_FILTERS },
+    const [contentFilters, setContentFilters, { isLoading }] = useStorage<types.CommentContentFilter[]>(
+        { instance: storage.extLocalStorage, key: constants.COMMENT_CONTENT_FILTERS },
         (v) => (v === undefined ? [] : v)
     )
 
-    const [defaultFilter] = useStorage<types.ContentFilter>({ instance: storage.extLocalStorage, key: constants.DEFAULT_FILTER }, (v) =>
-        v === undefined ? ({} as types.ContentFilter) : v
+    const [defaultFilter] = useStorage<types.CommentContentFilter>({ instance: storage.extLocalStorage, key: constants.DEFAULT_COMMENT_FILTER }, (v) =>
+        v === undefined ? ({} as types.CommentContentFilter) : v
     )
 
-    const [data, setRenderedData] = useState<types.ContentFilter[]>([])
+    const [data, setRenderedData] = useState<types.CommentContentFilter[]>([])
     const [editableRows, setEditableRows] = useState({})
     const [validationErrors, setValidationErrors] = useState<Record<number, Record<string, string>>>({})
 
@@ -305,8 +304,8 @@ export const ContentFilterTable = ({
             columnFilters: columnFilters
         },
         meta: {
-            addRow: (): types.ContentFilter[] => {
-                const newContentFilter: types.ContentFilter = {
+            addRow: (): types.CommentContentFilter[] => {
+                const newContentFilter: types.CommentContentFilter = {
                     age: defaultFilter.age,
                     context: "",
                     filterType: "custom",
@@ -323,7 +322,7 @@ export const ContentFilterTable = ({
                 return validationErrors?.[rowIndex]?.[columnId] ?? ""
             },
             getStoredContextNames: (): string[] => {
-                return contentFilters.map((row: types.ContentFilter) => row.context)
+                return contentFilters.map((row: types.CommentContentFilter) => row.context)
             },
             headerControlsVisible: headerControlsVisible,
             removeRow: async (rowIndex: number) => {

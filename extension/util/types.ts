@@ -111,7 +111,7 @@ export interface AuthTokenRefreshResponse {
     access: string
 }
 
-export interface ContentFilter {
+export interface CommentContentFilter {
     age: number
     context: string
     filterType: string
