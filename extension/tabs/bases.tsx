@@ -24,6 +24,12 @@ export const Authenticated = ({ children }) => {
                     </NavLink>
                 </NavItem>
 
+                <NavItem>
+                    <NavLink className={"nav-link"} to={"/debug"}>
+                        Debug
+                    </NavLink>
+                </NavItem>
+
                 {producerApiKeyMissing ? null : (
                     <>
                         <NavItem>

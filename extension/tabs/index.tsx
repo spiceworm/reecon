@@ -6,6 +6,7 @@ import { useStorage } from "@plasmohq/storage/dist/hook"
 
 import { ContentFilters } from "~tabs/views/contentFilters"
 import { ContextQuery } from "~tabs/views/contextQuery"
+import { Debug } from "~tabs/views/debug"
 import { Settings } from "~tabs/views/settings"
 import { RequireAuthentication } from "~util/components/authentication"
 import * as constants from "~util/constants"
@@ -57,6 +58,7 @@ export default function OptionsPage() {
 
                 <Route path="/auth/login" element={<Login onSuccessRedirectPath={"/content-filters"} />} />
                 <Route path="/auth/signup" element={<Signup onSuccessRedirectPath={"/content-filters"} />} />
+                <Route path="/debug" element={<Debug />} />
             </Routes>
         </MemoryRouter>
     )
