@@ -11,7 +11,7 @@ import * as storage from "~util/storage"
 const ProducerSettingsApiKeyInput = ({ name, apiKeyStorageKey, apiKeyValidatorFunc }) => {
     const [keyVisible, setKeyVisible] = useState(false)
     const [showKeyValidationError, setShowKeyValidationError] = useState(false)
-    const [apiKey, _, { setRenderValue, setStoreValue }] = useStorage({ instance: storage.extLocalStorage, key: apiKeyStorageKey }, (v: string) =>
+    const [apiKey, _, { setRenderValue, setStoreValue }] = useStorage<string>({ instance: storage.extLocalStorage, key: apiKeyStorageKey }, (v) =>
         v === undefined ? "" : v
     )
 

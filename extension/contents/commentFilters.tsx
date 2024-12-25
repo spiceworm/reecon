@@ -14,12 +14,12 @@ export const config: PlasmoCSConfig = {
 }
 
 const CommentFilters = () => {
-    const [activeContentFilter] = useStorage<types.CommentContentFilter>(
+    const [activeCommentFilter] = useStorage<types.CommentFilter>(
         {
             instance: storage.extLocalStorage,
-            key: constants.ACTIVE_COMMENT_CONTENT_FILTER
+            key: constants.ACTIVE_COMMENT_FILTER
         },
-        (v) => (v === undefined ? constants.defaultCommentContentFilter : v)
+        (v) => (v === undefined ? constants.defaultCommentFilter : v)
     )
 
     const [ageFilterEnabled] = useStorage<boolean>(
@@ -75,15 +75,15 @@ const CommentFilters = () => {
         if (username in processedRedditors) {
             const obj = processedRedditors[username]
 
-            if (ageFilterEnabled && obj.value.data.age.value < activeContentFilter.age) {
+            if (ageFilterEnabled && obj.value.data.age.value < activeCommentFilter.age) {
                 hiddenUsernames.add(username)
-            } else if (iqFilterEnabled && obj.value.data.iq.value < activeContentFilter.iq) {
+            } else if (iqFilterEnabled && obj.value.data.iq.value < activeCommentFilter.iq) {
                 hiddenUsernames.add(username)
-            } else if (sentimentPolarityFilterEnabled && obj.value.data.sentiment_polarity.value < activeContentFilter.sentimentPolarity) {
+            } else if (sentimentPolarityFilterEnabled && obj.value.data.sentiment_polarity.value < activeCommentFilter.sentimentPolarity) {
                 hiddenUsernames.add(username)
             } else if (
                 sentimentSubjectivityFilterEnabled &&
-                obj.value.data.sentiment_subjectivity.value < activeContentFilter.sentimentSubjectivity
+                obj.value.data.sentiment_subjectivity.value < activeCommentFilter.sentimentSubjectivity
             ) {
                 hiddenUsernames.add(username)
             } else {

@@ -11,12 +11,14 @@ import * as api from "~util/api"
 import * as bases from "~util/components/bases"
 import * as constants from "~util/constants"
 import * as storage from "~util/storage"
+import type * as types from "~util/types"
 
+// TODO: just use useState for these and uninstall signal dependency
 const signupPassword = signal("")
 const signupUsername = signal("")
 
 export const Signup = ({ onSuccessRedirectPath }) => {
-    const [_, setAuth] = useStorage({ instance: storage.extLocalStorage, key: constants.AUTH })
+    const [_, setAuth] = useStorage<types.Auth>({ instance: storage.extLocalStorage, key: constants.AUTH })
     const [passwordVisible, setPasswordVisible] = react.useState(false)
     const [signupCredentials, setSignupCredentials] = react.useState(null)
     const navigate = useNavigate()

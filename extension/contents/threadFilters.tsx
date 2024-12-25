@@ -14,12 +14,12 @@ export const config: PlasmoCSConfig = {
 }
 
 const ThreadFilters = () => {
-    const [activeContentFilter] = useStorage<types.CommentContentFilter>(
+    const [activeContentFilter] = useStorage<types.CommentFilter>(
         {
             instance: storage.extLocalStorage,
-            key: constants.ACTIVE_COMMENT_CONTENT_FILTER
+            key: constants.ACTIVE_COMMENT_FILTER
         },
-        (v) => (v === undefined ? constants.defaultCommentContentFilter : v)
+        (v) => (v === undefined ? constants.defaultCommentFilter : v)
     )
 
     const [processedThreads] = useStorage<Record<string, types.CachedProcessedThread>>(

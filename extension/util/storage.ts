@@ -25,29 +25,37 @@ export const setMany = async (items: Record<string, any>): Promise<void> => {
 
 export const init = async (): Promise<void> => {
     await setMany({
-        [constants.ACTIVE_COMMENT_CONTENT_FILTER]: constants.defaultCommentContentFilter,
-        [constants.AGE_CONTENT_FILTER_ENABLED]: false,
-        [constants.API_STATUS_MESSAGES]: [],
         [constants.AUTH]: null,
-        [constants.COMMENT_CONTENT_FILTERS]: [constants.defaultCommentContentFilter],
-        [constants.DEFAULT_COMMENT_FILTER]: constants.defaultCommentContentFilter,
         [constants.DISABLE_EXTENSION]: false,
+
+        [constants.ACTIVE_COMMENT_FILTER]: constants.defaultCommentFilter,
+        [constants.ACTIVE_THREAD_FILTER]: constants.defaultThreadFilter,
+        [constants.ALL_COMMENT_FILTERS]: [constants.defaultCommentFilter],
+        [constants.ALL_THREAD_FILTERS]: [constants.defaultThreadFilter],
+        [constants.DEFAULT_COMMENT_FILTER]: constants.defaultCommentFilter,
+        [constants.DEFAULT_THREAD_FILTER]: constants.defaultThreadFilter,
+
+        [constants.ALL_STATUS_MESSAGES]: [],
+        [constants.API_STATUS_MESSAGES]: [],
         [constants.EXTENSION_STATUS_MESSAGES]: constants.extensionStatusMessages,
+
+        [constants.AGE_CONTENT_FILTER_ENABLED]: false,
         [constants.IQ_CONTENT_FILTER_ENABLED]: false,
-        [constants.OPENAI_API_KEY]: "",
-        [constants.PRODUCER_SETTINGS]: constants.defaultProducerSettings,
-        [constants.REDDITOR_CONTEXT_QUERY_PROCESSING_ENABLED]: false,
-        [constants.REDDITOR_DATA_PROCESSING_ENABLED]: false,
         [constants.SENTIMENT_POLARITY_CONTENT_FILTER_ENABLED]: false,
         [constants.SENTIMENT_SUBJECTIVITY_CONTENT_FILTER_ENABLED]: false,
-        [constants.STATUS_MESSAGES]: [],
+
+        [constants.REDDITOR_CONTEXT_QUERY_PROCESSING_ENABLED]: false,
+        [constants.REDDITOR_DATA_PROCESSING_ENABLED]: false,
         [constants.THREAD_CONTEXT_QUERY_PROCESSING_ENABLED]: false,
-        [constants.THREAD_DATA_PROCESSING_ENABLED]: false
+        [constants.THREAD_DATA_PROCESSING_ENABLED]: false,
+
+        [constants.OPENAI_API_KEY]: "",
+        [constants.PRODUCER_SETTINGS]: constants.defaultProducerSettings,
     })
 }
 
-export const getActiveCommentContentFilter = async (): Promise<types.CommentContentFilter> => {
-    return get(constants.ACTIVE_COMMENT_CONTENT_FILTER)
+export const getActiveCommentFilter = async (): Promise<types.CommentFilter> => {
+    return get(constants.ACTIVE_COMMENT_FILTER)
 }
 
 const getApiStatusMessages = async (): Promise<types.ApiStatusMessage[]> => {
@@ -89,10 +97,6 @@ const getExtensionStatusMessages = async (): Promise<types.ExtensionStatusMessag
     return get(constants.EXTENSION_STATUS_MESSAGES)
 }
 
-export const getIqContentFilterEnabled = async (): Promise<boolean> => {
-    return get(constants.IQ_CONTENT_FILTER_ENABLED)
-}
-
 export const getProducerSettings = async (): Promise<types.ProducerSettings> => {
     return get(constants.PRODUCER_SETTINGS)
 }
@@ -116,28 +120,28 @@ export const getThreadDataProcessingEnabled = async (): Promise<boolean> => {
 export const setActiveContentFilter = async (url: string): Promise<void> => {
     const _url = new URL(url)
 
-    let newContext: string = constants.defaultCommentContentFilter.context
+    let newContext: string = constants.defaultCommentFilter.context
 
     if (_url.hostname.endsWith("reddit.com")) {
         // `context` will be the subreddit name if we are viewing a sub or an empty string if viewing home
         newContext = _url.pathname.split("/r/").at(-1).split("/")[0]
-        newContext = newContext === "" ? constants.defaultCommentContentFilter.context : newContext
+        newContext = newContext === "" ? constants.defaultCommentFilter.context : newContext
     }
 
     let matchingContextFilterFound = false
 
-    for (const contentFilter of (await get(constants.COMMENT_CONTENT_FILTERS)) as types.CommentContentFilter[]) {
+    for (const contentFilter of (await get(constants.ALL_COMMENT_FILTERS)) as types.CommentFilter[]) {
         if (contentFilter.context === newContext) {
-            await set(constants.ACTIVE_COMMENT_CONTENT_FILTER, contentFilter)
+            await set(constants.ACTIVE_COMMENT_FILTER, contentFilter)
             matchingContextFilterFound = true
             break
         }
     }
 
     if (!matchingContextFilterFound) {
-        for (const contentFilter of (await get(constants.COMMENT_CONTENT_FILTERS)) as types.CommentContentFilter[]) {
-            if (contentFilter.context === constants.defaultCommentContentFilter.context) {
-                await set(constants.ACTIVE_COMMENT_CONTENT_FILTER, contentFilter)
+        for (const contentFilter of (await get(constants.ALL_COMMENT_FILTERS)) as types.CommentFilter[]) {
+            if (contentFilter.context === constants.defaultCommentFilter.context) {
+                await set(constants.ACTIVE_COMMENT_FILTER, contentFilter)
                 break
             }
         }
@@ -168,8 +172,8 @@ export const setExtensionStatusMessage = async (messageName: string, active: boo
     return set(constants.EXTENSION_STATUS_MESSAGES, extensionStatusMessages)
 }
 
-const setStatusMessages = async (messages: (types.ApiStatusMessage | types.ExtensionStatusMessage)[]): Promise<void> => {
-    return set(constants.STATUS_MESSAGES, messages)
+const setAllStatusMessages = async (messages: (types.ApiStatusMessage | types.ExtensionStatusMessage)[]): Promise<void> => {
+    return set(constants.ALL_STATUS_MESSAGES, messages)
 }
 
 export const shouldExecuteContentScript = async (): Promise<boolean> => {
@@ -195,10 +199,28 @@ export const shouldExecuteContentScript = async (): Promise<boolean> => {
 }
 
 extLocalStorage.watch({
+    [constants.ALL_COMMENT_FILTERS]: async (storageChange) => {
+        const { oldValue, newValue } = storageChange
+
+        newValue.map(async (contentFilter: types.CommentFilter) => {
+            if (contentFilter.filterType === constants.defaultCommentFilter.filterType) {
+                return await set(constants.DEFAULT_COMMENT_FILTER, contentFilter)
+            }
+        })
+    },
+    [constants.ALL_THREAD_FILTERS]: async (storageChange) => {
+        const { oldValue, newValue } = storageChange
+
+        newValue.map(async (contentFilter: types.ThreadFilter) => {
+            if (contentFilter.filterType === constants.defaultThreadFilter.filterType) {
+                return await set(constants.DEFAULT_THREAD_FILTER, contentFilter)
+            }
+        })
+    },
     [constants.API_STATUS_MESSAGES]: async (storageChange) => {
         const { oldValue, newValue } = storageChange
 
-        await setStatusMessages(newValue.concat(await getExtensionStatusMessages()))
+        await setAllStatusMessages(newValue.concat(await getExtensionStatusMessages()))
 
         for (const message of newValue as (types.ApiStatusMessage | types.ExtensionStatusMessage)[]) {
             if (message.name === "redditorContextQueryProcessingDisabled") {
@@ -227,15 +249,6 @@ extLocalStorage.watch({
             }
         }
     },
-    [constants.COMMENT_CONTENT_FILTERS]: async (storageChange) => {
-        const { oldValue, newValue } = storageChange
-
-        newValue.map(async (contentFilter: types.CommentContentFilter) => {
-            if (contentFilter.filterType === constants.defaultCommentContentFilter.filterType) {
-                return await set(constants.DEFAULT_COMMENT_FILTER, contentFilter)
-            }
-        })
-    },
     [constants.DISABLE_EXTENSION]: async (storageChange) => {
         const { oldValue, newValue } = storageChange
 
@@ -244,7 +257,7 @@ extLocalStorage.watch({
     [constants.EXTENSION_STATUS_MESSAGES]: async (storageChange) => {
         const { oldValue, newValue } = storageChange
 
-        await setStatusMessages(newValue.concat(await getApiStatusMessages()))
+        await setAllStatusMessages(newValue.concat(await getApiStatusMessages()))
     },
     [constants.OPENAI_API_KEY]: async (storageChange) => {
         const { oldValue, newValue } = storageChange

@@ -111,11 +111,18 @@ export interface AuthTokenRefreshResponse {
     access: string
 }
 
-export interface CommentContentFilter {
+export interface CommentFilter {
     age: number
     context: string
     filterType: string
     iq: number
+    sentimentPolarity: number
+    sentimentSubjectivity: number
+}
+
+export interface ThreadFilter {
+    context: string
+    filterType: string
     sentimentPolarity: number
     sentimentSubjectivity: number
 }

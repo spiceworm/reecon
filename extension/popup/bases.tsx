@@ -16,9 +16,9 @@ export const Authenticated = ({ children }) => {
 
     const { error, isLoading } = useSWR("updateApiStatusMessages", api.updateApiStatusMessages)
 
-    const [statusMessages] = useStorage(
-        { instance: storage.extLocalStorage, key: constants.STATUS_MESSAGES },
-        (v: (types.ApiStatusMessage | types.ExtensionStatusMessage)[]) => (v === undefined ? [] : v)
+    const [statusMessages] = useStorage<(types.ApiStatusMessage | types.ExtensionStatusMessage)[]>(
+        { instance: storage.extLocalStorage, key: constants.ALL_STATUS_MESSAGES },
+        (v) => (v === undefined ? [] : v)
     )
     const [_, setAuth] = useStorage({ instance: storage.extLocalStorage, key: constants.AUTH })
 

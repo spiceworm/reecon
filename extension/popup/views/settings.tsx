@@ -9,12 +9,12 @@ import * as storage from "~util/storage"
 import type * as types from "~util/types"
 
 export const Settings = () => {
-    const [activeContentFilter] = useStorage({ instance: storage.extLocalStorage, key: constants.ACTIVE_COMMENT_CONTENT_FILTER }, (v: types.CommentContentFilter) =>
-        v === undefined ? constants.defaultCommentContentFilter : v
+    const [activeCommentFilter] = useStorage<types.CommentFilter>({ instance: storage.extLocalStorage, key: constants.ACTIVE_COMMENT_FILTER }, (v) =>
+        v === undefined ? constants.defaultCommentFilter : v
     )
-    const [disableExtension, setDisableExtension] = useStorage(
+    const [disableExtension, setDisableExtension] = useStorage<boolean>(
         { instance: storage.extLocalStorage, key: constants.DISABLE_EXTENSION },
-        (v: boolean) => (v === undefined ? false : v)
+        (v) => (v === undefined ? false : v)
     )
 
     const handleAllSettingsBtnClick = async (e) => {
@@ -40,7 +40,7 @@ export const Settings = () => {
                 columnFilters={[
                     {
                         id: "context",
-                        value: activeContentFilter.context
+                        value: activeCommentFilter.context
                     }
                 ]}
                 columnVisibility={{

@@ -13,7 +13,7 @@ import * as storage from "~util/storage"
 import type * as types from "~util/types"
 import * as validators from "~util/validators"
 
-const columnHelper = createColumnHelper<types.CommentContentFilter>()
+const columnHelper = createColumnHelper<types.CommentFilter>()
 
 const Cell = ({ getValue, row, column, table }) => {
     const initialValue = getValue()
@@ -23,7 +23,7 @@ const Cell = ({ getValue, row, column, table }) => {
     const [renderValue, setRenderValue] = useState(initialValue)
 
     const isContextCell = column.columnDef.id === "context"
-    const isDefaultContextCell = isContextCell && row.original.filterType === constants.defaultCommentContentFilter.filterType
+    const isDefaultContextCell = isContextCell && row.original.filterType === constants.defaultCommentFilter.filterType
 
     useEffect(() => {
         // When a new row is added, validate the new row values so a validation error is triggered for the empty
@@ -87,12 +87,6 @@ const ActionCell = ({ row, table }) => {
     }
 
     const onSaveClickHandler = async () => {
-        tableMeta.data.map((row, rowIndex) => {
-            Object.entries(row).map(([colName, value]) => {
-                console.log(`${rowIndex}) ${colName}=${value} (${typeof value}, isFloat=${Number(value) === value && value % 1 !== 0})`)
-            })
-        })
-
         if (!tableMeta.rowHasValidationErrors(row.index)) {
             await tableMeta.setContentFilters([...tableMeta.data])
             tableMeta.setRowEditingState(row.index, false)
@@ -115,7 +109,7 @@ const ActionCell = ({ row, table }) => {
                         <Pencil />
                     </Button>
                 )}
-                {row.original.filterType !== constants.defaultCommentContentFilter.filterType ? (
+                {row.original.filterType !== constants.defaultCommentFilter.filterType ? (
                     <Button
                         color={"danger"}
                         // Do not allow deletion if validation errors exist anywhere in the table because deleting
@@ -278,16 +272,16 @@ export const ContentFilterTable = ({
     footerVisible = true,
     headerControlsVisible = false
 }) => {
-    const [contentFilters, setContentFilters, { isLoading }] = useStorage<types.CommentContentFilter[]>(
-        { instance: storage.extLocalStorage, key: constants.COMMENT_CONTENT_FILTERS },
+    const [contentFilters, setContentFilters, { isLoading }] = useStorage<types.CommentFilter[]>(
+        { instance: storage.extLocalStorage, key: constants.ALL_COMMENT_FILTERS },
         (v) => (v === undefined ? [] : v)
     )
 
-    const [defaultFilter] = useStorage<types.CommentContentFilter>({ instance: storage.extLocalStorage, key: constants.DEFAULT_COMMENT_FILTER }, (v) =>
-        v === undefined ? ({} as types.CommentContentFilter) : v
+    const [defaultFilter] = useStorage<types.CommentFilter>({ instance: storage.extLocalStorage, key: constants.DEFAULT_COMMENT_FILTER }, (v) =>
+        v === undefined ? ({} as types.CommentFilter) : v
     )
 
-    const [data, setRenderedData] = useState<types.CommentContentFilter[]>([])
+    const [data, setRenderedData] = useState<types.CommentFilter[]>([])
     const [editableRows, setEditableRows] = useState({})
     const [validationErrors, setValidationErrors] = useState<Record<number, Record<string, string>>>({})
 
@@ -304,8 +298,8 @@ export const ContentFilterTable = ({
             columnFilters: columnFilters
         },
         meta: {
-            addRow: (): types.CommentContentFilter[] => {
-                const newContentFilter: types.CommentContentFilter = {
+            addRow: (): types.CommentFilter[] => {
+                const newContentFilter: types.CommentFilter = {
                     age: defaultFilter.age,
                     context: "",
                     filterType: "custom",
@@ -322,7 +316,7 @@ export const ContentFilterTable = ({
                 return validationErrors?.[rowIndex]?.[columnId] ?? ""
             },
             getStoredContextNames: (): string[] => {
-                return contentFilters.map((row: types.CommentContentFilter) => row.context)
+                return contentFilters.map((row: types.CommentFilter) => row.context)
             },
             headerControlsVisible: headerControlsVisible,
             removeRow: async (rowIndex: number) => {

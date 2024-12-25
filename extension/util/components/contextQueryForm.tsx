@@ -29,20 +29,20 @@ import * as storage from "~util/storage"
 import type * as types from "~util/types"
 
 export const ContextQueryForm = () => {
-    const [redditorProcessingEnabled] = useStorage(
+    const [redditorProcessingEnabled] = useStorage<boolean>(
         { instance: storage.extLocalStorage, key: constants.REDDITOR_CONTEXT_QUERY_PROCESSING_ENABLED },
-        (v: boolean) => (v === undefined ? false : v)
+        (v) => (v === undefined ? false : v)
     )
-    const [threadProcessingEnabled] = useStorage(
+    const [threadProcessingEnabled] = useStorage<boolean>(
         { instance: storage.extLocalStorage, key: constants.THREAD_CONTEXT_QUERY_PROCESSING_ENABLED },
-        (v: boolean) => (v === undefined ? false : v)
+        (v) => (v === undefined ? false : v)
     )
-    const [producerSettings] = useStorage(
+    const [producerSettings] = useStorage<types.ProducerSettings>(
         {
             instance: storage.extLocalStorage,
             key: constants.PRODUCER_SETTINGS
         },
-        (v: types.ProducerSettings) => (v === undefined ? constants.defaultProducerSettings : v)
+        (v) => (v === undefined ? constants.defaultProducerSettings : v)
     )
     const [jobId, setJobId] = useState("")
 

@@ -12,10 +12,10 @@ export const openAiApiKeyIsUsable = async (apiKey: string): Promise<boolean> => 
             }
         }
     })
-    return resp.message as boolean
+    return resp.message
 }
 
-export const processRedditorData = async (producerSettings: object, usernames: string[]) => {
+export const processRedditorData = async (producerSettings: object, usernames: string[]): Promise<types.SubmitRedditorDataResponse> => {
     const resp = await sendToBackground({
         name: "reddit",
         body: {
@@ -26,10 +26,10 @@ export const processRedditorData = async (producerSettings: object, usernames: s
             }
         }
     })
-    return resp.message as types.SubmitRedditorDataResponse
+    return resp.message
 }
 
-export const processThreadData = async (producerSettings: object, urlPaths: string[]) => {
+export const processThreadData = async (producerSettings: object, urlPaths: string[]): Promise<types.SubmitThreadDataResponse> => {
     const resp = await sendToBackground({
         name: "reddit",
         body: {
@@ -40,5 +40,5 @@ export const processThreadData = async (producerSettings: object, urlPaths: stri
             }
         }
     })
-    return resp.message as types.SubmitThreadDataResponse
+    return resp.message
 }

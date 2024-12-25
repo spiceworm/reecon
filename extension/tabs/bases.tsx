@@ -9,7 +9,7 @@ import * as storage from "~util/storage"
 import type * as types from "~util/types"
 
 export const Authenticated = ({ children }) => {
-    const [producerSettings] = useStorage({ instance: storage.extLocalStorage, key: constants.PRODUCER_SETTINGS }, (v: types.ProducerSettings) =>
+    const [producerSettings] = useStorage<types.ProducerSettings>({ instance: storage.extLocalStorage, key: constants.PRODUCER_SETTINGS }, (v) =>
         v === undefined ? constants.defaultProducerSettings : v
     )
 
