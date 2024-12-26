@@ -11,8 +11,8 @@ export const extLocalStorage = new Storage({
     area: "local"
 })
 
-export const get = async (key: string): Promise<any> => {
-    return extLocalStorage.get(key)
+export const get = async <T>(key: string): Promise<T> => {
+    return extLocalStorage.get<T>(key)
 }
 
 export const set = async (key: string, value: any): Promise<void> => {
@@ -39,10 +39,12 @@ export const init = async (): Promise<void> => {
         [constants.API_STATUS_MESSAGES]: [],
         [constants.EXTENSION_STATUS_MESSAGES]: constants.extensionStatusMessages,
 
-        [constants.AGE_CONTENT_FILTER_ENABLED]: false,
-        [constants.IQ_CONTENT_FILTER_ENABLED]: false,
-        [constants.SENTIMENT_POLARITY_CONTENT_FILTER_ENABLED]: false,
-        [constants.SENTIMENT_SUBJECTIVITY_CONTENT_FILTER_ENABLED]: false,
+        [constants.COMMENT_AGE_CONTENT_FILTER_ENABLED]: false,
+        [constants.COMMENT_IQ_CONTENT_FILTER_ENABLED]: false,
+        [constants.COMMENT_SENTIMENT_POLARITY_CONTENT_FILTER_ENABLED]: false,
+        [constants.COMMENT_SENTIMENT_SUBJECTIVITY_CONTENT_FILTER_ENABLED]: false,
+        [constants.THREAD_SENTIMENT_POLARITY_CONTENT_FILTER_ENABLED]: false,
+        [constants.THREAD_SENTIMENT_SUBJECTIVITY_CONTENT_FILTER_ENABLED]: false,
 
         [constants.REDDITOR_CONTEXT_QUERY_PROCESSING_ENABLED]: false,
         [constants.REDDITOR_DATA_PROCESSING_ENABLED]: false,
@@ -50,20 +52,16 @@ export const init = async (): Promise<void> => {
         [constants.THREAD_DATA_PROCESSING_ENABLED]: false,
 
         [constants.OPENAI_API_KEY]: "",
-        [constants.PRODUCER_SETTINGS]: constants.defaultProducerSettings,
+        [constants.PRODUCER_SETTINGS]: constants.defaultProducerSettings
     })
 }
 
 export const getActiveCommentFilter = async (): Promise<types.CommentFilter> => {
-    return get(constants.ACTIVE_COMMENT_FILTER)
+    return get<types.CommentFilter>(constants.ACTIVE_COMMENT_FILTER)
 }
 
-const getApiStatusMessages = async (): Promise<types.ApiStatusMessage[]> => {
-    return get(constants.API_STATUS_MESSAGES)
-}
-
-export const getAgeContentFilterEnabled = async (): Promise<boolean> => {
-    return get(constants.AGE_CONTENT_FILTER_ENABLED)
+export const getActiveThreadFilter = async (): Promise<types.ThreadFilter> => {
+    return get<types.ThreadFilter>(constants.ACTIVE_THREAD_FILTER)
 }
 
 export const getAuth = async (): Promise<types.Auth | null> => {
@@ -89,63 +87,65 @@ export const getAuth = async (): Promise<types.Auth | null> => {
     return null
 }
 
-export const getDisableExtension = async (): Promise<boolean> => {
-    return get(constants.DISABLE_EXTENSION)
+const getContentFilterByContext = <T extends types.ContentFilter>(context: string, contentFilters: T[]): T => {
+    for (const contentFilter of contentFilters) {
+        if (contentFilter.context === context) {
+            return contentFilter
+        }
+    }
+
+    for (const contentFilter of contentFilters) {
+        if (contentFilter.filterType === "default") {
+            return contentFilter
+        }
+    }
 }
 
-const getExtensionStatusMessages = async (): Promise<types.ExtensionStatusMessage[]> => {
-    return get(constants.EXTENSION_STATUS_MESSAGES)
+export const getDisableExtension = async (): Promise<boolean> => {
+    return get<boolean>(constants.DISABLE_EXTENSION)
 }
 
 export const getProducerSettings = async (): Promise<types.ProducerSettings> => {
-    return get(constants.PRODUCER_SETTINGS)
+    return get<types.ProducerSettings>(constants.PRODUCER_SETTINGS)
 }
 
 export const getRedditorDataProcessingEnabled = async (): Promise<boolean> => {
-    return get(constants.REDDITOR_DATA_PROCESSING_ENABLED)
+    return get<boolean>(constants.REDDITOR_DATA_PROCESSING_ENABLED)
 }
 
 export const getSentimentPolarityContentFilterEnabled = async (): Promise<boolean> => {
-    return get(constants.SENTIMENT_POLARITY_CONTENT_FILTER_ENABLED)
+    return get<boolean>(constants.COMMENT_SENTIMENT_POLARITY_CONTENT_FILTER_ENABLED)
 }
 
 export const getSentimentSubjectivityContentFilterEnabled = async (): Promise<boolean> => {
-    return get(constants.SENTIMENT_SUBJECTIVITY_CONTENT_FILTER_ENABLED)
+    return get<boolean>(constants.COMMENT_SENTIMENT_SUBJECTIVITY_CONTENT_FILTER_ENABLED)
 }
 
 export const getThreadDataProcessingEnabled = async (): Promise<boolean> => {
-    return get(constants.THREAD_DATA_PROCESSING_ENABLED)
+    return get<boolean>(constants.THREAD_DATA_PROCESSING_ENABLED)
 }
 
-export const setActiveContentFilter = async (url: string): Promise<void> => {
+export const setActiveContentFilters = async (url: string): Promise<void> => {
     const _url = new URL(url)
 
-    let newContext: string = constants.defaultCommentFilter.context
+    let newContext: string = "Default"
 
+    // If the extension popup is opened for a non-reddit URL, do not accidentally set the current filter to a user
+    // defined matching filter if the current URL has same structure as a reddit URL containing a subreddit name.
+    // For example, https://test.com/r/test would cause a 'test' filter to get set if it were to exist.
     if (_url.hostname.endsWith("reddit.com")) {
         // `context` will be the subreddit name if we are viewing a sub or an empty string if viewing home
-        newContext = _url.pathname.split("/r/").at(-1).split("/")[0]
-        newContext = newContext === "" ? constants.defaultCommentFilter.context : newContext
+        const subReddit = _url.pathname.split("/r/").at(-1).split("/")[0]
+        newContext = subReddit === "" ? newContext : subReddit
     }
 
-    let matchingContextFilterFound = false
+    const allCommentFilters = await get<types.CommentFilter[]>(constants.ALL_COMMENT_FILTERS)
+    const activeCommentFilter = getContentFilterByContext<types.CommentFilter>(newContext, allCommentFilters)
+    await set(constants.ACTIVE_COMMENT_FILTER, activeCommentFilter)
 
-    for (const contentFilter of (await get(constants.ALL_COMMENT_FILTERS)) as types.CommentFilter[]) {
-        if (contentFilter.context === newContext) {
-            await set(constants.ACTIVE_COMMENT_FILTER, contentFilter)
-            matchingContextFilterFound = true
-            break
-        }
-    }
-
-    if (!matchingContextFilterFound) {
-        for (const contentFilter of (await get(constants.ALL_COMMENT_FILTERS)) as types.CommentFilter[]) {
-            if (contentFilter.context === constants.defaultCommentFilter.context) {
-                await set(constants.ACTIVE_COMMENT_FILTER, contentFilter)
-                break
-            }
-        }
-    }
+    const allThreadFilters = await get<types.ThreadFilter[]>(constants.ALL_THREAD_FILTERS)
+    const activeThreadFilter = getContentFilterByContext<types.ThreadFilter>(newContext, allThreadFilters)
+    await set(constants.ACTIVE_THREAD_FILTER, activeThreadFilter)
 }
 
 export const setApiStatusMessages = async (messages: types.ApiStatusMessage[]): Promise<void> => {
@@ -220,7 +220,7 @@ extLocalStorage.watch({
     [constants.API_STATUS_MESSAGES]: async (storageChange) => {
         const { oldValue, newValue } = storageChange
 
-        await setAllStatusMessages(newValue.concat(await getExtensionStatusMessages()))
+        await setAllStatusMessages(newValue.concat(await get(constants.EXTENSION_STATUS_MESSAGES)))
 
         for (const message of newValue as (types.ApiStatusMessage | types.ExtensionStatusMessage)[]) {
             if (message.name === "redditorContextQueryProcessingDisabled") {
@@ -257,7 +257,7 @@ extLocalStorage.watch({
     [constants.EXTENSION_STATUS_MESSAGES]: async (storageChange) => {
         const { oldValue, newValue } = storageChange
 
-        await setAllStatusMessages(newValue.concat(await getApiStatusMessages()))
+        await setAllStatusMessages(newValue.concat(await get(constants.API_STATUS_MESSAGES)))
     },
     [constants.OPENAI_API_KEY]: async (storageChange) => {
         const { oldValue, newValue } = storageChange

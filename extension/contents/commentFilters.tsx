@@ -25,23 +25,23 @@ const CommentFilters = () => {
     const [ageFilterEnabled] = useStorage<boolean>(
         {
             instance: storage.extLocalStorage,
-            key: constants.AGE_CONTENT_FILTER_ENABLED
+            key: constants.COMMENT_AGE_CONTENT_FILTER_ENABLED
         },
         (v) => (v === undefined ? false : v)
     )
     const [iqFilterEnabled] = useStorage<boolean>(
         {
             instance: storage.extLocalStorage,
-            key: constants.IQ_CONTENT_FILTER_ENABLED
+            key: constants.COMMENT_IQ_CONTENT_FILTER_ENABLED
         },
         (v) => (v === undefined ? false : v)
     )
     const [sentimentPolarityFilterEnabled] = useStorage<boolean>(
-        { instance: storage.extLocalStorage, key: constants.SENTIMENT_POLARITY_CONTENT_FILTER_ENABLED },
+        { instance: storage.extLocalStorage, key: constants.COMMENT_SENTIMENT_POLARITY_CONTENT_FILTER_ENABLED },
         (v) => (v === undefined ? false : v)
     )
     const [sentimentSubjectivityFilterEnabled] = useStorage<boolean>(
-        { instance: storage.extLocalStorage, key: constants.SENTIMENT_SUBJECTIVITY_CONTENT_FILTER_ENABLED },
+        { instance: storage.extLocalStorage, key: constants.COMMENT_SENTIMENT_SUBJECTIVITY_CONTENT_FILTER_ENABLED },
         (v) => (v === undefined ? false : v)
     )
 

@@ -3,7 +3,7 @@ import { Button, Form, Input, Label } from "reactstrap"
 import { useStorage } from "@plasmohq/storage/dist/hook"
 
 import * as bases from "~popup/bases"
-import { ContentFilterTable } from "~util/components/contentFilterTable"
+import { CommentFilterTable, ThreadFilterTable } from "~util/components/filterTable/tables"
 import * as constants from "~util/constants"
 import * as storage from "~util/storage"
 import type * as types from "~util/types"
@@ -11,6 +11,9 @@ import type * as types from "~util/types"
 export const Settings = () => {
     const [activeCommentFilter] = useStorage<types.CommentFilter>({ instance: storage.extLocalStorage, key: constants.ACTIVE_COMMENT_FILTER }, (v) =>
         v === undefined ? constants.defaultCommentFilter : v
+    )
+    const [activeThreadFilter] = useStorage<types.ThreadFilter>({ instance: storage.extLocalStorage, key: constants.ACTIVE_THREAD_FILTER }, (v) =>
+        v === undefined ? constants.defaultThreadFilter : v
     )
     const [disableExtension, setDisableExtension] = useStorage<boolean>(
         { instance: storage.extLocalStorage, key: constants.DISABLE_EXTENSION },
@@ -36,7 +39,23 @@ export const Settings = () => {
                 </div>
             </Form>
 
-            <ContentFilterTable
+            <ThreadFilterTable
+                columnFilters={[
+                    {
+                        id: "context",
+                        value: activeThreadFilter.context
+                    }
+                ]}
+                columnVisibility={{
+                    context: true,
+                    sentimentPolarity: true,
+                    sentimentSubjectivity: true,
+                    action: false
+                }}
+                footerVisible={false}
+                headerControlsVisible={true}
+            />
+            <CommentFilterTable
                 columnFilters={[
                     {
                         id: "context",
