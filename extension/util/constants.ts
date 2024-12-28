@@ -21,6 +21,10 @@ export const COMMENT_SENTIMENT_SUBJECTIVITY_CONTENT_FILTER_ENABLED = "_commentSe
 export const THREAD_SENTIMENT_POLARITY_CONTENT_FILTER_ENABLED = "_threadSentimentPolarityFilterEnabled"
 export const THREAD_SENTIMENT_SUBJECTIVITY_CONTENT_FILTER_ENABLED = "_threadSentimentSubjectivityFilterEnabled"
 
+export const HIDE_IGNORED_REDDITORS_ENABLED = "_hideIgnoredRedditorsEnabled"
+export const HIDE_UNPROCESSABLE_REDDITORS_ENABLED = "_hideUnprocessableRedditorsEnabled"
+export const HIDE_UNPROCESSABLE_THREADS_ENABLED = "_hideUnprocessableThreadsEnabled"
+
 export const REDDITOR_CONTEXT_QUERY_PROCESSING_ENABLED = "_redditorContextQueryProcessingEnabled"
 export const REDDITOR_DATA_PROCESSING_ENABLED = "_redditorDataProcessingEnabled"
 export const THREAD_CONTEXT_QUERY_PROCESSING_ENABLED = "_threadContextQueryProcessingEnabled"

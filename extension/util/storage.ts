@@ -46,6 +46,10 @@ export const init = async (): Promise<void> => {
         [constants.THREAD_SENTIMENT_POLARITY_CONTENT_FILTER_ENABLED]: false,
         [constants.THREAD_SENTIMENT_SUBJECTIVITY_CONTENT_FILTER_ENABLED]: false,
 
+        [constants.HIDE_IGNORED_REDDITORS_ENABLED]: false,
+        [constants.HIDE_UNPROCESSABLE_REDDITORS_ENABLED]: false,
+        [constants.HIDE_UNPROCESSABLE_THREADS_ENABLED]: false,
+
         [constants.REDDITOR_CONTEXT_QUERY_PROCESSING_ENABLED]: false,
         [constants.REDDITOR_DATA_PROCESSING_ENABLED]: false,
         [constants.THREAD_CONTEXT_QUERY_PROCESSING_ENABLED]: false,
@@ -202,11 +206,12 @@ extLocalStorage.watch({
     [constants.ALL_COMMENT_FILTERS]: async (storageChange) => {
         const { oldValue, newValue } = storageChange
 
-        newValue.map(async (contentFilter: types.CommentFilter) => {
+        for (const contentFilter of newValue as types.CommentFilter[]) {
             if (contentFilter.filterType === constants.defaultCommentFilter.filterType) {
-                return await set(constants.DEFAULT_COMMENT_FILTER, contentFilter)
+                await set(constants.DEFAULT_COMMENT_FILTER, contentFilter)
+                break
             }
-        })
+        }
     },
     [constants.ALL_THREAD_FILTERS]: async (storageChange) => {
         const { oldValue, newValue } = storageChange

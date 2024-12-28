@@ -19,6 +19,18 @@ export const Settings = () => {
         { instance: storage.extLocalStorage, key: constants.DISABLE_EXTENSION },
         (v) => (v === undefined ? false : v)
     )
+    const [hideIgnoredRedditors, setHideIgnoredRedditors] = useStorage<boolean>(
+        { instance: storage.extLocalStorage, key: constants.HIDE_IGNORED_REDDITORS_ENABLED },
+        (v) => (v === undefined ? false : v)
+    )
+    const [hideUnprocessableRedditors, setHideUnprocessableRedditors] = useStorage<boolean>(
+        { instance: storage.extLocalStorage, key: constants.HIDE_UNPROCESSABLE_REDDITORS_ENABLED },
+        (v) => (v === undefined ? false : v)
+    )
+    const [hideUnprocessableThreads, setHideUnprocessableThreads] = useStorage<boolean>(
+        { instance: storage.extLocalStorage, key: constants.HIDE_UNPROCESSABLE_THREADS_ENABLED },
+        (v) => (v === undefined ? false : v)
+    )
 
     const handleAllSettingsBtnClick = async (e) => {
         await chrome.tabs.create({ url: "/tabs/index.html" })
@@ -36,6 +48,39 @@ export const Settings = () => {
                         type="checkbox"
                     />
                     <Label for={"disableExtension"}>Disable reecon</Label>
+                </div>
+
+                <div className={"form-check pt-2"}>
+                    <Input
+                        className={"form-check-input"}
+                        checked={hideIgnoredRedditors}
+                        id={"hideIgnoredRedditors"}
+                        onChange={(e) => setHideIgnoredRedditors(e.target.checked)}
+                        type="checkbox"
+                    />
+                    <Label for={"hideIgnoredRedditors"}>Hide ignored redditors</Label>
+                </div>
+
+                <div className={"form-check pt-2"}>
+                    <Input
+                        className={"form-check-input"}
+                        checked={hideUnprocessableRedditors}
+                        id={"hideUnprocessableRedditors"}
+                        onChange={(e) => setHideUnprocessableRedditors(e.target.checked)}
+                        type="checkbox"
+                    />
+                    <Label for={"hideUnprocessableRedditors"}>Hide unprocessable redditors</Label>
+                </div>
+
+                <div className={"form-check pt-2"}>
+                    <Input
+                        className={"form-check-input"}
+                        checked={hideUnprocessableThreads}
+                        id={"hideUnprocessableThreads"}
+                        onChange={(e) => setHideUnprocessableThreads(e.target.checked)}
+                        type="checkbox"
+                    />
+                    <Label for={"hideUnprocessableThreads"}>Hide unprocessable threads</Label>
                 </div>
             </Form>
 

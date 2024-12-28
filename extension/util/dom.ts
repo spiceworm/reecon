@@ -226,6 +226,15 @@ const getThreadRowElements = (): NodeListOf<HTMLDivElement> => {
     return document.querySelectorAll("[data-permalink]:not(.comment, .ad-container)")
 }
 
+export const getThreadRowElementsMap = (): Record<string, HTMLDivElement[]> => {
+    let threadElements: Record<string, HTMLDivElement[]> = {}
+    for (const el of getThreadRowElements()) {
+        const urlPath = el.getAttribute("data-permalink")
+        urlPath in threadElements ? threadElements[urlPath].push(el) : (threadElements[urlPath] = [el])
+    }
+    return threadElements
+}
+
 const getThreadTitleElement = (urlPath: string): HTMLLinkElement => {
     return getThreadRowElement(urlPath).querySelector('[data-event-action="title"]')
 }
@@ -260,6 +269,18 @@ export const setCommentVisibility = (hiddenUsernames: Set<string>, shownUsername
                     commentRow.classList.remove("collapsed")
                     commentRow.classList.add("noncollapsed")
                 }
+            }
+        })
+    })
+}
+
+export const setThreadVisibility = (hiddenUrlPaths: Set<string>, shownUrlPaths: Set<string>) => {
+    Object.entries(getThreadRowElementsMap()).map(([urlPath, divElements]) => {
+        divElements.map((divElement) => {
+            if (hiddenUrlPaths.has(urlPath)) {
+                divElement.style.display = "none"
+            } else if (shownUrlPaths.has(urlPath)) {
+                divElement.style.display = "block"
             }
         })
     })

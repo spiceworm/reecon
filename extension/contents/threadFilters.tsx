@@ -14,12 +14,26 @@ export const config: PlasmoCSConfig = {
 }
 
 const ThreadFilters = () => {
-    const [activeContentFilter] = useStorage<types.CommentFilter>(
+    const [activeFilter] = useStorage<types.ThreadFilter>(
         {
             instance: storage.extLocalStorage,
-            key: constants.ACTIVE_COMMENT_FILTER
+            key: constants.ACTIVE_THREAD_FILTER
         },
-        (v) => (v === undefined ? constants.defaultCommentFilter : v)
+        (v) => (v === undefined ? constants.defaultThreadFilter : v)
+    )
+
+    const [sentimentPolarityFilterEnabled] = useStorage<boolean>(
+        { instance: storage.extLocalStorage, key: constants.THREAD_SENTIMENT_POLARITY_CONTENT_FILTER_ENABLED },
+        (v) => (v === undefined ? false : v)
+    )
+    const [sentimentSubjectivityFilterEnabled] = useStorage<boolean>(
+        { instance: storage.extLocalStorage, key: constants.THREAD_SENTIMENT_SUBJECTIVITY_CONTENT_FILTER_ENABLED },
+        (v) => (v === undefined ? false : v)
+    )
+
+    const [hideUnprocessableThreadsEnabled] = useStorage<boolean>(
+        { instance: storage.extLocalStorage, key: constants.HIDE_UNPROCESSABLE_THREADS_ENABLED },
+        (v) => (v === undefined ? false : v)
     )
 
     const [processedThreads] = useStorage<Record<string, types.CachedProcessedThread>>(
@@ -35,6 +49,30 @@ const ThreadFilters = () => {
     let shownUrlPaths = new Set<string>()
 
     console.log(`running threads filter CS at ${new Date()}`)
+
+    Object.keys(dom.getThreadRowElementsMap()).map((urlPath) => {
+        if (urlPath in processedThreads) {
+            const obj = processedThreads[urlPath]
+
+            if (sentimentPolarityFilterEnabled && obj.value.data.sentiment_polarity.value < activeFilter.sentimentPolarity) {
+                hiddenUrlPaths.add(urlPath)
+            } else if (sentimentSubjectivityFilterEnabled && obj.value.data.sentiment_subjectivity.value < activeFilter.sentimentSubjectivity) {
+                hiddenUrlPaths.add(urlPath)
+            } else {
+                shownUrlPaths.add(urlPath)
+            }
+        } else if (urlPath in unprocessableThreads) {
+            if (hideUnprocessableThreadsEnabled) {
+                hiddenUrlPaths.add(urlPath)
+            } else {
+                shownUrlPaths.add(urlPath)
+            }
+        }
+    })
+
+    if (hiddenUrlPaths.size > 0 || shownUrlPaths.size > 0) {
+        dom.setThreadVisibility(hiddenUrlPaths, shownUrlPaths)
+    }
 }
 
 export default ThreadFilters

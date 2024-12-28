@@ -14,7 +14,7 @@ export const config: PlasmoCSConfig = {
 }
 
 const CommentFilters = () => {
-    const [activeCommentFilter] = useStorage<types.CommentFilter>(
+    const [activeFilter] = useStorage<types.CommentFilter>(
         {
             instance: storage.extLocalStorage,
             key: constants.ACTIVE_COMMENT_FILTER
@@ -45,6 +45,15 @@ const CommentFilters = () => {
         (v) => (v === undefined ? false : v)
     )
 
+    const [hideIgnoredRedditorsEnabled] = useStorage<boolean>(
+        { instance: storage.extLocalStorage, key: constants.HIDE_IGNORED_REDDITORS_ENABLED },
+        (v) => (v === undefined ? false : v)
+    )
+    const [hideUnprocessableRedditorsEnabled] = useStorage<boolean>(
+        { instance: storage.extLocalStorage, key: constants.HIDE_UNPROCESSABLE_REDDITORS_ENABLED },
+        (v) => (v === undefined ? false : v)
+    )
+
     const [ignoredRedditors] = useStorage<Record<string, types.CachedIgnoredRedditor>>(
         { instance: storage.extLocalStorage, key: constants.CACHED_IGNORED_REDDITORS },
         (v) => (v === undefined ? {} : v)
@@ -57,14 +66,6 @@ const CommentFilters = () => {
         { instance: storage.extLocalStorage, key: constants.CACHED_UNPROCESSABLE_REDDITORS },
         (v) => (v === undefined ? {} : v)
     )
-    const [processedThreads] = useStorage<Record<string, types.CachedProcessedThread>>(
-        { instance: storage.extLocalStorage, key: constants.CACHED_PROCESSED_THREADS },
-        (v) => (v === undefined ? {} : v)
-    )
-    const [unprocessableThreads] = useStorage<Record<string, types.CachedUnprocessableThread>>(
-        { instance: storage.extLocalStorage, key: constants.CACHED_UNPROCESSABLE_THREADS },
-        (v) => (v === undefined ? {} : v)
-    )
 
     let hiddenUsernames = new Set<string>()
     let shownUsernames = new Set<string>()
@@ -75,22 +76,29 @@ const CommentFilters = () => {
         if (username in processedRedditors) {
             const obj = processedRedditors[username]
 
-            if (ageFilterEnabled && obj.value.data.age.value < activeCommentFilter.age) {
+            if (ageFilterEnabled && obj.value.data.age.value < activeFilter.age) {
                 hiddenUsernames.add(username)
-            } else if (iqFilterEnabled && obj.value.data.iq.value < activeCommentFilter.iq) {
+            } else if (iqFilterEnabled && obj.value.data.iq.value < activeFilter.iq) {
                 hiddenUsernames.add(username)
-            } else if (sentimentPolarityFilterEnabled && obj.value.data.sentiment_polarity.value < activeCommentFilter.sentimentPolarity) {
+            } else if (sentimentPolarityFilterEnabled && obj.value.data.sentiment_polarity.value < activeFilter.sentimentPolarity) {
                 hiddenUsernames.add(username)
-            } else if (
-                sentimentSubjectivityFilterEnabled &&
-                obj.value.data.sentiment_subjectivity.value < activeCommentFilter.sentimentSubjectivity
-            ) {
+            } else if (sentimentSubjectivityFilterEnabled && obj.value.data.sentiment_subjectivity.value < activeFilter.sentimentSubjectivity) {
                 hiddenUsernames.add(username)
             } else {
                 shownUsernames.add(username)
             }
         } else if (username in ignoredRedditors) {
+            if (hideIgnoredRedditorsEnabled) {
+                hiddenUsernames.add(username)
+            } else {
+                shownUsernames.add(username)
+            }
         } else if (username in unprocessableRedditors) {
+            if (hideUnprocessableRedditorsEnabled) {
+                hiddenUsernames.add(username)
+            } else {
+                shownUsernames.add(username)
+            }
         }
     })
 
