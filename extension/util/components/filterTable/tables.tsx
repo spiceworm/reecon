@@ -180,8 +180,12 @@ export const CommentFilterTable = ({ columnFilters, columnVisibility, footerVisi
         (v) => (v === undefined ? [] : v)
     )
 
-    const [defaultFilter] = useStorage<types.CommentFilter>({ instance: storage.extLocalStorage, key: constants.DEFAULT_COMMENT_FILTER }, (v) =>
-        v === undefined ? ({} as types.CommentFilter) : v
+    const [defaultFilter] = useStorage<types.CommentFilter>(
+        {
+            instance: storage.extLocalStorage,
+            key: constants.DEFAULT_COMMENT_FILTER
+        },
+        (v) => (v === undefined ? ({} as types.CommentFilter) : v)
     )
 
     const newRow = {
@@ -200,18 +204,21 @@ export const CommentFilterTable = ({ columnFilters, columnVisibility, footerVisi
     }
 
     return (
-        <FilterTable<types.CommentFilter>
-            columns={commentFilterTableColumns}
-            columnFilters={columnFilters}
-            columnVisibility={columnVisibility}
-            data={renderData}
-            footerVisible={footerVisible}
-            headerControlsVisible={headerControlsVisible}
-            newRow={newRow}
-            setRenderedData={setRenderedData}
-            setStorageData={setCommentFilters}
-            storageData={commentFilters}
-        />
+        <>
+            <h5 className={"text-center"}>Comment Filters</h5>
+            <FilterTable<types.CommentFilter>
+                columns={commentFilterTableColumns}
+                columnFilters={columnFilters}
+                columnVisibility={columnVisibility}
+                data={renderData}
+                footerVisible={footerVisible}
+                headerControlsVisible={headerControlsVisible}
+                newRow={newRow}
+                setRenderedData={setRenderedData}
+                setStorageData={setCommentFilters}
+                storageData={commentFilters}
+            />
+        </>
     )
 }
 
@@ -223,8 +230,12 @@ export const ThreadFilterTable = ({ columnFilters, columnVisibility, footerVisib
         (v) => (v === undefined ? [] : v)
     )
 
-    const [defaultFilter] = useStorage<types.ThreadFilter>({ instance: storage.extLocalStorage, key: constants.DEFAULT_THREAD_FILTER }, (v) =>
-        v === undefined ? ({} as types.ThreadFilter) : v
+    const [defaultFilter] = useStorage<types.ThreadFilter>(
+        {
+            instance: storage.extLocalStorage,
+            key: constants.DEFAULT_THREAD_FILTER
+        },
+        (v) => (v === undefined ? ({} as types.ThreadFilter) : v)
     )
 
     const newRow = {
@@ -241,17 +252,20 @@ export const ThreadFilterTable = ({ columnFilters, columnVisibility, footerVisib
     }
 
     return (
-        <FilterTable<types.ThreadFilter>
-            columns={threadFilterTableColumns}
-            columnFilters={columnFilters}
-            columnVisibility={columnVisibility}
-            data={renderData}
-            footerVisible={footerVisible}
-            headerControlsVisible={headerControlsVisible}
-            newRow={newRow}
-            setRenderedData={setRenderedData}
-            setStorageData={setThreadFilters}
-            storageData={threadFilters}
-        />
+        <>
+            <h5 className={"text-center"}>Thread Filters</h5>
+            <FilterTable<types.ThreadFilter>
+                columns={threadFilterTableColumns}
+                columnFilters={columnFilters}
+                columnVisibility={columnVisibility}
+                data={renderData}
+                footerVisible={footerVisible}
+                headerControlsVisible={headerControlsVisible}
+                newRow={newRow}
+                setRenderedData={setRenderedData}
+                setStorageData={setThreadFilters}
+                storageData={threadFilters}
+            />
+        </>
     )
 }
