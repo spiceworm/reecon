@@ -78,7 +78,7 @@ export const ActionCell = ({ row, table }) => {
 
     const onSaveClickHandler = async (): Promise<void> => {
         if (!tableMeta.rowHasValidationErrors(row.index)) {
-            await tableMeta.setStorageData([...tableMeta.data])
+            await tableMeta.updateStorageRow(row.index)
             tableMeta.setRowEditingState(row.index, false)
         }
     }

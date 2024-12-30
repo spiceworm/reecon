@@ -54,7 +54,9 @@ const FilterTable = <T extends types.ContentFilter>({
 
                 data.splice(rowIndex, 1)
                 setRenderedData([...data])
-                await setStorageData([...data])
+
+                storageData.splice(rowIndex, 1)
+                await setStorageData([...storageData])
             },
             resetRowValidationErrors: (rowIndex: number): void => {
                 let _validationErrors = { ...validationErrors }
@@ -75,12 +77,29 @@ const FilterTable = <T extends types.ContentFilter>({
             rowIsEditable: (rowIndex: number): boolean => {
                 return editableRows[rowIndex]
             },
-            setStorageData,
-            setRowEditingState: (rowId: number, editingEnabled: boolean): void => {
+            setRowEditingState: (rowIndex: number, editingEnabled: boolean): void => {
                 setEditableRows((existingEditable: []) => ({
                     ...existingEditable,
-                    [rowId]: editingEnabled
+                    [rowIndex]: editingEnabled
                 }))
+            },
+            tableHasValidationErrors: (): boolean => {
+                for (const rowValidationErrorMessages of Object.values(validationErrors)) {
+                    for (const columnValidationErrorMessage of Object.values(rowValidationErrorMessages)) {
+                        if (columnValidationErrorMessage.length > 0) {
+                            return true
+                        }
+                    }
+                }
+                return false
+            },
+            updateRenderedData: (rowIndex: number, columnId: string, value: string): void => {
+                data[rowIndex][columnId] = value
+                setRenderedData([...data])
+            },
+            updateStorageRow: async (rowIndex: number): Promise<void> => {
+                storageData[rowIndex] = data[rowIndex]
+                await setStorageData([...storageData])
             },
             validateCellInput: (value: any, columnMeta, columnId: string, rowIndex: number): boolean => {
                 let _validationErrors = { ...validationErrors }
@@ -103,20 +122,6 @@ const FilterTable = <T extends types.ContentFilter>({
                 }
                 return true
             },
-            tableHasValidationErrors: (): boolean => {
-                for (const rowValidationErrorMessages of Object.values(validationErrors)) {
-                    for (const columnValidationErrorMessage of Object.values(rowValidationErrorMessages)) {
-                        if (columnValidationErrorMessage.length > 0) {
-                            return true
-                        }
-                    }
-                }
-                return false
-            },
-            updateRenderedData: (rowIndex: number, columnId: string, value: string): void => {
-                data[rowIndex][columnId] = value
-                setRenderedData([...data])
-            }
         },
         state: {
             columnFilters,
