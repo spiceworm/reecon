@@ -50,7 +50,8 @@ export const defaultCommentFilter: types.CommentFilter = {
     iq: 0,
     sentimentPolarity: 0.05,
     sentimentSubjectivity: 0.5,
-    filterType: "default"
+    filterType: "default",
+    uuid: crypto.randomUUID()
 }
 
 // Do not reference the `defaultThreadFilter` object as a whole. If you do, updates to the default filter
@@ -60,7 +61,8 @@ export const defaultThreadFilter: types.ThreadFilter = {
     context: "Default",
     sentimentPolarity: 0.05,
     sentimentSubjectivity: 0.5,
-    filterType: "default"
+    filterType: "default",
+    uuid: crypto.randomUUID()
 }
 
 export const defaultProducerSettings: types.ProducerSettings = {

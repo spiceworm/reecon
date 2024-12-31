@@ -23,8 +23,8 @@ const FilterTable = <T extends types.ContentFilter>({
     setStorageData,
     storageData
 }) => {
-    const [editableRows, setEditableRows] = useState({})
-    const [validationErrors, setValidationErrors] = useState<Record<number, Record<string, string>>>({})
+    const [editableRows, setEditableRows] = useState<Record<string, boolean>>({})
+    const [validationErrors, setValidationErrors] = useState<Record<string, Record<string, string>>>({})
 
     const table = useReactTable({
         data,
@@ -35,53 +35,54 @@ const FilterTable = <T extends types.ContentFilter>({
             columnFilters: columnFilters
         },
         meta: {
-            addRow: (): T[] => {
-                data.push({ ...newRow })
+            addRow: (): string => {
+                const rowUUID = crypto.randomUUID()
+
+                data.push({ ...newRow, uuid: rowUUID })
                 setRenderedData([...data])
-                return data
+
+                return rowUUID
             },
-            data,
-            getCellValidationError: (rowIndex: number, columnId: string): string => {
-                return validationErrors?.[rowIndex]?.[columnId] ?? ""
+            getCellValidationError: (rowUUID: string, columnId: string): string => {
+                return validationErrors?.[rowUUID]?.[columnId] ?? ""
             },
-            getStoredContextNames: (): string[] => {
-                return storageData.map((row: T) => row.context)
+            getStoredContextNames: (excludedRowUUID: string): string[] => {
+                return storageData.filter((row: T) => row.uuid !== excludedRowUUID).map((row: T) => row.context)
             },
             headerControlsVisible: headerControlsVisible,
-            removeRow: async (rowIndex: number): Promise<void> => {
-                delete validationErrors[rowIndex]
+            removeRow: async (rowUUID: string): Promise<void> => {
+                delete editableRows[rowUUID]
+                setEditableRows({ ...editableRows })
+
+                delete validationErrors[rowUUID]
                 setValidationErrors({ ...validationErrors })
 
-                data.splice(rowIndex, 1)
-                setRenderedData([...data])
+                setRenderedData([...data.filter((row) => row.uuid !== rowUUID)])
 
-                storageData.splice(rowIndex, 1)
-                await setStorageData([...storageData])
+                await setStorageData([...storageData.filter((row) => row.uuid !== rowUUID)])
             },
-            resetRowValidationErrors: (rowIndex: number): void => {
-                let _validationErrors = { ...validationErrors }
-                _validationErrors[rowIndex] ??= {}
+            resetRowValidationErrors: (rowUUID: string): void => {
+                validationErrors[rowUUID] ??= {}
+
                 table.options.columns.map((column) => {
                     if (column.id !== "action") {
-                        _validationErrors[rowIndex][column.id] = ""
+                        validationErrors[rowUUID][column.id] = ""
                     }
                 })
-                setValidationErrors(_validationErrors)
+                setValidationErrors({ ...validationErrors })
             },
-            rowHasValidationErrors: (rowIndex: number): boolean => {
-                return Object.values(validationErrors[rowIndex]).some((s: string) => s.length > 0)
+            rowHasValidationErrors: (rowUUID: string): boolean => {
+                return Object.values(validationErrors[rowUUID]).some((s: string) => s.length > 0)
             },
             rowEditingInProgress: (): boolean => {
                 return Object.values(editableRows).some((rowIsEditable) => rowIsEditable)
             },
-            rowIsEditable: (rowIndex: number): boolean => {
-                return editableRows[rowIndex]
+            rowIsEditable: (rowUUID: string): boolean => {
+                return editableRows[rowUUID]
             },
-            setRowEditingState: (rowIndex: number, editingEnabled: boolean): void => {
-                setEditableRows((existingEditable: []) => ({
-                    ...existingEditable,
-                    [rowIndex]: editingEnabled
-                }))
+            setRowEditingState: (rowUUID: string, editingEnabled: boolean): void => {
+                editableRows[rowUUID] = editingEnabled
+                setEditableRows({ ...editableRows })
             },
             tableHasValidationErrors: (): boolean => {
                 for (const rowValidationErrorMessages of Object.values(validationErrors)) {
@@ -93,26 +94,40 @@ const FilterTable = <T extends types.ContentFilter>({
                 }
                 return false
             },
-            updateRenderedData: (rowIndex: number, columnId: string, value: string): void => {
-                data[rowIndex][columnId] = value
-                setRenderedData([...data])
+            updateRenderedData: (rowUUID: string, columnId: string, value: string): void => {
+                for (let [index, row] of data.entries()) {
+                    if (row.uuid === rowUUID) {
+                        data[index][columnId] = value
+                        setRenderedData([...data])
+                        break
+                    }
+                }
             },
-            updateStorageRow: async (rowIndex: number): Promise<void> => {
-                storageData[rowIndex] = data[rowIndex]
+            updateStorageRow: async (rowUUID: string): Promise<void> => {
+                const updatedRow = data.filter((row) => row.uuid === rowUUID)[0]
+
+                for (const [index, row] of storageData.entries()) {
+                    if (row.uuid === rowUUID) {
+                        storageData[index] = updatedRow
+                        await setStorageData([...storageData])
+                        return
+                    }
+                }
+                storageData.push(updatedRow)
                 await setStorageData([...storageData])
             },
-            validateCellInput: (value: any, columnMeta, columnId: string, rowIndex: number): boolean => {
+            validateCell: (value: any, columnMeta, columnId: string, rowUUID: string): boolean => {
                 let _validationErrors = { ...validationErrors }
-                _validationErrors[rowIndex] ??= {}
+                _validationErrors[rowUUID] ??= {}
 
                 for (const validatorFn of columnMeta.validators) {
                     try {
-                        validatorFn(value, table)
-                        _validationErrors[rowIndex][columnId] = ""
+                        validatorFn(value, table, rowUUID)
+                        _validationErrors[rowUUID][columnId] = ""
                         setValidationErrors({ ..._validationErrors })
                     } catch (error: unknown) {
                         if (error instanceof errors.ValidationError) {
-                            _validationErrors[rowIndex][columnId] = error.message
+                            _validationErrors[rowUUID][columnId] = error.message
                             setValidationErrors({ ..._validationErrors })
                         } else {
                             console.error(`Unhandled error caught when validating ${value} in ${columnId} column.`)
@@ -121,7 +136,7 @@ const FilterTable = <T extends types.ContentFilter>({
                     }
                 }
                 return true
-            },
+            }
         },
         state: {
             columnFilters,
@@ -199,7 +214,8 @@ export const CommentFilterTable = ({ columnFilters, columnVisibility, footerVisi
         filterType: "custom",
         iq: defaultFilter.iq,
         sentimentPolarity: defaultFilter.sentimentPolarity,
-        sentimentSubjectivity: defaultFilter.sentimentSubjectivity
+        sentimentSubjectivity: defaultFilter.sentimentSubjectivity,
+        uuid: ""
     }
 
     const [renderData, setRenderedData] = useState<types.CommentFilter[]>([])
@@ -247,7 +263,8 @@ export const ThreadFilterTable = ({ columnFilters, columnVisibility, footerVisib
         context: "",
         filterType: "custom",
         sentimentPolarity: defaultFilter.sentimentPolarity,
-        sentimentSubjectivity: defaultFilter.sentimentSubjectivity
+        sentimentSubjectivity: defaultFilter.sentimentSubjectivity,
+        uuid: ""
     }
 
     const [renderData, setRenderedData] = useState<types.ThreadFilter[]>([])

@@ -206,9 +206,26 @@ extLocalStorage.watch({
     [constants.ALL_COMMENT_FILTERS]: async (storageChange) => {
         const { oldValue, newValue } = storageChange
 
+        const activeFilter = await get<types.CommentFilter>(constants.ACTIVE_COMMENT_FILTER)
+        let activeFilterFound = false
+
+        // When changes are made to the default or active filters in the all filters array ensure that the separately
+        // stored default and active filters get updates as well.
         for (const contentFilter of newValue as types.CommentFilter[]) {
+            if (contentFilter.context === activeFilter.context) {
+                await set(constants.ACTIVE_COMMENT_FILTER, contentFilter)
+                activeFilterFound = true
+            }
             if (contentFilter.filterType === constants.defaultCommentFilter.filterType) {
                 await set(constants.DEFAULT_COMMENT_FILTER, contentFilter)
+            }
+        }
+
+        // If the separately stored active filter no longer exists in the all filters list, update the active filter
+        // to be the default filter.
+        for (const contentFilter of newValue as types.CommentFilter[]) {
+            if (contentFilter.filterType === constants.defaultCommentFilter.filterType && !activeFilterFound) {
+                await set(constants.ACTIVE_COMMENT_FILTER, contentFilter)
                 break
             }
         }
@@ -216,11 +233,29 @@ extLocalStorage.watch({
     [constants.ALL_THREAD_FILTERS]: async (storageChange) => {
         const { oldValue, newValue } = storageChange
 
-        newValue.map(async (contentFilter: types.ThreadFilter) => {
-            if (contentFilter.filterType === constants.defaultThreadFilter.filterType) {
-                return await set(constants.DEFAULT_THREAD_FILTER, contentFilter)
+        const activeFilter = await get<types.ThreadFilter>(constants.ACTIVE_THREAD_FILTER)
+        let activeFilterFound = false
+
+        // When changes are made to the default or active filters in the all filters array ensure that the separately
+        // stored default and active filters get updates as well.
+        for (const contentFilter of newValue as types.ThreadFilter[]) {
+            if (contentFilter.context === activeFilter.context) {
+                await set(constants.ACTIVE_THREAD_FILTER, contentFilter)
+                activeFilterFound = true
             }
-        })
+            if (contentFilter.filterType === constants.defaultThreadFilter.filterType) {
+                await set(constants.DEFAULT_THREAD_FILTER, contentFilter)
+            }
+        }
+
+        // If the separately stored active filter no longer exists in the all filters list, update the active filter
+        // to be the default filter.
+        for (const contentFilter of newValue as types.ThreadFilter[]) {
+            if (contentFilter.filterType === constants.defaultThreadFilter.filterType && !activeFilterFound) {
+                await set(constants.ACTIVE_THREAD_FILTER, contentFilter)
+                break
+            }
+        }
     },
     [constants.API_STATUS_MESSAGES]: async (storageChange) => {
         const { oldValue, newValue } = storageChange

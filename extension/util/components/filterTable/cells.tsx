@@ -10,6 +10,7 @@ export const Cell = ({ getValue, row, column, table }) => {
     const initialValue = getValue()
     const columnMeta = column.columnDef.meta
     const tableMeta = table.options.meta
+    const rowUUID = row.original.uuid
 
     const [renderValue, setRenderValue] = useState(initialValue)
 
@@ -18,7 +19,7 @@ export const Cell = ({ getValue, row, column, table }) => {
 
     useEffect(() => {
         // When a new row is added, validate the new row values so a validation error is triggered for the empty context field.
-        tableMeta.validateCellInput(initialValue, columnMeta, column.id, row.index)
+        tableMeta.validateCell(initialValue, columnMeta, column.id, rowUUID)
 
         if (initialValue !== renderValue) {
             setRenderValue(initialValue)
@@ -28,15 +29,15 @@ export const Cell = ({ getValue, row, column, table }) => {
     const onChangeHandler = (e): void => {
         let value = e.target.value
 
-        if (tableMeta.validateCellInput(value, columnMeta, column.id, row.index)) {
+        if (tableMeta.validateCell(value, columnMeta, column.id, rowUUID)) {
             value = columnMeta.cast(value)
         }
 
         setRenderValue(value)
-        tableMeta.updateRenderedData(row.index, column.id, value)
+        tableMeta.updateRenderedData(rowUUID, column.id, value)
     }
 
-    const validationError = tableMeta.getCellValidationError(row.index, column.columnDef.id)
+    const validationError = tableMeta.getCellValidationError(rowUUID, column.id)
 
     if (columnMeta.element === "input") {
         return (
@@ -47,11 +48,11 @@ export const Cell = ({ getValue, row, column, table }) => {
                     </span>
                 ) : null}
                 <Input
-                    disabled={isDefaultContextCell || !tableMeta.rowIsEditable(row.index)}
+                    disabled={isDefaultContextCell || !tableMeta.rowIsEditable(rowUUID)}
                     invalid={validationError.length > 0}
                     key={`row-${row.index}-col-${column.id}-input`}
                     onChange={onChangeHandler}
-                    readOnly={isDefaultContextCell || !tableMeta.rowIsEditable(row.index)}
+                    readOnly={isDefaultContextCell || !tableMeta.rowIsEditable(rowUUID)}
                     step={columnMeta.step ? columnMeta.step : null}
                     title={validationError.length > 0 ? validationError : renderValue}
                     type={columnMeta.type}
@@ -66,46 +67,39 @@ export const Cell = ({ getValue, row, column, table }) => {
 
 export const ActionCell = ({ row, table }) => {
     const tableMeta = table.options.meta
+    const rowUUID = row.original.uuid
 
     const onDeleteClickHandler = (): void => {
-        tableMeta.removeRow(row.index)
+        tableMeta.removeRow(rowUUID)
     }
 
     const onEditClickHandler = (): void => {
-        tableMeta.resetRowValidationErrors(row.index)
-        tableMeta.setRowEditingState(row.index, true)
+        tableMeta.resetRowValidationErrors(rowUUID)
+        tableMeta.setRowEditingState(rowUUID, true)
     }
 
     const onSaveClickHandler = async (): Promise<void> => {
-        if (!tableMeta.rowHasValidationErrors(row.index)) {
-            await tableMeta.updateStorageRow(row.index)
-            tableMeta.setRowEditingState(row.index, false)
+        if (!tableMeta.rowHasValidationErrors(rowUUID)) {
+            await tableMeta.updateStorageRow(rowUUID)
+            tableMeta.setRowEditingState(rowUUID, false)
         }
     }
 
     return (
         <ButtonGroup>
             <>
-                {tableMeta.rowIsEditable(row.index) ? (
-                    <Button color={"success"} disabled={tableMeta.rowHasValidationErrors(row.index)} onClick={onSaveClickHandler}>
+                {tableMeta.rowIsEditable(rowUUID) ? (
+                    <Button color={"success"} disabled={tableMeta.rowHasValidationErrors(rowUUID)} onClick={onSaveClickHandler}>
                         <Check />
                     </Button>
                 ) : (
-                    <Button
-                        color={"secondary"}
-                        // Only allow one row to be edited at a time.
-                        disabled={tableMeta.rowEditingInProgress()}
-                        onClick={onEditClickHandler}>
+                    <Button color={"secondary"} onClick={onEditClickHandler}>
                         <Pencil />
                     </Button>
                 )}
                 {row.original.filterType !== "default" ? (
                     <Button
                         color={"danger"}
-                        // Do not allow deletion if validation errors exist anywhere in the table because deleting
-                        // causes the all rendered rows to be saved. We do not want to save a row that contains errors.
-                        // We also do not want to save a different row that is still being edited that is not yet saved.
-                        disabled={tableMeta.tableHasValidationErrors() || tableMeta.rowEditingInProgress()}
                         key={`row-${row.index}-action`}
                         onClick={onDeleteClickHandler}
                         title={"Delete"}>
@@ -146,10 +140,9 @@ export const FooterCell = ({ table }) => {
     const tableMeta = table.options.meta
 
     const onClickHandler = (): void => {
-        const newTableData = tableMeta.addRow()
-        const newRowIndex = newTableData.length - 1
-        tableMeta.resetRowValidationErrors(newRowIndex)
-        tableMeta.setRowEditingState(newRowIndex, true)
+        const rowUUID = tableMeta.addRow()
+        tableMeta.resetRowValidationErrors(rowUUID)
+        tableMeta.setRowEditingState(rowUUID, true)
     }
 
     return (

@@ -114,6 +114,7 @@ export interface AuthTokenRefreshResponse {
 export interface ContentFilter {
     context: string
     filterType: string
+    uuid: string
 }
 
 export interface CommentFilter extends ContentFilter {

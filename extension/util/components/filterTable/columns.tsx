@@ -29,6 +29,7 @@ const age = (columnHelper, storageKey: string) => {
 const context = (columnHelper) => {
     return columnHelper.accessor("context", {
         cell: cells.Cell,
+        filterFn: "equals",
         header: "Context",
         id: "context",
         meta: {
@@ -37,8 +38,8 @@ const context = (columnHelper) => {
             type: "text",
             validators: [
                 validators.requireValue,
-                (value, table) => {
-                    validators.requireUnique(value, table.options.meta.getStoredContextNames())
+                (value, table, excludedRowUUID: string) => {
+                    validators.requireUnique(value, table.options.meta.getStoredContextNames(excludedRowUUID))
                 }
             ]
         }

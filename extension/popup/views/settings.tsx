@@ -95,7 +95,7 @@ export const Settings = () => {
                     context: true,
                     sentimentPolarity: true,
                     sentimentSubjectivity: true,
-                    action: false
+                    action: true
                 }}
                 footerVisible={false}
                 headerControlsVisible={true}
@@ -113,7 +113,7 @@ export const Settings = () => {
                     iq: true,
                     sentimentPolarity: true,
                     sentimentSubjectivity: true,
-                    action: false
+                    action: true
                 }}
                 footerVisible={false}
                 headerControlsVisible={true}
