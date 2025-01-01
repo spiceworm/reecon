@@ -98,11 +98,7 @@ export const ActionCell = ({ row, table }) => {
                     </Button>
                 )}
                 {row.original.filterType !== "default" ? (
-                    <Button
-                        color={"danger"}
-                        key={`row-${row.index}-action`}
-                        onClick={onDeleteClickHandler}
-                        title={"Delete"}>
+                    <Button color={"danger"} key={`row-${row.index}-action`} onClick={onDeleteClickHandler} title={"Delete"}>
                         <Trash key={`row-${row.index}-icon`} />
                     </Button>
                 ) : null}

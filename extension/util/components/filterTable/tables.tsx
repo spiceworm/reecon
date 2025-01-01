@@ -47,7 +47,9 @@ const FilterTable = <T extends types.ContentFilter>({
                 return validationErrors?.[rowUUID]?.[columnId] ?? ""
             },
             getStoredContextNames: (excludedRowUUID: string): string[] => {
-                return storageData.filter((row: T) => row.uuid !== excludedRowUUID).map((row: T) => row.context)
+                return Object.values(storageData)
+                    .filter((row: T) => row.uuid !== excludedRowUUID)
+                    .map((row: T) => row.context)
             },
             headerControlsVisible: headerControlsVisible,
             removeRow: async (rowUUID: string): Promise<void> => {
@@ -57,9 +59,10 @@ const FilterTable = <T extends types.ContentFilter>({
                 delete validationErrors[rowUUID]
                 setValidationErrors({ ...validationErrors })
 
-                setRenderedData([...data.filter((row) => row.uuid !== rowUUID)])
+                setRenderedData([...data.filter((row: T) => row.uuid !== rowUUID)])
 
-                await setStorageData([...storageData.filter((row) => row.uuid !== rowUUID)])
+                Object.values(storageData).filter((row: T) => (row.uuid === rowUUID ? delete storageData[row.context] : null))
+                await setStorageData({ ...storageData })
             },
             resetRowValidationErrors: (rowUUID: string): void => {
                 validationErrors[rowUUID] ??= {}
@@ -104,17 +107,9 @@ const FilterTable = <T extends types.ContentFilter>({
                 }
             },
             updateStorageRow: async (rowUUID: string): Promise<void> => {
-                const updatedRow = data.filter((row) => row.uuid === rowUUID)[0]
-
-                for (const [index, row] of storageData.entries()) {
-                    if (row.uuid === rowUUID) {
-                        storageData[index] = updatedRow
-                        await setStorageData([...storageData])
-                        return
-                    }
-                }
-                storageData.push(updatedRow)
-                await setStorageData([...storageData])
+                const updatedRow = data.filter((row: T) => row.uuid === rowUUID)[0]
+                storageData[updatedRow.context] = updatedRow
+                await setStorageData({ ...storageData })
             },
             validateCell: (value: any, columnMeta, columnId: string, rowUUID: string): boolean => {
                 let _validationErrors = { ...validationErrors }
@@ -195,9 +190,9 @@ const commentFilterTableColumns = [
 ]
 
 export const CommentFilterTable = ({ columnFilters, columnVisibility, footerVisible, headerControlsVisible }) => {
-    const [commentFilters, setCommentFilters, { isLoading }] = useStorage<types.CommentFilter[]>(
+    const [commentFilters, setCommentFilters, { isLoading }] = useStorage<Record<string, types.CommentFilter>>(
         { instance: storage.extLocalStorage, key: constants.ALL_COMMENT_FILTERS },
-        (v) => (v === undefined ? [] : v)
+        (v) => (v === undefined ? {} : v)
     )
 
     const [defaultFilter] = useStorage<types.CommentFilter>(
@@ -208,7 +203,7 @@ export const CommentFilterTable = ({ columnFilters, columnVisibility, footerVisi
         (v) => (v === undefined ? ({} as types.CommentFilter) : v)
     )
 
-    const newRow = {
+    const newRow: types.CommentFilter = {
         age: defaultFilter.age,
         context: "",
         filterType: "custom",
@@ -221,7 +216,7 @@ export const CommentFilterTable = ({ columnFilters, columnVisibility, footerVisi
     const [renderData, setRenderedData] = useState<types.CommentFilter[]>([])
 
     if (!isLoading && renderData.length === 0) {
-        setRenderedData([...commentFilters])
+        setRenderedData(Object.values(commentFilters))
     }
 
     return (
@@ -246,9 +241,9 @@ export const CommentFilterTable = ({ columnFilters, columnVisibility, footerVisi
 const threadFilterTableColumns = [columns.ThreadContext, columns.ThreadSentimentPolarity, columns.ThreadSentimentSubjectivity, columns.ThreadAction]
 
 export const ThreadFilterTable = ({ columnFilters, columnVisibility, footerVisible, headerControlsVisible }) => {
-    const [threadFilters, setThreadFilters, { isLoading }] = useStorage<types.ThreadFilter[]>(
+    const [threadFilters, setThreadFilters, { isLoading }] = useStorage<Record<string, types.ThreadFilter>>(
         { instance: storage.extLocalStorage, key: constants.ALL_THREAD_FILTERS },
-        (v) => (v === undefined ? [] : v)
+        (v) => (v === undefined ? {} : v)
     )
 
     const [defaultFilter] = useStorage<types.ThreadFilter>(
@@ -259,7 +254,7 @@ export const ThreadFilterTable = ({ columnFilters, columnVisibility, footerVisib
         (v) => (v === undefined ? ({} as types.ThreadFilter) : v)
     )
 
-    const newRow = {
+    const newRow: types.ThreadFilter = {
         context: "",
         filterType: "custom",
         sentimentPolarity: defaultFilter.sentimentPolarity,
@@ -270,7 +265,7 @@ export const ThreadFilterTable = ({ columnFilters, columnVisibility, footerVisib
     const [renderData, setRenderedData] = useState<types.ThreadFilter[]>([])
 
     if (!isLoading && renderData.length === 0) {
-        setRenderedData([...threadFilters])
+        setRenderedData(Object.values(threadFilters))
     }
 
     return (
