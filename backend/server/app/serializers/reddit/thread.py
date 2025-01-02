@@ -1,4 +1,3 @@
-from django.utils.functional import lazy
 from rest_framework import serializers
 
 from reecon.models import (
@@ -114,11 +113,16 @@ class UnprocessableThreadContextQuerySerializer(serializers.ModelSerializer):
 
 
 class ThreadContextQueryCreateRequestSerializer(serializers.Serializer):
-    llm_name = serializers.ChoiceField(choices=lazy(util.get_llm_choices, tuple)())
-    nlp_name = serializers.ChoiceField(choices=lazy(util.get_nlp_choices, tuple)())
+    llm_name = serializers.ChoiceField(choices=[])
+    nlp_name = serializers.ChoiceField(choices=[])
     path = serializers.CharField()
     producer_settings = ProducerSettingsSerializer()
     prompt = serializers.CharField()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['llm_name'].choices = util.get_llm_choices()
+        self.fields['nlp_name'].choices = util.get_nlp_choices()
 
 
 class ThreadContextQueryCreateResponseSerializer(serializers.Serializer):

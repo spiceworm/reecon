@@ -163,29 +163,32 @@ class Command(management.base.BaseCommand):
         parser.add_argument("--migrate", action="store_true")
         parser.add_argument("--populate-database", action="store_true")
 
+    def ensure_db_connection(self):
+        for _ in range(5):
+            try:
+                db.connection.cursor()
+            except db.utils.OperationalError as e:
+                err = e
+                time.sleep(2)
+            else:
+                break
+        else:
+            raise err
+
     def handle(self, *args, **options):
         if options["all"] or options["collectstatic"]:
             # Write static files to /static
             management.call_command("collectstatic", interactive=False)
-        if options["all"] or options["generate_api_schema"]:
-            # Generate API documentation schema (viewable to /api/v1/schema/{redoc,swagger-ui})
-            management.call_command("spectacular", "--color", "--file=/static/schema.yml")
         if options["all"] or options["migrate"]:
-            # Apply migrations to database after verifying that Django can connect to db
-            for _ in range(5):
-                try:
-                    db.connection.cursor()
-                except db.utils.OperationalError as e:
-                    err = e
-                    time.sleep(2)
-                else:
-                    management.call_command("migrate")
-                    break
-            else:
-                raise err
+            self.ensure_db_connection()
+            management.call_command("migrate")
         if options["all"] or options["populate-database"]:
+            self.ensure_db_connection()
             create_hardcoded_users()
             create_hardcoded_ignored_redditors()
             create_hardcoded_producer_categories()
             create_hardcoded_producers()
             create_hardcoded_status_messages()
+        if options["all"] or options["generate_api_schema"]:
+            # Generate API documentation schema (viewable to /api/v1/schema/{redoc,swagger-ui})
+            management.call_command("spectacular", "--color", "--file=/static/schema.yml")

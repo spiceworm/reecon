@@ -21,6 +21,8 @@ do
   sleep 1;
 done;
 
+echo "Performing startup actions" | tee /var/log/entrypoint.log
 python /server/manage.py prepare_app --all
 
+echo "Starting supervisord" | tee /var/log/entrypoint.log
 exec supervisord --user root --nodaemon --configuration /etc/supervisor/conf.d/supervisord.conf
