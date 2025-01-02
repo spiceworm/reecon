@@ -2,7 +2,6 @@ from django.utils.functional import lazy
 from rest_framework import serializers
 
 from reecon.models import (
-    Producer,
     Thread,
     ThreadContextQuery,
     ThreadData,

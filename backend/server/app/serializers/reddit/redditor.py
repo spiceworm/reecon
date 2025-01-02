@@ -3,7 +3,6 @@ from rest_framework import serializers
 
 from reecon.models import (
     IgnoredRedditor,
-    Producer,
     Redditor,
     RedditorContextQuery,
     RedditorData,

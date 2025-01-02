@@ -416,8 +416,8 @@ CONSTANCE_CONFIG = collections.OrderedDict(
             timedelta,
         ),
         "REDDITOR_ACCOUNT_MIN_AGE": (
-            timedelta(days=7),
-            "The minimum number of days old a redditor account must be for data processing to occur.",
+            timedelta(hours=1),
+            "The minimum age a redditor account must be for data processing to occur.",
             timedelta,
         ),
     }
