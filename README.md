@@ -101,6 +101,7 @@ REDIS_SSL=True / False
 - reinstall reecon python package for local virtualenv
   - `cd reecon/backend/reecon`
   - `export VERSION=<new-version>; python -m build && pip install dist/reecon-${VERSION}.tar.gz`
+- Tag latest commit with version
 
 # Deploy to Production
 ```
@@ -109,20 +110,27 @@ $ . ~/venv/reecon/bin/activate
 (reecon) $ ./deploy.py
 ```
 
+# Going public blockers
+- Make nlp sentiment values human readable
+
 # TODO:
-- If going to an "aggregator" sub like /r/all and /r/popular, apply content filters to each individual thread based on the context of that thread
-  - In settings popup, show all active content filters
 - Think about how to handle local settings after logout. Logging back in as a different user will currently load the initial users settings
     - Add option to back up settings to file and another option to import from file
 - Generate a bell curve using recent processed redditor data to determine high, medium, and low values for sentiment polarity and subjectivity
-- There is no way for a user to recover their account if they forgot their password because the app does not require them to enter an email address
-    - If their reecon username is the same as their redditor username, could add a password reset mechanism by messaging the reecon-admin bot
 - Make annotated data render nicer
 - Make use of RQ priority queues (would need to configure a worker host for each queue)
     - Unprocessed redditors/threads go in medium priority, reprocessing redditors/threads go in low priority, context queries go in high priority
 - Implement password reset bot for reecon-admin
     - User sends DM that says "forgot password" and bot responds back with a password reset link
 - Lookup how extension updates are performed and stored keys are impacted (new and existing ones)
+- Auto updates to the DOM that change 'pending' to something else causes a collapsed comment with any pending child comments to uncollapse when the update occurs
+- Add terms of service aggreements checkbox that links to a TOS document
+    - All data generated using user api keys is owned by me
+    - There should be no expectation of accuracy for generated data
+    - All generated data should be relied upon for entertainment purposes only
+- Run content script once and then only continue running it on the active tab. If there are 5 tabs for large tabs open that will be a lot of browser processing happening.
+- Redo storage initialization so variables are only set to defaults if the storage key is currently unset (or lookup the proper way to do this so extension updates work without accidentally modifying existing storage values)
+- Only return objects from redis cache from api requests and enqueue eveything else. Queued entries will either result in a refreshing of the redis entry or processing
 
 # Enhancements:
 - Add option to hide comments for unprocessable redditors
@@ -130,9 +138,12 @@ $ . ~/venv/reecon/bin/activate
 - Recommend threads to users based on their interests determined from their submissions history.
 - Hide thread posts from redditors that trigger filter rule for current context
 - Do not expose producer api keys when looking at RQ job arguments in admin panel
-- update llm prompt to return keywords in order of relevance from most to least
 - Add contributions tab that shows how many submissions the user has paid for with their key
 - Show contribution rank next to each redditors username
 - Add way for users to report suspected bot accounts so they get added to the ignored redditors list
 - Add UI endpoint to render processed data for individual redditors / threads. This could be used when people share processed information as a link or could be incorporated into a search feature of the site one day
 - Allow users to contribute anonymously or have a checkbox to hide their username from contributions (while still being associated with them)
+- Add pagination and search to context-query history
+- When looking at a thread or user comment/thread history page, show one of those little agent chat windows in the bottom right of the page where you can submit a context-query for the current page entity
+- Use VPC database connections when digitalocean app connections within a VPC is made available
+  - https://ideas.digitalocean.com/app-platform/p/vpc-with-apps-droplets-and-managed-databases
