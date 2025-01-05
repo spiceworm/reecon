@@ -1,74 +1,28 @@
 from pathlib import Path
 
-import decouple
+from reecon import settings as reecon_settings
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = decouple.config("SECRET_KEY")
 
-DEBUG = decouple.config("DEBUG", cast=bool, default=False)
-PRODUCTION = decouple.config("PRODUCTION", cast=bool, default=False)
+SECRET_KEY = reecon_settings.SECRET_KEY
+DEBUG = reecon_settings.DEBUG
 
 WSGI_APPLICATION = "proj.wsgi.application"
-
-LOG_LEVEL = decouple.config(
-    "LOG_LEVEL",
-    default="DEBUG" if DEBUG else "INFO",
-    cast=decouple.Choices(["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]),
-)
 
 INSTALLED_APPS = [
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django_rq",
-    "reecon.apps.ReeconConfig",
+    "reecon",
     "app",
 ]
 
-REDIS_HOST = decouple.config("REDIS_HOST")
-REDIS_PASSWORD = decouple.config("REDIS_PASSWORD", default="")
-REDIS_PORT = decouple.config("REDIS_PORT", cast=int, default=6379)
-REDIS_SSL = decouple.config("REDIS_SSL", cast=bool, default=False)
-REDIS_USERNAME = decouple.config("REDIS_USERNAME", default="")
-REDIS_URL = f"redis{'s' if REDIS_SSL else ''}://{REDIS_USERNAME}:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/0"
+CACHES = reecon_settings.CACHES
+DATABASES = reecon_settings.DATABASES
 
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "DEFAULT_TIMEOUT": 360,
-        "LOCATION": REDIS_URL,
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            "CONNECTION_POOL_KWARGS": {"ssl_cert_reqs": None} if REDIS_SSL else {},
-        },
-    }
-}
-
-RQ = {
-    "DEFAULT_RESULT_TTL": 5000,
-}
-
-RQ_QUEUES = {
-    "default": {
-        "USE_REDIS_CACHE": "default",
-    },
-}
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "ATOMIC_REQUESTS": True,
-        "CONN_MAX_AGE": 30,
-        "HOST": decouple.config("POSTGRES_HOST"),
-        "NAME": decouple.config("POSTGRES_DB"),
-        "PASSWORD": decouple.config("POSTGRES_PASSWORD"),
-        "PORT": decouple.config("POSTGRES_PORT"),
-        "USER": decouple.config("POSTGRES_USER"),
-        "OPTIONS": {
-            "sslmode": decouple.config("POSTGRES_SSL"),
-        },
-    }
-}
+RQ = reecon_settings.RQ
+RQ_QUEUES = reecon_settings.RQ_QUEUES
 
 LOGGING = {
     "version": 1,
@@ -97,30 +51,28 @@ LOGGING = {
         },
         "django": {
             "handlers": ["console"],
-            "level": LOG_LEVEL,
+            "level": reecon_settings.LOG_LEVEL,
             "propagate": False,
         },
         "rq.worker": {
             "handlers": ["rq-file"],
-            "level": LOG_LEVEL,
+            "level": reecon_settings.LOG_LEVEL,
             "propagate": False,
         },
     },
     "root": {
         "handlers": ["console"],
-        "level": LOG_LEVEL,
+        "level": reecon_settings.LOG_LEVEL,
     },
 }
 
-# Internationalization
-# https://docs.djangoproject.com/en/5.1/topics/i18n/
+LANGUAGE_CODE = reecon_settings.LANGUAGE_CODE
+TIME_ZONE = reecon_settings.TIME_ZONE
+USE_I18N = reecon_settings.USE_I18N
+USE_TZ = reecon_settings.USE_TZ
+DEFAULT_AUTO_FIELD = reecon_settings.DEFAULT_AUTO_FIELD
 
-LANGUAGE_CODE = "en-us"
-
-TIME_ZONE = "UTC"
-
-USE_I18N = True
-
-USE_TZ = True
-
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+CONSTANCE_BACKEND = reecon_settings.CONSTANCE_BACKEND
+CONSTANCE_REDIS_CONNECTION = reecon_settings.CONSTANCE_REDIS_CONNECTION
+CONSTANCE_ADDITIONAL_FIELDS = reecon_settings.CONSTANCE_ADDITIONAL_FIELDS
+CONSTANCE_CONFIG = reecon_settings.CONSTANCE_CONFIG

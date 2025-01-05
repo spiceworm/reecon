@@ -7,6 +7,7 @@ from reecon.models import (
     UnprocessableThread,
     UnprocessableThreadContextQuery,
 )
+from reecon import util
 
 from ..producer import (
     ProducedFloatSerializer,
@@ -15,7 +16,6 @@ from ..producer import (
     ProducerSettingsSerializer,
 )
 from ..user import UserSerializer
-from ... import util
 
 
 __all__ = (
@@ -121,8 +121,8 @@ class ThreadContextQueryCreateRequestSerializer(serializers.Serializer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['llm_name'].choices = util.get_llm_choices()
-        self.fields['nlp_name'].choices = util.get_nlp_choices()
+        self.fields['llm_name'].choices = util.producer.get_llm_choices()
+        self.fields['nlp_name'].choices = util.producer.get_nlp_choices()
 
 
 class ThreadContextQueryCreateResponseSerializer(serializers.Serializer):
