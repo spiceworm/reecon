@@ -53,7 +53,13 @@ RQ = {
 }
 
 RQ_QUEUES = {
+    "high": {
+        "USE_REDIS_CACHE": "default",
+    },
     "default": {
+        "USE_REDIS_CACHE": "default",
+    },
+    "low": {
         "USE_REDIS_CACHE": "default",
     },
 }
