@@ -62,9 +62,9 @@ class RedditorContextQueryViewSet(GenericViewSet):
             # Do not explicitly set a job id because context-query jobs should have unique IDs.
             # Multiple users could submit a context query for the same redditor, but each query
             # will create a new job.
-            job = django_rq.enqueue(
+            job_queue = django_rq.get_queue("high")
+            job = job_queue.enqueue(
                 "app.worker.process_redditor_context_query",  # this function is defined in the worker app
-                at_front=True,
                 kwargs={
                     "redditor_username": username,
                     "llm_contributor": request.user,
@@ -173,7 +173,7 @@ class RedditorDataViewSet(GenericViewSet):
             nlp_producer = models.Producer.objects.get(name=config.NLP_NAME)
             env = schemas.get_worker_env()
 
-            job_queue = django_rq.get_queue()
+            job_queue = django_rq.get_queue("default")
             existing_job_ids = set(job_queue.get_job_ids())
 
             for redditor_username in pending_usernames:
@@ -237,9 +237,9 @@ class ThreadContextQueryViewSet(GenericViewSet):
             # Do not explicitly set a job id because context-query jobs should have unique IDs.
             # Multiple users could submit a context query for the same thread, but each query
             # will create a new job.
-            job = django_rq.enqueue(
+            job_queue = django_rq.get_queue("high")
+            job = job_queue.enqueue(
                 "app.worker.process_thread_context_query",  # this function is defined in the worker app
-                at_front=True,
                 kwargs={
                     "thread_url": f"https://reddit.com{url_path}",
                     "llm_contributor": request.user,
@@ -344,7 +344,7 @@ class ThreadDataViewSet(GenericViewSet):
             nlp_producer = models.Producer.objects.get(name=config.NLP_NAME)
             env = schemas.get_worker_env()
 
-            job_queue = django_rq.get_queue()
+            job_queue = django_rq.get_queue("default")
             existing_job_ids = set(job_queue.get_job_ids())
 
             for thread_url in pending_urls:
