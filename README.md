@@ -118,8 +118,6 @@ $ . ~/venv/reecon/bin/activate
     - Add option to back up settings to file and another option to import from file
 - Generate a bell curve using recent processed redditor data to determine high, medium, and low values for sentiment polarity and subjectivity
 - Make annotated data render nicer
-- Make use of RQ priority queues (would need to configure a worker host for each queue)
-    - Unprocessed redditors/threads go in medium priority, reprocessing redditors/threads go in low priority, context queries go in high priority
 - Implement password reset bot for reecon-admin
     - User sends DM that says "forgot password" and bot responds back with a password reset link
 - Lookup how extension updates are performed and stored keys are impacted (new and existing ones)
@@ -131,6 +129,7 @@ $ . ~/venv/reecon/bin/activate
 - Run content script once and then only continue running it on the active tab. If there are 5 tabs for large tabs open that will be a lot of browser processing happening.
 - Redo storage initialization so variables are only set to defaults if the storage key is currently unset (or lookup the proper way to do this so extension updates work without accidentally modifying existing storage values)
 - Only return objects from redis cache from api requests and enqueue eveything else. Queued entries will either result in a refreshing of the redis entry or processing
+- If an already processed entity is submitted and needs to be re-processed because it is stale, but that job in the low priority queue
 
 # Enhancements:
 - Add option to hide comments for unprocessable redditors

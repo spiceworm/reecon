@@ -175,6 +175,10 @@ class Command(management.base.BaseCommand):
         else:
             raise err
 
+    # TODO: `--collectstatic` and `--generate-api-schema` are needed for the server container to serve drf ui and docs.
+    #     `--migrate` and `--populate-database` should be called only from the service container. The problem is that
+    #     a bunch of installed apps, middleware, and requirements need to be present in the service container to create
+    #     django tables and tables required for some dependencies.
     def handle(self, *args, **options):
         if options["all"] or options["collectstatic"]:
             # Write static files to /static
@@ -182,7 +186,7 @@ class Command(management.base.BaseCommand):
         if options["all"] or options["migrate"]:
             self.ensure_db_connection()
             management.call_command("migrate")
-        if options["all"] or options["populate-database"]:
+        if options["all"] or options["populate_database"]:
             self.ensure_db_connection()
             create_hardcoded_users()
             create_hardcoded_ignored_redditors()

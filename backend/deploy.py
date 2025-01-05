@@ -48,7 +48,7 @@ def main(args):
 
     subprocess.check_call(["docker", "compose", "build"])
 
-    for service_name in ("server", "worker"):
+    for service_name in ("server", "service", "worker"):
         image_url = f"{registry_url}/{config['APP_NAME']}/{service_name}:{args.tag}"
         push_cmd = ["docker", "push", image_url]
 

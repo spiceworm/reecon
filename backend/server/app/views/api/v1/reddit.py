@@ -150,12 +150,6 @@ class RedditorDataViewSet(GenericViewSet):
             )
         )
 
-        # Delete unprocessable redditors that are expired and can attempt to be processed again.
-        # TODO: Should deletion of expired objects be handled by a separate process that runs on a schedule?
-        models.UnprocessableRedditor.objects.filter(
-            created__lte=timezone.now() - config.UNPROCESSABLE_REDDITOR_EXP_TD
-        ).delete()
-
         unprocessable_redditors = models.UnprocessableRedditor.objects.filter(username__in=usernames)
         unprocessable_usernames = set(unprocessable_redditors.values_list("username", flat=True))
 
@@ -325,12 +319,6 @@ class ThreadDataViewSet(GenericViewSet):
                 flat=True,
             )
         )
-
-        # Delete unprocessable threads that are expired and can attempt to be processed again.
-        # TODO: Should deletion of expired objects be handled by a separate process that runs on a schedule?
-        models.UnprocessableThread.objects.filter(
-            created__lte=timezone.now() - config.UNPROCESSABLE_THREAD_EXP_TD
-        ).delete()
 
         unprocessable_threads = models.UnprocessableThread.objects.filter(url__in=thread_urls)
         unprocessable_urls = set(unprocessable_threads.values_list("url", flat=True))
