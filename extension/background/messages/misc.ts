@@ -16,7 +16,7 @@ const openAiApiKeyIsUsable = async (apiKey: string) => {
         return true
     } catch (error) {
         if (error instanceof RateLimitError) {
-            await storage.setExtensionStatusMessage("unusableOpenAiApiKey", true, `OpenAI key is not usable. ${error.error.message}`)
+            await storage.setExtensionStatusMessage("unusableOpenAiApiKey", true, `OpenAI key is not usable. ${error.message}`)
         } else {
             console.error(`Unhandled OpenAI error caught`)
             console.error(error)
