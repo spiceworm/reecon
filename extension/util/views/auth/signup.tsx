@@ -1,5 +1,4 @@
-import { signal } from "@preact/signals"
-import * as react from "react"
+import { useState, type FormEvent } from "react"
 import { ExclamationCircle, Eye, EyeSlash } from "react-bootstrap-icons"
 import { NavLink, useNavigate } from "react-router-dom"
 import { Button, Form, Input, InputGroup, Spinner, UncontrolledAlert } from "reactstrap"
@@ -13,14 +12,12 @@ import * as constants from "~util/constants"
 import * as storage from "~util/storage"
 import type * as types from "~util/types"
 
-// TODO: just use useState for these and uninstall signal dependency
-const signupPassword = signal("")
-const signupUsername = signal("")
-
 export const Signup = ({ onSuccessRedirectPath }) => {
     const [_, setAuth] = useStorage<types.Auth>({ instance: storage.extLocalStorage, key: constants.AUTH })
-    const [passwordVisible, setPasswordVisible] = react.useState(false)
-    const [signupCredentials, setSignupCredentials] = react.useState(null)
+    const [passwordVisible, setPasswordVisible] = useState(false)
+    const [signupCredentials, setSignupCredentials] = useState(null)
+    const [password, setPassword] = useState<string>("")
+    const [username, setUsername] = useState<string>("")
     const navigate = useNavigate()
 
     const {
@@ -41,11 +38,11 @@ export const Signup = ({ onSuccessRedirectPath }) => {
         }
     )
 
-    const handleSubmit = async (e: react.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         setSignupCredentials({
-            username: signupUsername.value,
-            password: signupPassword.value
+            username: username,
+            password: password
         })
     }
 
@@ -66,15 +63,11 @@ export const Signup = ({ onSuccessRedirectPath }) => {
 
             <Form onSubmit={handleSubmit}>
                 <div className={"mb-3"}>
-                    <Input autoFocus={true} onChange={(e) => (signupUsername.value = e.target.value)} placeholder={"Username"} type="text" />
+                    <Input autoFocus={true} onChange={(e) => setUsername(e.target.value)} placeholder={"Username"} type="text" />
                 </div>
                 <div className={"mb-3"}>
                     <InputGroup>
-                        <Input
-                            onChange={(e) => (signupPassword.value = e.target.value)}
-                            placeholder={"Password"}
-                            type={passwordVisible ? "text" : "password"}
-                        />
+                        <Input onChange={(e) => setPassword(e.target.value)} placeholder={"Password"} type={passwordVisible ? "text" : "password"} />
                         <Button
                             onClick={(e) => {
                                 setPasswordVisible(!passwordVisible)
