@@ -46,6 +46,8 @@ export const Signup = ({ onSuccessRedirectPath }) => {
         })
     }
 
+    const formFieldsMissing = password.length === 0 || username.length === 0
+
     return (
         <bases.Unauthenticated>
             <p className={"text-center"}>
@@ -77,7 +79,7 @@ export const Signup = ({ onSuccessRedirectPath }) => {
                     </InputGroup>
                 </div>
                 <div className="hstack gap-3 justify-content-center">
-                    <Button color={"primary"} disabled={signupIsLoading || loginIsLoading} type={"submit"}>
+                    <Button color={"primary"} disabled={signupIsLoading || loginIsLoading || formFieldsMissing} type={"submit"}>
                         {!signupIsLoading && !loginIsLoading ? (
                             "Signup"
                         ) : (
