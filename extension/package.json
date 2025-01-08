@@ -48,8 +48,8 @@
     "permissions": [
       "declarativeNetRequestWithHostAccess",
       "storage",
-      "scripting",
       "tabs",
+      "unlimitedStorage",
       "webRequest"
     ],
     "declarative_net_request": {
