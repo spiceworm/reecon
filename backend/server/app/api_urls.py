@@ -33,6 +33,7 @@ router.register(r"reddit/thread/data", v1.ThreadDataViewSet, basename="reddit-th
 v1_endpoints = [
     path("", include(router.urls)),
     path("producers/defaults/", v1.ProducerDefaultsView.as_view(), name="producers-defaults"),
+    path("profile/", v1.ProfileView.as_view(), name="profile"),
     path("status/", v1.StatusView.as_view(), name="status"),
 ]
 
