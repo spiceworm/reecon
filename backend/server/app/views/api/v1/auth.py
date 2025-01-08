@@ -32,6 +32,7 @@ class SignupView(CreateAPIView):
             username=data["username"],
             password=data["password"],
         )
+
         response_serializer = SignupResponseSerializer(instance=user)
         headers = self.get_success_headers(response_serializer.data)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)

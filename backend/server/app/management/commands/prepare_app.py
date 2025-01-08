@@ -12,7 +12,7 @@ without having to list duplicate commands as everything is defined in one place.
 import time
 
 import decouple
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core import management
 from django import db
 
@@ -146,8 +146,12 @@ def create_hardcoded_status_messages():
 
 
 def create_hardcoded_users():
-    if not User.objects.filter(username="admin").exists():
-        User.objects.create_user(
+    user_model = get_user_model()
+
+    try:
+        user_model.objects.get(username="admin")
+    except user_model.DoesNotExist:
+        user_model.objects.create_user(
             username="admin",
             password=decouple.config("ADMIN_PASSWORD"),
             is_superuser=True,

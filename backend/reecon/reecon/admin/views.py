@@ -5,6 +5,7 @@ from ..models import (
     IgnoredRedditor,
     Producer,
     ProducerCategory,
+    Profile,
     Redditor,
     RedditorContextQuery,
     StatusMessage,
@@ -51,6 +52,11 @@ class ProducerAdmin(admin.ModelAdmin):
 @admin.register(ProducerCategory)
 class ProducerCategoryAdmin(admin.ModelAdmin):
     list_display = get_list_display(ProducerCategory)
+
+
+@admin.register(Profile)
+class ProfileAdmin(admin.ModelAdmin):
+    list_display = get_list_display(Profile)
 
 
 @admin.register(Redditor)
