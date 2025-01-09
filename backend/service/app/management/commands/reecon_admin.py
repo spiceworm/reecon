@@ -1,5 +1,3 @@
-import textwrap
-
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import management
@@ -25,23 +23,25 @@ def delete_reecon_account(*, username) -> str:
 
 
 def help_() -> str:
-    return textwrap.dedent(
-        """
-        Send reecon-admin a message with any of the following actions in the subject field:
-        \tdelete-reecon-account
-        \t\tThis will delete your reecon account.
+    return (
+        f"""
+        Available actions:
 
-        \thelp
-        \t\treecon-admin will send you a response containing this message.
+        {Actions.DELETE_REECON_ACCOUNT}
+            This will delete your reecon account.
 
-        \tlink-reddit-username
-        \t\tLink your Reddit username to your reecon account. Linking your reddit username is required for actions such as resetting your password.
+        {Actions.HELP}
+            {settings.REDDIT_BOT_USERNAME} will send you a response containing this message.
 
-        \treset-password
-        \t\treecon-admin will send you a response containing link to reset your reecon password.
+        {Actions.LINK_REDDIT_USERNAME}
+            Link your Reddit username to your reecon account.
+            Linking your reddit username is required for actions such as resetting your password.
 
-        \tlink-reddit-username
-        \t\tUnlink your Reddit username from being associated with your reecon account.
+        {Actions.RESET_REECON_PASSWORD}
+            {settings.REDDIT_BOT_USERNAME} will send you a response containing link to reset your reecon password.
+
+        {Actions.UNLINK_REDDIT_USERNAME}
+            Unlink your Reddit username from being associated with your reecon account.
         """
     )
 
@@ -91,7 +91,7 @@ def unlink_reddit_username(*, reddit_username: str, signed_reecon_username: str)
 
 
 def unsuccessful_action(message: str) -> str:
-    return textwrap.dedent(
+    return (
         f"""
         {message}
 
@@ -114,7 +114,7 @@ class Command(management.base.BaseCommand):
         for message in reddit_client.inbox.stream():
             # Do not process messages that are thread comment responses.
             if not message.was_comment:
-                match message.subject.lower().strip():
+                match message.subject.strip():
                     case Actions.DELETE_REECON_ACCOUNT:
                         response = delete_reecon_account(
                             username=message.author.name,

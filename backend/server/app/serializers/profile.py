@@ -9,6 +9,9 @@ __all__ = ("ProfileSerializer",)
 
 
 class ProfileSerializer(serializers.ModelSerializer):
+    signed_username = serializers.CharField(
+        read_only=True,
+    )
     user = UserSerializer(
         read_only=True,
     )

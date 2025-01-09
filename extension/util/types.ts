@@ -36,6 +36,12 @@ interface ProducerCategory {
     name: string
 }
 
+export interface Profile {
+    reddit_username: string | null
+    signed_username: string
+    user: User
+}
+
 interface RedditData {
     created: Date
     id: number
