@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import decouple
+
 from reecon import settings as reecon_settings
 
 
@@ -76,3 +78,10 @@ CONSTANCE_BACKEND = reecon_settings.CONSTANCE_BACKEND
 CONSTANCE_REDIS_CONNECTION = reecon_settings.CONSTANCE_REDIS_CONNECTION
 CONSTANCE_ADDITIONAL_FIELDS = reecon_settings.CONSTANCE_ADDITIONAL_FIELDS
 CONSTANCE_CONFIG = reecon_settings.CONSTANCE_CONFIG
+
+REDDIT_BOT_CLIENT_ID = decouple.config("REDDIT_BOT_CLIENT_ID")
+REDDIT_BOT_CLIENT_SECRET = decouple.config("REDDIT_BOT_CLIENT_SECRET")
+REDDIT_BOT_PASSWORD = decouple.config("REDDIT_BOT_PASSWORD")
+REDDIT_BOT_RATELIMIT_SECONDS = decouple.config("REDDIT_BOT_RATELIMIT_SECONDS", cast=int, default=300)
+REDDIT_BOT_USER_AGENT = decouple.config("REDDIT_BOT_USER_AGENT")
+REDDIT_BOT_USERNAME = decouple.config("REDDIT_BOT_USERNAME")

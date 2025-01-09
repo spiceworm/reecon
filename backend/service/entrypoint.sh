@@ -3,7 +3,7 @@
 # Do not use `set -e` here because this script will stop running if an `until` command fails when
 # it should try multiple times.
 
-mkdir -p /var/log/supervisor/rq-scheduler
+mkdir -p /var/log/supervisor/{reecon_admin,rq-scheduler}
 
 LOG=/var/log/entrypoint.log
 

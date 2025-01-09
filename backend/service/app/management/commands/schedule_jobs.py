@@ -16,6 +16,7 @@ def clear_scheduled_jobs():
         log.debug("Deleting scheduled job %s", job)
         job.delete()
 
+
 def register_scheduled_jobs():
     # Cannot have scheduled jobs start immediately because the database may not be ready immediately.
     start_time = timezone.now() + timedelta(seconds=10)
