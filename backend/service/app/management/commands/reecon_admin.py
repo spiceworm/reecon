@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core import management
 import praw
 
@@ -13,9 +13,10 @@ class Actions:
 
 
 def delete_reecon_account(*, username) -> str:
+    user_model = get_user_model()
     try:
-        user = User.objects.get(username=username)
-    except User.DoesNotExist:
+        user = user_model.objects.get(username=username)
+    except user_model.DoesNotExist:
         return unsuccessful_action(f"User with username {username} does not exist")
     else:
         user.delete()
@@ -49,9 +50,10 @@ def help_() -> str:
 def link_reddit_username(*, reddit_username: str, signed_reecon_username: str) -> str:
     reecon_username, *_ = signed_reecon_username.split(":", 1)
 
+    user_model = get_user_model()
     try:
-        user = User.objects.get(username=reecon_username)
-    except User.DoesNotExist:
+        user = user_model.objects.get(username=reecon_username)
+    except user_model.DoesNotExist:
         return unsuccessful_action(f"No reecon account exists for {reecon_username}.")
     else:
         if user.profile.reddit_username:
@@ -73,9 +75,10 @@ def reset_reecon_password() -> str:
 def unlink_reddit_username(*, reddit_username: str, signed_reecon_username: str) -> str:
     reecon_username, *_ = signed_reecon_username.split(":", 1)
 
+    user_model = get_user_model()
     try:
-        user = User.objects.get(username=reecon_username)
-    except User.DoesNotExist:
+        user = user_model.objects.get(username=reecon_username)
+    except user_model.DoesNotExist:
         return unsuccessful_action(f"No reecon account exists for {reecon_username}.")
     else:
         if user.profile.reddit_username:

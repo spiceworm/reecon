@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.generics import CreateAPIView
@@ -17,7 +17,7 @@ __all__ = ("SignupView",)
 @extend_schema(responses=SignupResponseSerializer)
 class SignupView(CreateAPIView):
     authentication_classes = ()
-    queryset = User.objects.all()
+    queryset = get_user_model().objects.all()
     serializer_class = SignupRequestSerializer
 
     def create(self, request, *args, **kwargs):
@@ -25,10 +25,12 @@ class SignupView(CreateAPIView):
         serializer.is_valid(raise_exception=True)
         data = serializer.data
 
-        if User.objects.filter(username=data["username"]).exists():
+        user_model = get_user_model()
+
+        if user_model.objects.filter(username=data["username"]).exists():
             raise UserSignupConflictException()
 
-        user = User.objects.create_user(
+        user = user_model.objects.create_user(
             username=data["username"],
             password=data["password"],
         )

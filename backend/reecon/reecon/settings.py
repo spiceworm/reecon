@@ -13,6 +13,8 @@ LOG_LEVEL = decouple.config(
     cast=decouple.Choices(["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]),
 )
 
+AUTH_USER_MODEL = "reecon.AppUser"
+
 REDIS_HOST = decouple.config("REDIS_HOST")
 REDIS_PASSWORD = decouple.config("REDIS_PASSWORD", default="")
 REDIS_PORT = decouple.config("REDIS_PORT", cast=int, default=6379)

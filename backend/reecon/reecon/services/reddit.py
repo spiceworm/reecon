@@ -3,7 +3,6 @@ import datetime as dt
 import logging
 from typing import List
 
-from django.contrib.auth.models import User
 from django.utils import timezone
 import praw
 from praw.models import (
@@ -55,12 +54,12 @@ class _RedditService(abc.ABC):
         self,
         *,
         identifier: str,
-        llm_contributor: User,
+        llm_contributor: models.AppUser,
         llm_producer: models.Producer,
-        nlp_contributor: User,
+        nlp_contributor: models.AppUser,
         nlp_producer: models.Producer,
         producer_settings: dict,
-        submitter: User,
+        submitter: models.AppUser,
         env: schemas.WorkerEnv,
     ):
         self.identifier = identifier

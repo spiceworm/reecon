@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.conf import settings
 from django.core import signing
 from django.db import models
 
@@ -7,7 +7,7 @@ __all__ = ("Profile",)
 
 
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     reddit_username = models.CharField(blank=True, null=True, unique=True)
 
     def __str__(self):

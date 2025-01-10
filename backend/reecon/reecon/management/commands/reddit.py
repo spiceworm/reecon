@@ -5,7 +5,7 @@ from typing import List
 
 from constance import config
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core import management
 import tiktoken
 
@@ -89,7 +89,7 @@ class Command(management.base.BaseCommand):
 
         llm_producer = models.Producer.objects.get(name=options["llm"])
         nlp_producer = models.Producer.objects.get(name=options["nlp"])
-        admin = User.objects.get(username="admin")
+        admin = get_user_model().objects.get(username="admin")
         env = schemas.get_worker_env()
 
         encoding = tiktoken.encoding_for_model(llm_producer.name)

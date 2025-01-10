@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
@@ -19,7 +19,7 @@ class ProducedBinary(Created):
     """Stores a single produced binary value. Related to :model:`ai.Producer`."""
 
     contributor = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         null=False,
         on_delete=models.CASCADE,
         related_name="contributed_binary",
@@ -48,7 +48,7 @@ class ProducedFloat(Created):
     """Stores a single produced float value. Related to :model:`ai.Producer`."""
 
     contributor = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         null=False,
         on_delete=models.CASCADE,
         related_name="contributed_floats",
@@ -77,7 +77,7 @@ class ProducedInteger(Created):
     """Stores a single produced integer value. Related to :model:`ai.Producer`."""
 
     contributor = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         null=False,
         on_delete=models.CASCADE,
         related_name="contributed_integers",
@@ -106,7 +106,7 @@ class ProducedText(Created):
     """Stores a single produced text value. Related to :model:`ai.Producer`."""
 
     contributor = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         null=False,
         on_delete=models.CASCADE,
         related_name="contributed_text",
@@ -133,7 +133,7 @@ class ProducedText(Created):
 
 class ProducedTextList(Created):
     contributor = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         null=False,
         on_delete=models.CASCADE,
         related_name="contributed_text_list",

@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from reecon.models import (
@@ -16,7 +16,7 @@ __all__ = (
 
 class ContributorSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = get_user_model()
         fields = ("username",)
 
 

@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.conf import settings
 from django.db import models
 from django.utils.text import Truncator
 
@@ -42,7 +42,7 @@ class Redditor(Created, LastProcessed, RedditorUsername):
     """
 
     submitter = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         null=False,
         on_delete=models.CASCADE,
         related_name="submitted_redditors",
@@ -71,7 +71,7 @@ class RedditorContextQuery(Created):
         related_name="response_redditor_context_query",
     )
     submitter = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         null=False,
         on_delete=models.CASCADE,
         related_name="submitted_redditor_context_queries",
@@ -165,7 +165,7 @@ class UnprocessableRedditor(Created, RedditorUsername, UnprocessableReason):
     """
 
     submitter = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         null=False,
         on_delete=models.CASCADE,
         related_name="submitted_unprocessable_redditors",
@@ -178,7 +178,7 @@ class UnprocessableRedditor(Created, RedditorUsername, UnprocessableReason):
 
 class UnprocessableRedditorContextQuery(Created, RedditorUsername, UnprocessableReason):
     submitter = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         null=False,
         on_delete=models.CASCADE,
         related_name="submitted_unprocessable_redditor_context_queries",

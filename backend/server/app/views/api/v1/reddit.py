@@ -3,7 +3,7 @@ from urllib.parse import urlparse
 
 import rq.exceptions
 from constance import config
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.utils import timezone
 import django_rq
 from drf_spectacular.utils import (
@@ -70,7 +70,7 @@ class RedditorContextQueryViewSet(GenericViewSet):
                     "llm_contributor": request.user,
                     "llm_context_query_producer": models.Producer.objects.get(name=llm_name),
                     "llm_data_producer": models.Producer.objects.get(name=config.LLM_NAME),
-                    "nlp_contributor": User.objects.get(username="admin"),
+                    "nlp_contributor": get_user_model().objects.get(username="admin"),
                     "nlp_context_query_producer": models.Producer.objects.get(name=nlp_name),
                     "nlp_data_producer": models.Producer.objects.get(name=config.NLP_NAME),
                     "producer_settings": producer_settings,
@@ -163,7 +163,7 @@ class RedditorDataViewSet(GenericViewSet):
 
         if config.REDDITOR_DATA_PROCESSING_ENABLED:
             llm_producer = models.Producer.objects.get(name=config.LLM_NAME)
-            nlp_contributor = User.objects.get(username="admin")
+            nlp_contributor = get_user_model().objects.get(username="admin")
             nlp_producer = models.Producer.objects.get(name=config.NLP_NAME)
             env = schemas.get_worker_env()
 
@@ -239,7 +239,7 @@ class ThreadContextQueryViewSet(GenericViewSet):
                     "llm_contributor": request.user,
                     "llm_context_query_producer": models.Producer.objects.get(name=llm_name),
                     "llm_data_producer": models.Producer.objects.get(name=config.LLM_NAME),
-                    "nlp_contributor": User.objects.get(username="admin"),
+                    "nlp_contributor": get_user_model().objects.get(username="admin"),
                     "nlp_context_query_producer": models.Producer.objects.get(name=nlp_name),
                     "nlp_data_producer": models.Producer.objects.get(name=config.NLP_NAME),
                     "producer_settings": producer_settings,
@@ -328,7 +328,7 @@ class ThreadDataViewSet(GenericViewSet):
 
         if config.THREAD_DATA_PROCESSING_ENABLED:
             llm_producer = models.Producer.objects.get(name=config.LLM_NAME)
-            nlp_contributor = User.objects.get(username="admin")
+            nlp_contributor = get_user_model().objects.get(username="admin")
             nlp_producer = models.Producer.objects.get(name=config.NLP_NAME)
             env = schemas.get_worker_env()
 

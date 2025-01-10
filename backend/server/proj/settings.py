@@ -19,6 +19,8 @@ ALLOWED_HOSTS = [".reecon.xyz"] if reecon_settings.PRODUCTION else ["*"]
 CSRF_TRUSTED_ORIGINS = ["https://reecon.xyz"] if reecon_settings.PRODUCTION else ["http://127.0.0.1:8888"]
 CORS_ALLOW_ALL_ORIGINS = True
 
+AUTH_USER_MODEL = reecon_settings.AUTH_USER_MODEL
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.admindocs",

@@ -1,7 +1,5 @@
 import logging
 
-from django.contrib.auth.models import User
-
 from reecon import (
     exceptions,
     models,
@@ -24,12 +22,12 @@ log = logging.getLogger("app.worker.jobs.reddit")
 def _ensure_redditor_context_query_processable(
     *,
     redditor_username: str,
-    llm_contributor: User,
+    llm_contributor: models.AppUser,
     llm_producer: models.Producer,
-    nlp_contributor: User,
+    nlp_contributor: models.AppUser,
     nlp_producer: models.Producer,
     producer_settings: dict,
-    submitter: User,
+    submitter: models.AppUser,
     env: schemas.WorkerEnv,
 ) -> models.UnprocessableRedditorContextQuery | None:
     """
@@ -77,12 +75,12 @@ def _ensure_redditor_context_query_processable(
 def _ensure_redditor_data(
     *,
     redditor_username: str,
-    llm_contributor: User,
+    llm_contributor: models.AppUser,
     llm_producer: models.Producer,
-    nlp_contributor: User,
+    nlp_contributor: models.AppUser,
     nlp_producer: models.Producer,
     producer_settings: dict,
-    submitter: User,
+    submitter: models.AppUser,
     env: schemas.WorkerEnv,
 ) -> models.RedditorData | models.UnprocessableRedditor:
     """
@@ -110,12 +108,12 @@ def _ensure_redditor_data(
 def _ensure_thread_context_query_processable(
     *,
     thread_url: str,
-    llm_contributor: User,
+    llm_contributor: models.AppUser,
     llm_producer: models.Producer,
-    nlp_contributor: User,
+    nlp_contributor: models.AppUser,
     nlp_producer: models.Producer,
     producer_settings: dict,
-    submitter: User,
+    submitter: models.AppUser,
     env: schemas.WorkerEnv,
 ) -> models.UnprocessableThreadContextQuery | None:
     """
@@ -152,12 +150,12 @@ def _ensure_thread_context_query_processable(
 def _ensure_thread_data(
     *,
     thread_url: str,
-    llm_contributor: User,
+    llm_contributor: models.AppUser,
     llm_producer: models.Producer,
-    nlp_contributor: User,
+    nlp_contributor: models.AppUser,
     nlp_producer: models.Producer,
     producer_settings: dict,
-    submitter: User,
+    submitter: models.AppUser,
     env: schemas.WorkerEnv,
 ) -> models.ThreadData | models.UnprocessableThread:
     """
@@ -184,14 +182,14 @@ def _ensure_thread_data(
 def process_redditor_context_query(
     *,
     redditor_username: str,
-    llm_contributor: User,
+    llm_contributor: models.AppUser,
     llm_context_query_producer: models.Producer,
     llm_data_producer: models.Producer,
-    nlp_contributor: User,
+    nlp_contributor: models.AppUser,
     nlp_context_query_producer: models.Producer,
     nlp_data_producer: models.Producer,
     producer_settings: dict,
-    submitter: User,
+    submitter: models.AppUser,
     env: schemas.WorkerEnv,
 ) -> models.RedditorContextQuery | models.UnprocessableRedditorContextQuery:
     obj = _ensure_redditor_context_query_processable(
@@ -229,12 +227,12 @@ def process_redditor_context_query(
 def process_redditor_data(
     *,
     redditor_username: str,
-    llm_contributor: User,
+    llm_contributor: models.AppUser,
     llm_producer: models.Producer,
-    nlp_contributor: User,
+    nlp_contributor: models.AppUser,
     nlp_producer: models.Producer,
     producer_settings: dict,
-    submitter: User,
+    submitter: models.AppUser,
     env: schemas.WorkerEnv,
 ) -> models.RedditorData | models.UnprocessableRedditor:
     service = services.RedditorDataService(
@@ -261,14 +259,14 @@ def process_redditor_data(
 def process_thread_context_query(
     *,
     thread_url: str,
-    llm_contributor: User,
+    llm_contributor: models.AppUser,
     llm_context_query_producer: models.Producer,
     llm_data_producer: models.Producer,
-    nlp_contributor: User,
+    nlp_contributor: models.AppUser,
     nlp_context_query_producer: models.Producer,
     nlp_data_producer: models.Producer,
     producer_settings: dict,
-    submitter: User,
+    submitter: models.AppUser,
     env: schemas.WorkerEnv,
 ) -> models.ThreadContextQuery | models.UnprocessableThreadContextQuery:
     obj = _ensure_thread_context_query_processable(
@@ -306,12 +304,12 @@ def process_thread_context_query(
 def process_thread_data(
     *,
     thread_url: str,
-    llm_contributor: User,
+    llm_contributor: models.AppUser,
     llm_producer: models.Producer,
-    nlp_contributor: User,
+    nlp_contributor: models.AppUser,
     nlp_producer: models.Producer,
     producer_settings: dict,
-    submitter: User,
+    submitter: models.AppUser,
     env: schemas.WorkerEnv,
 ) -> models.ThreadData | models.UnprocessableThread:
     service = services.ThreadDataService(

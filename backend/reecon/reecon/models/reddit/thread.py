@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.conf import settings
 from django.db import models
 from django.utils.text import Truncator
 
@@ -30,7 +30,7 @@ class Thread(Created, LastProcessed, ThreadUrl):
     """
 
     submitter = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         null=False,
         on_delete=models.CASCADE,
         related_name="submitted_threads",
@@ -59,7 +59,7 @@ class ThreadContextQuery(Created):
         related_name="response_thread_context_query",
     )
     submitter = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         null=False,
         on_delete=models.CASCADE,
         related_name="submitted_thread_context_queries",
@@ -138,7 +138,7 @@ class UnprocessableThread(Created, ThreadUrl, UnprocessableReason):
     """
 
     submitter = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         null=False,
         on_delete=models.CASCADE,
         related_name="submitted_unprocessable_threads",
@@ -151,7 +151,7 @@ class UnprocessableThread(Created, ThreadUrl, UnprocessableReason):
 
 class UnprocessableThreadContextQuery(Created, ThreadUrl, UnprocessableReason):
     submitter = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         null=False,
         on_delete=models.CASCADE,
         related_name="submitted_unprocessable_thread_context_queries",

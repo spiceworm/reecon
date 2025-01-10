@@ -12,6 +12,8 @@ DEBUG = reecon_settings.DEBUG
 
 WSGI_APPLICATION = "proj.wsgi.application"
 
+AUTH_USER_MODEL = reecon_settings.AUTH_USER_MODEL
+
 INSTALLED_APPS = [
     "django.contrib.auth",
     "django.contrib.contenttypes",
