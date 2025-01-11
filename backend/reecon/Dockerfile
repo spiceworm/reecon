@@ -31,6 +31,6 @@ RUN pip install -r /tmp/requirements.txt \
 
 COPY . /reecon
 
-RUN mv ./reecon-db.sh ./reecon-redis.sh /usr/local/bin/ \
+RUN mv ./reecon-redis.sh /usr/local/bin/ \
     && python -m build \
     && pip install /reecon/dist/reecon-${VERSION}.tar.gz

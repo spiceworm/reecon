@@ -46,7 +46,6 @@ docker exec -it reecon-backend-worker-1 tail -f /var/log/supervisor/rq-worker/wo
 # in order to use `supervisorctl`.
 
 # These are available in the running server and worker containers
-$ reecon-db.sh
 $ reecon-debug.sh
 $ reecon-redis.sh
 ```
