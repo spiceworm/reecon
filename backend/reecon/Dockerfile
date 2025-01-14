@@ -14,6 +14,7 @@ RUN apt-get update \
         postgresql-client-common \
         redis \
         supervisor \
+        tox \
         vim \
     && apt-get clean \
     && rm -Rf /var/lib/apt/lists/*
