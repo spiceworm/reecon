@@ -2,22 +2,22 @@ import "bootstrap/dist/css/bootstrap.min.css"
 
 import { MemoryRouter, Navigate, Route, Routes } from "react-router-dom"
 
-import { Settings } from "~popup/views/settings"
-import { Status } from "~popup/views/status"
+import { ActiveSettingsView } from "~popup/views/activeSettings"
+import { StatusView } from "~popup/views/status"
 import { RequireAuthentication } from "~util/components/authentication"
-import { Login } from "~util/views/auth/login"
-import { Signup } from "~util/views/auth/signup"
+import { LoginView } from "~views/auth/login"
+import { SignupView } from "~views/auth/signup"
 
-function IndexPopup() {
+export default function IndexPopup() {
     return (
         <MemoryRouter>
             <Routes>
-                <Route path={"/"} element={<Navigate to={"/settings"} replace={true} />} />
+                <Route path={"/"} element={<Navigate to={"/active-settings"} replace={true} />} />
                 <Route
-                    path="/settings"
+                    path="/active-settings"
                     element={
                         <RequireAuthentication>
-                            <Settings />
+                            <ActiveSettingsView />
                         </RequireAuthentication>
                     }
                 />
@@ -25,16 +25,14 @@ function IndexPopup() {
                     path="/status"
                     element={
                         <RequireAuthentication>
-                            <Status />
+                            <StatusView />
                         </RequireAuthentication>
                     }
                 />
 
-                <Route path="/auth/login" element={<Login onSuccessRedirectPath={"/settings"} />} />
-                <Route path="/auth/signup" element={<Signup onSuccessRedirectPath={"/settings"} />} />
+                <Route path="/auth/login" element={<LoginView onSuccessRedirectPath={"/active-settings"} />} />
+                <Route path="/auth/signup" element={<SignupView onSuccessRedirectPath={"/active-settings"} />} />
             </Routes>
         </MemoryRouter>
     )
 }
-
-export default IndexPopup

@@ -4,19 +4,19 @@ import { MemoryRouter, Navigate, Route, Routes } from "react-router-dom"
 
 import { useStorage } from "@plasmohq/storage/dist/hook"
 
-import { ContentFilters } from "~tabs/views/contentFilters"
-import { ContextQuery } from "~tabs/views/contextQuery"
-import { Debug } from "~tabs/views/debug"
-import { Profile } from "~tabs/views/profile"
-import { Settings } from "~tabs/views/settings"
+import { ContentFiltersView } from "~tabs/views/contentFilters"
+import { ContextQueryView } from "~tabs/views/contextQuery"
+import { DebugView } from "~tabs/views/debug"
+import { ProducerSettingsView } from "~tabs/views/producerSettings"
+import { ProfileView } from "~tabs/views/profile"
 import { RequireAuthentication } from "~util/components/authentication"
 import * as constants from "~util/constants"
 import * as storage from "~util/storage"
 import type * as types from "~util/types"
-import { Login } from "~util/views/auth/login"
-import { Signup } from "~util/views/auth/signup"
+import { LoginView } from "~views/auth/login"
+import { SignupView } from "~views/auth/signup"
 
-export default function OptionsPage() {
+export default function TabsIndex() {
     const [producerSettings] = useStorage({ instance: storage.extLocalStorage, key: constants.PRODUCER_SETTINGS }, (v: types.ProducerSettings) =>
         v === undefined ? constants.defaultProducerSettings : v
     )
@@ -26,20 +26,20 @@ export default function OptionsPage() {
     return (
         <MemoryRouter>
             <Routes>
-                <Route path={"/"} element={<Navigate to={"/settings"} replace={true} />} />
+                <Route path={"/"} element={<Navigate to={"/producer-settings"} replace={true} />} />
                 <Route
-                    path="/settings"
+                    path="/producer-settings"
                     element={
                         <RequireAuthentication>
-                            <Settings />
+                            <ProducerSettingsView />
                         </RequireAuthentication>
                     }
                 />
 
-                <Route path="/auth/login" element={<Login onSuccessRedirectPath={"/content-filters"} />} />
-                <Route path="/auth/signup" element={<Signup onSuccessRedirectPath={"/content-filters"} />} />
-                <Route path="/debug" element={<Debug />} />
-                <Route path="/profile" element={<Profile />} />
+                <Route path="/auth/login" element={<LoginView onSuccessRedirectPath={"/content-filters"} />} />
+                <Route path="/auth/signup" element={<SignupView onSuccessRedirectPath={"/content-filters"} />} />
+                <Route path="/debug" element={<DebugView />} />
+                <Route path="/profile" element={<ProfileView />} />
 
                 {producerApiKeyMissing ? null : (
                     <>
@@ -47,7 +47,7 @@ export default function OptionsPage() {
                             path="/context-query"
                             element={
                                 <RequireAuthentication>
-                                    <ContextQuery />
+                                    <ContextQueryView />
                                 </RequireAuthentication>
                             }
                         />
@@ -55,7 +55,7 @@ export default function OptionsPage() {
                             path="/content-filters"
                             element={
                                 <RequireAuthentication>
-                                    <ContentFilters />
+                                    <ContentFiltersView />
                                 </RequireAuthentication>
                             }
                         />

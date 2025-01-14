@@ -12,7 +12,7 @@ import * as constants from "~util/constants"
 import * as storage from "~util/storage"
 import type * as types from "~util/types"
 
-export const Login = ({ onSuccessRedirectPath }) => {
+export const LoginView = ({ onSuccessRedirectPath }) => {
     const [_, setAuth] = useStorage<types.Auth>({
         instance: storage.extLocalStorage,
         key: constants.AUTH
@@ -45,7 +45,7 @@ export const Login = ({ onSuccessRedirectPath }) => {
     const formFieldsMissing = password.length === 0 || username.length === 0
 
     return (
-        <bases.Unauthenticated>
+        <bases.Base>
             <p className={"text-center"}>Login</p>
 
             {error ? <UncontrolledAlert color={"danger"}>{JSON.parse(error.message).detail}</UncontrolledAlert> : null}
@@ -82,6 +82,6 @@ export const Login = ({ onSuccessRedirectPath }) => {
                     </NavLink>
                 </div>
             </Form>
-        </bases.Unauthenticated>
+        </bases.Base>
     )
 }

@@ -12,7 +12,7 @@ import * as constants from "~util/constants"
 import * as storage from "~util/storage"
 import type * as types from "~util/types"
 
-export const Signup = ({ onSuccessRedirectPath }) => {
+export const SignupView = ({ onSuccessRedirectPath }) => {
     const [_, setAuth] = useStorage<types.Auth>({ instance: storage.extLocalStorage, key: constants.AUTH })
     const [passwordVisible, setPasswordVisible] = useState(false)
     const [signupCredentials, setSignupCredentials] = useState(null)
@@ -49,7 +49,7 @@ export const Signup = ({ onSuccessRedirectPath }) => {
     const formFieldsMissing = password.length === 0 || username.length === 0
 
     return (
-        <bases.Unauthenticated>
+        <bases.Base>
             <p className={"text-center"}>
                 Signup{" "}
                 <ExclamationCircle
@@ -95,6 +95,6 @@ export const Signup = ({ onSuccessRedirectPath }) => {
                     </NavLink>
                 </div>
             </Form>
-        </bases.Unauthenticated>
+        </bases.Base>
     )
 }
