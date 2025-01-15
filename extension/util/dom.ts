@@ -21,6 +21,9 @@ export const annotatePendingThreads = async (pendingThreads: types.PendingThread
 }
 
 export const annotateProcessedThreads = async (processedThreads: types.Thread[], contentFilter: types.CommentFilter) => {
+    const sentimentPolarityFilterEnabled = await storage.getSentimentPolarityContentFilterEnabled()
+    const sentimentSubjectivityFilterEnabled = await storage.getSentimentSubjectivityContentFilterEnabled()
+
     for (const thread of processedThreads) {
         const threadRow = getThreadRowElement(thread.path)
         const dataSpanPrefix = `${process.env.PLASMO_PUBLIC_APP_NAME}-${thread.path}`
@@ -51,14 +54,14 @@ export const annotateProcessedThreads = async (processedThreads: types.Thread[],
         getThreadTitleElement(thread.path).insertAdjacentElement("beforeend", dataSpan)
 
         if (sentiment_polarity < contentFilter.sentimentPolarity) {
-            if (await storage.getSentimentPolarityContentFilterEnabled()) {
+            if (sentimentPolarityFilterEnabled) {
                 threadRow.style.display = "none"
             } else {
                 threadRow.style.display = "block"
                 dataSpan.innerText = " 🚨"
             }
         } else if (sentiment_subjectivity < contentFilter.sentimentSubjectivity) {
-            if (await storage.getSentimentSubjectivityContentFilterEnabled()) {
+            if (sentimentSubjectivityFilterEnabled) {
                 threadRow.style.display = "none"
             } else {
                 threadRow.style.display = "block"
