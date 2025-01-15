@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
-from .producer import ProducerSerializer
+from reecon.serializers import ProducerSerializer
+
 from ..validators import validate_openai_api_key
 
 

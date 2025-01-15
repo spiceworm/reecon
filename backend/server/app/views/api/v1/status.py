@@ -5,8 +5,10 @@ from rest_framework.views import Response
 from reecon.models import StatusMessage
 
 from ..mixins import ReadOnlyListModelViewSet
-from ....serializers import StatusMessageResponseSerializer, StatusResponseSerializer
-
+from ....serializers import (
+    StatusResponseSerializer,
+    StatusMessageResponseSerializer,
+)
 
 __all__ = (
     "StatusView",

@@ -4,7 +4,8 @@ from rest_framework import status
 from rest_framework.generics import CreateAPIView
 from rest_framework.response import Response
 
-from ....exceptions import UserSignupConflictException
+from reecon.exceptions import UserSignupConflictException
+
 from ....serializers import (
     SignupRequestSerializer,
     SignupResponseSerializer,

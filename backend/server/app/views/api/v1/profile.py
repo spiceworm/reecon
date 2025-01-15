@@ -3,8 +3,7 @@ import logging
 from rest_framework.generics import RetrieveAPIView
 
 from reecon.models import Profile
-
-from ....serializers import ProfileSerializer
+from reecon.serializers import ProfileSerializer
 
 
 __all__ = ("ProfileView",)

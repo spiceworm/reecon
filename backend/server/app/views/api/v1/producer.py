@@ -7,12 +7,10 @@ from reecon.models import (
     Producer,
     ProducerCategory,
 )
-from ..mixins import ReadOnlyListModelViewSet
-from ....serializers import (
-    ProducerDefaultsSerializer,
-    ProducerSerializer,
-)
+from reecon.serializers import ProducerSerializer
 
+from ..mixins import ReadOnlyListModelViewSet
+from ....serializers import ProducerDefaultsSerializer
 
 __all__ = (
     "LlmProducerViewSet",

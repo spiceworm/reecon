@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .user import UserSerializer
+from reecon.serializers import UserSerializer
 
 
 __all__ = (
