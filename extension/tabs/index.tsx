@@ -1,5 +1,3 @@
-import "bootstrap/dist/css/bootstrap.min.css"
-
 import { MemoryRouter, Navigate, Route, Routes } from "react-router-dom"
 
 import { useStorage } from "@plasmohq/storage/dist/hook"

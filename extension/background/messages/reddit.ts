@@ -4,7 +4,7 @@ import * as api from "~util/api"
 import * as cache from "~util/storageCache"
 import type * as types from "~util/types"
 
-// set difference until Set.prototype.difference` is available
+// TODO: delete this once `Set.prototype.difference` is available
 const difference = <T>(a: Set<T>, b: Set<T>) => new Set([...a].filter((x) => !b.has(x)))
 
 const processRedditorData = async (producerSettings: types.ProducerSettings, usernames: string[]): Promise<types.SubmitRedditorDataResponse> => {

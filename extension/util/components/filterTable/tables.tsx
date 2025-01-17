@@ -1,6 +1,14 @@
+import Stack from "@mui/material/Stack"
+import Table from "@mui/material/Table"
+import TableBody from "@mui/material/TableBody"
+import TableCell from "@mui/material/TableCell"
+import TableContainer from "@mui/material/TableContainer"
+import TableFooter from "@mui/material/TableFooter"
+import TableHead from "@mui/material/TableHead"
+import TableRow from "@mui/material/TableRow"
+import Typography from "@mui/material/Typography"
 import { flexRender, getCoreRowModel, getFilteredRowModel, useReactTable } from "@tanstack/react-table"
 import { useState } from "react"
-import { Table } from "reactstrap"
 
 import { useStorage } from "@plasmohq/storage/dist/hook"
 
@@ -140,43 +148,49 @@ const FilterTable = <T extends types.ContentFilter>({
     })
 
     return (
-        <Table>
-            <thead>
-                {table.getHeaderGroups().map((headerGroup) => {
-                    return (
-                        <tr key={`tr-${headerGroup.id}`}>
-                            {headerGroup.headers.map((header, idx) => {
-                                return (
-                                    <th key={`tr-${headerGroup.id}-th-${header.id}-${idx}`}>
-                                        {flexRender(header.column.columnDef.header, header.getContext())}
-                                    </th>
-                                )
-                            })}
-                        </tr>
-                    )
-                })}
-            </thead>
-            <tbody>
-                {table.getRowModel().rows.map((row) => {
-                    return (
-                        <tr key={`tr-${row.id}`}>
-                            {row.getVisibleCells().map((cell) => {
-                                return <td key={`tr-${row.id}-td-${cell.id}`}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
-                            })}
-                        </tr>
-                    )
-                })}
-            </tbody>
-            <tfoot>
-                {footerVisible ? (
-                    <tr key={"tr-footer"}>
-                        <th colSpan={table.getCenterLeafColumns().length}>
-                            <cells.FooterCell table={table} />
-                        </th>
-                    </tr>
-                ) : null}
-            </tfoot>
-        </Table>
+        <TableContainer>
+            <Table size={"small"}>
+                <TableHead>
+                    {table.getHeaderGroups().map((headerGroup) => {
+                        return (
+                            <TableRow key={`tr-${headerGroup.id}`}>
+                                {headerGroup.headers.map((header, idx) => {
+                                    return (
+                                        <TableCell key={`tr-${headerGroup.id}-th-${header.id}-${idx}`} padding={"none"}>
+                                            {flexRender(header.column.columnDef.header, header.getContext())}
+                                        </TableCell>
+                                    )
+                                })}
+                            </TableRow>
+                        )
+                    })}
+                </TableHead>
+                <TableBody>
+                    {table.getRowModel().rows.map((row) => {
+                        return (
+                            <TableRow key={`tr-${row.id}`}>
+                                {row.getVisibleCells().map((cell) => {
+                                    return (
+                                        <TableCell key={`tr-${row.id}-td-${cell.id}`} padding={"none"}>
+                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                        </TableCell>
+                                    )
+                                })}
+                            </TableRow>
+                        )
+                    })}
+                </TableBody>
+                <TableFooter>
+                    {footerVisible ? (
+                        <TableRow key={"tr-footer"}>
+                            <TableCell align={"center"} colSpan={table.getCenterLeafColumns().length} padding={"none"}>
+                                <cells.FooterCell table={table} />
+                            </TableCell>
+                        </TableRow>
+                    ) : null}
+                </TableFooter>
+            </Table>
+        </TableContainer>
     )
 }
 
@@ -220,8 +234,10 @@ export const CommentFilterTable = ({ columnFilters, columnVisibility, footerVisi
     }
 
     return (
-        <>
-            <h5 className={"text-center"}>Comment Filters</h5>
+        <Stack>
+            <Stack justifyContent="center" alignItems="center">
+                <Typography variant={"h6"}>Comment Filters</Typography>
+            </Stack>
             <FilterTable<types.CommentFilter>
                 columns={commentFilterTableColumns}
                 columnFilters={columnFilters}
@@ -234,7 +250,7 @@ export const CommentFilterTable = ({ columnFilters, columnVisibility, footerVisi
                 setStorageData={setCommentFilters}
                 storageData={commentFilters}
             />
-        </>
+        </Stack>
     )
 }
 
@@ -269,8 +285,10 @@ export const ThreadFilterTable = ({ columnFilters, columnVisibility, footerVisib
     }
 
     return (
-        <>
-            <h5 className={"text-center"}>Thread Filters</h5>
+        <Stack>
+            <Stack justifyContent="center" alignItems="center">
+                <Typography variant={"h6"}>Thread Filters</Typography>
+            </Stack>
             <FilterTable<types.ThreadFilter>
                 columns={threadFilterTableColumns}
                 columnFilters={columnFilters}
@@ -283,6 +301,6 @@ export const ThreadFilterTable = ({ columnFilters, columnVisibility, footerVisib
                 setStorageData={setThreadFilters}
                 storageData={threadFilters}
             />
-        </>
+        </Stack>
     )
 }

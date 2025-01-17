@@ -1,36 +1,36 @@
-import { useState } from "react"
-import { BoxArrowUpRight } from "react-bootstrap-icons"
-import {
-    Button,
-    Col,
-    ListGroup,
-    ListGroupItem,
-    ListGroupItemHeading,
-    ListGroupItemText,
-    Modal,
-    ModalBody,
-    ModalHeader,
-    Row,
-    Spinner
-} from "reactstrap"
+import DataObjectIcon from "@mui/icons-material/DataObject"
+import LaunchIcon from "@mui/icons-material/Launch"
+import Button from "@mui/material/Button"
+import Dialog from "@mui/material/Dialog"
+import DialogContent from "@mui/material/DialogContent"
+import DialogContentText from "@mui/material/DialogContentText"
+import IconButton from "@mui/material/IconButton"
+import List from "@mui/material/List"
+import ListItem from "@mui/material/ListItem"
+import ListItemButton from "@mui/material/ListItemButton"
+import ListItemIcon from "@mui/material/ListItemIcon"
+import ListItemText from "@mui/material/ListItemText"
+import Stack from "@mui/material/Stack"
+import Typography from "@mui/material/Typography"
+import { MuiMarkdown } from "mui-markdown"
+import { useRef, useState } from "react"
 import useSWR from "swr"
 
 import * as api from "~util/api"
-import * as markdown from "~util/components/markdown"
+import { CopyToClipboardButton, TooltipIcon } from "~util/components/mui"
 import type * as types from "~util/types"
 
 export const ContextQueryHistory = () => {
-    const [redditorContextQueryHistory, setRedditorContextQueryHistory] = useState([])
-    const [threadContextQueryHistory, setThreadContextQueryHistory] = useState([])
+    const [redditorContextQueryHistory, setRedditorContextQueryHistory] = useState<types.RedditorContextQuery[]>([])
+    const [threadContextQueryHistory, setThreadContextQueryHistory] = useState<types.ThreadContextQuery[]>([])
 
     const [redditorContextQueriesAreLoading, setRedditorContextQueriesAreLoading] = useState(false)
     const [threadContextQueriesAreLoading, setThreadContextQueriesAreLoading] = useState(false)
     const [shouldFetchHistory, setShouldFetchHistory] = useState(false)
 
-    const [modalHeaderText, setModalHeaderText] = useState("")
-    const [modalHeaderTitle, setModalHeaderTitle] = useState("")
-    const [modalBodyLines, setModalBodyLines] = useState([])
+    const [modalContent, setModalContent] = useState<types.RedditorContextQuery | types.ThreadContextQuery>(null)
     const [modalVisible, setModalVisible] = useState(false)
+    const responseModalDescriptionElementRef = useRef<HTMLElement>(null)
 
     useSWR(shouldFetchHistory ? "/api/v1/reddit/redditor/context-query/" : null, api.authGet, {
         onSuccess: async (data: types.RedditorContextQuery[], key, config) => {
@@ -48,6 +48,15 @@ export const ContextQueryHistory = () => {
         }
     })
 
+    const getQueryMetadata = (contextQuery: types.RedditorContextQuery | types.ThreadContextQuery) => {
+        return {
+            created: contextQuery?.created,
+            inputs: contextQuery?.total_inputs,
+            llm: contextQuery?.response.producer.name,
+            submitter: contextQuery?.submitter.username
+        }
+    }
+
     const loadHistoryButtonHandler = async (e) => {
         setRedditorContextQueriesAreLoading(true)
         setThreadContextQueriesAreLoading(true)
@@ -55,83 +64,87 @@ export const ContextQueryHistory = () => {
     }
 
     const showContextQueryClickHandler = async (contextQuery: types.RedditorContextQuery | types.ThreadContextQuery) => {
-        setModalHeaderText(contextQuery.context.identifier)
-
-        setModalHeaderTitle(
-            [
-                `Created: ${contextQuery.created}`,
-                `Inputs: ${contextQuery.total_inputs}`,
-                `Submitter: ${contextQuery.submitter.username}`,
-                `Response LLM: ${contextQuery.response.producer.name}`
-            ].join("\u000d")
-        )
-
-        setModalBodyLines([contextQuery.prompt, contextQuery.response.value])
+        setModalContent(contextQuery)
         setModalVisible(true)
     }
 
     const toggleModalVisibility = () => setModalVisible(!modalVisible)
 
     return (
-        <>
-            <Row>
-                <Col>
-                    <hr />
-                </Col>
-            </Row>
-            <Row>
-                <Col className={"d-flex justify-content-center"}>
-                    <Button color={"link"} onClick={loadHistoryButtonHandler}>
-                        Load History
-                    </Button>
-                    {redditorContextQueriesAreLoading || threadContextQueriesAreLoading ? <Spinner /> : null}
-                </Col>
-            </Row>
-            <Row>
-                <ListGroup>
-                    {redditorContextQueriesAreLoading || threadContextQueriesAreLoading
-                        ? null
-                        : redditorContextQueryHistory
-                              .concat(threadContextQueryHistory)
-                              .sort(
-                                  (
-                                      a: types.RedditorContextQuery | types.ThreadContextQuery,
-                                      b: types.RedditorContextQuery | types.ThreadContextQuery
-                                  ) => new Date(b.created).getTime() - new Date(a.created).getTime()
-                              )
-                              .map((contextQuery: types.RedditorContextQuery | types.ThreadContextQuery, idx: number) => (
-                                  <ListGroupItem
-                                      action
-                                      href={"#"}
-                                      tag={"a"}
-                                      key={`context-query-${idx}`}
-                                      onClick={() => showContextQueryClickHandler(contextQuery)}>
-                                      <ListGroupItemHeading>
-                                          <Button color={"link"} href={contextQuery.context.source} size={"sm"} target={"_blank"}>
-                                              <BoxArrowUpRight />
-                                          </Button>{" "}
-                                          {contextQuery.context.identifier}
-                                      </ListGroupItemHeading>
+        <Stack>
+            <Button
+                disabled={redditorContextQueriesAreLoading || threadContextQueriesAreLoading}
+                onClick={loadHistoryButtonHandler}
+                // loading={redditorContextQueriesAreLoading || threadContextQueriesAreLoading}
+                // loadingPosition={"end"}
+            >
+                Load History
+            </Button>
 
-                                      <ListGroupItemText>{contextQuery.prompt}</ListGroupItemText>
-                                  </ListGroupItem>
-                              ))}
-                </ListGroup>
-            </Row>
-
-            <Modal isOpen={modalVisible} size={"xl"} toggle={toggleModalVisibility}>
-                <ModalHeader toggle={toggleModalVisibility} title={modalHeaderTitle}>
-                    {modalHeaderText}
-                </ModalHeader>
-                <ModalBody>
-                    {modalBodyLines.map((line: string, idx: number) => (
-                        <>
-                            {idx !== 0 ? <br /> : null}
-                            <markdown.Markdown key={idx}>{line}</markdown.Markdown>
-                        </>
+            <List>
+                {[...redditorContextQueryHistory, ...threadContextQueryHistory]
+                    .sort((a, b) => new Date(b.created).getTime() - new Date(a.created).getTime())
+                    .map((contextQuery, idx: number) => (
+                        <ListItem
+                            disablePadding={true}
+                            key={`context-query-${idx}`}
+                            secondaryAction={
+                                <IconButton edge={"end"} href={contextQuery.context.source} target={"_blank"}>
+                                    <LaunchIcon fontSize={"small"} />
+                                </IconButton>
+                            }>
+                            <ListItemButton divider={true} onClick={() => showContextQueryClickHandler(contextQuery)}>
+                                <ListItemIcon>
+                                    <TooltipIcon
+                                        icon={<DataObjectIcon fontSize={"small"} />}
+                                        title={
+                                            <Stack>
+                                                {Object.entries(getQueryMetadata(contextQuery)).map(([key, value]) => (
+                                                    <Typography key={key}>{`${key}: ${value}`}</Typography>
+                                                ))}
+                                            </Stack>
+                                        }
+                                    />
+                                </ListItemIcon>
+                                <ListItemText primary={contextQuery.prompt} />
+                            </ListItemButton>
+                        </ListItem>
                     ))}
-                </ModalBody>
-            </Modal>
-        </>
+            </List>
+
+            <Dialog open={modalVisible} onClose={toggleModalVisibility}>
+                <DialogContent dividers={true}>
+                    <DialogContentText ref={responseModalDescriptionElementRef} tabIndex={-1}>
+                        <Stack spacing={2}>
+                            <Stack direction={"row"} spacing={2}>
+                                <Typography variant={"h6"}>Prompt</Typography>
+                                <CopyToClipboardButton text={modalContent?.prompt} />
+                            </Stack>
+
+                            <Typography>{modalContent?.prompt}</Typography>
+
+                            <Stack direction={"row"} spacing={2}>
+                                <Typography variant={"h6"}>Response</Typography>
+                                <CopyToClipboardButton text={modalContent?.response.value} />
+                                <TooltipIcon
+                                    icon={<DataObjectIcon fontSize={"small"} />}
+                                    title={
+                                        <Stack>
+                                            {Object.entries(getQueryMetadata(modalContent)).map(([key, value]) => (
+                                                <Typography key={key}>{`${key}: ${value}`}</Typography>
+                                            ))}
+                                        </Stack>
+                                    }
+                                />
+                            </Stack>
+
+                            <Typography>
+                                <MuiMarkdown>{modalContent?.response.value}</MuiMarkdown>
+                            </Typography>
+                        </Stack>
+                    </DialogContentText>
+                </DialogContent>
+            </Dialog>
+        </Stack>
     )
 }

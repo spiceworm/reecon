@@ -1,60 +1,86 @@
-import { ThreeDotsVertical } from "react-bootstrap-icons"
-import { NavLink, useNavigate } from "react-router-dom"
-import { Badge, DropdownItem, DropdownMenu, DropdownToggle, Nav, NavItem, UncontrolledDropdown } from "reactstrap"
+import MoreVertIcon from "@mui/icons-material/MoreVert"
+import Box from "@mui/material/Box"
+import IconButton from "@mui/material/IconButton"
+import Menu from "@mui/material/Menu"
+import MenuItem from "@mui/material/MenuItem"
+import Tab from "@mui/material/Tab"
+import Tabs from "@mui/material/Tabs"
+import Grid from "@mui/material/Unstable_Grid2"
+import { useState, type MouseEvent, type SyntheticEvent } from "react"
+import { Link, useNavigate } from "react-router-dom"
 import useSWR from "swr"
 
 import { useStorage } from "@plasmohq/storage/dist/hook"
 
 import * as api from "~util/api"
-import * as bases from "~util/components/bases"
+import { EmptyBadge } from "~util/components/mui"
 import * as constants from "~util/constants"
 import * as storage from "~util/storage"
 import type * as types from "~util/types"
 
-export const PopupNavigation = ({ children }) => {
-    const navigate = useNavigate()
+const NavigationTabs = () => {
+    const [currentTab, setCurrentTab] = useState(0)
 
     const { error, isLoading } = useSWR("updateApiStatusMessages", api.updateApiStatusMessages)
-
     const [statusMessages] = useStorage<(types.ApiStatusMessage | types.ExtensionStatusMessage)[]>(
         { instance: storage.extLocalStorage, key: constants.ALL_STATUS_MESSAGES },
         (v) => (v === undefined ? [] : v)
     )
+    const activeStatusMessages = statusMessages.filter((message: types.ApiStatusMessage | types.ExtensionStatusMessage) => message.active)
+
+    const handleTabChange = (event: SyntheticEvent, tabIndex: number) => {
+        setCurrentTab(tabIndex)
+    }
+
+    return (
+        <Tabs value={currentTab} onChange={handleTabChange} variant="fullWidth">
+            <Tab component={Link} label="Active Settings" to={"/active-settings"} value={"/active-settings"} />
+            <Tab
+                component={Link}
+                icon={<EmptyBadge badgeContent={activeStatusMessages.length} color={error ? "error" : "info"} />}
+                iconPosition={"end"}
+                label="Status"
+                to={"/status"}
+                value={"/status"}
+            />
+        </Tabs>
+    )
+}
+
+const NavigationDropdown = () => {
+    const navigate = useNavigate()
     const [_, setAuth] = useStorage({ instance: storage.extLocalStorage, key: constants.AUTH })
+
+    const [dropdownAnchorEl, setDropdownAnchorEl] = useState<HTMLElement | null>(null)
+    const dropdownIsOpen = Boolean(dropdownAnchorEl)
 
     const logoutClickHandler = async (e) => {
         await setAuth(null)
         navigate("/auth/login", { replace: true })
     }
 
-    const activeStatusMessage = statusMessages.filter((message: types.ApiStatusMessage | types.ExtensionStatusMessage) => message.active)
-
     return (
-        <bases.Base>
-            <Nav tabs justified>
-                <NavItem>
-                    <NavLink className={"nav-link"} to={"/active-settings"}>
-                        Active Settings
-                    </NavLink>
-                </NavItem>
-                <NavItem>
-                    <NavLink className={"nav-link"} to={"/status"}>
-                        Status{" "}
-                        {activeStatusMessage.length > 0 ? <Badge color={error ? "danger" : "warning"}>{activeStatusMessage.length}</Badge> : null}
-                    </NavLink>
-                </NavItem>
-                <UncontrolledDropdown setActiveFromChild>
-                    <DropdownToggle nav>
-                        <ThreeDotsVertical />
-                    </DropdownToggle>
+        <Box>
+            <IconButton onClick={(e: MouseEvent<HTMLButtonElement>) => setDropdownAnchorEl(e.currentTarget)}>
+                <MoreVertIcon />
+            </IconButton>
 
-                    <DropdownMenu>
-                        <DropdownItem onClick={logoutClickHandler}>Logout</DropdownItem>
-                    </DropdownMenu>
-                </UncontrolledDropdown>
-            </Nav>
+            <Menu anchorEl={dropdownAnchorEl} open={dropdownIsOpen} onClose={() => setDropdownAnchorEl(null)}>
+                <MenuItem onClick={logoutClickHandler}>Logout</MenuItem>
+            </Menu>
+        </Box>
+    )
+}
 
-            {children}
-        </bases.Base>
+export const PopupNavigation = () => {
+    return (
+        <Grid container sx={{ borderBottom: 1, borderColor: "divider" }}>
+            <Grid xs={11} sm={11} md={11} lg={11} xl={11}>
+                <NavigationTabs />
+            </Grid>
+            <Grid xs={1} sm={1} md={1} lg={1} xl={1}>
+                <NavigationDropdown />
+            </Grid>
+        </Grid>
     )
 }

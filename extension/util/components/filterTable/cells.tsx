@@ -1,6 +1,16 @@
+import AddIcon from "@mui/icons-material/Add"
+import CheckIcon from "@mui/icons-material/Check"
+import DeleteIcon from "@mui/icons-material/Delete"
+import EditIcon from "@mui/icons-material/Edit"
+import Button from "@mui/material/Button"
+import ButtonGroup from "@mui/material/ButtonGroup"
+import Checkbox from "@mui/material/Checkbox"
+import FormControlLabel from "@mui/material/FormControlLabel"
+import IconButton from "@mui/material/IconButton"
+import InputAdornment from "@mui/material/InputAdornment"
+import TextField from "@mui/material/TextField"
+import Typography from "@mui/material/Typography"
 import { useEffect, useState } from "react"
-import { Check, Pencil, Plus, Trash } from "react-bootstrap-icons"
-import { Button, ButtonGroup, Input, InputGroup } from "reactstrap"
 
 import { useStorage } from "@plasmohq/storage/dist/hook"
 
@@ -41,24 +51,24 @@ export const Cell = ({ getValue, row, column, table }) => {
 
     if (columnMeta.element === "input") {
         return (
-            <InputGroup key={`row-${row.index}-col-${column.id}-ig`}>
-                {isContextCell && !isDefaultContextCell ? (
-                    <span className={"input-group-text"} key={`row-${row.index}-col-${column.id}-span`}>
-                        /r/
-                    </span>
-                ) : null}
-                <Input
-                    disabled={isDefaultContextCell || !tableMeta.rowIsEditable(rowUUID)}
-                    invalid={validationError.length > 0}
-                    key={`row-${row.index}-col-${column.id}-input`}
-                    onChange={onChangeHandler}
-                    readOnly={isDefaultContextCell || !tableMeta.rowIsEditable(rowUUID)}
-                    step={columnMeta.step ? columnMeta.step : null}
-                    title={validationError.length > 0 ? validationError : renderValue}
-                    type={columnMeta.type}
-                    value={renderValue}
-                />
-            </InputGroup>
+            <TextField
+                disabled={isDefaultContextCell || !tableMeta.rowIsEditable(rowUUID)}
+                error={validationError.length > 0}
+                fullWidth={true}
+                key={`row-${row.index}-col-${column.id}-input`}
+                onChange={onChangeHandler}
+                title={validationError.length > 0 ? validationError : renderValue}
+                type={columnMeta.type}
+                value={renderValue}
+                inputProps={{
+                    step: columnMeta.step ? columnMeta.step : ""
+                }}
+                InputProps={{
+                    readOnly: isDefaultContextCell || !tableMeta.rowIsEditable(rowUUID),
+                    disableUnderline: isDefaultContextCell || !tableMeta.rowIsEditable(rowUUID),
+                    startAdornment: isContextCell && !isDefaultContextCell ? <InputAdornment position="start">/r/</InputAdornment> : null
+                }}
+            />
         )
     } else {
         console.error(`Unhandled column meta element: ${columnMeta.element}`)
@@ -87,27 +97,25 @@ export const ActionCell = ({ row, table }) => {
 
     return (
         <ButtonGroup>
-            <>
-                {tableMeta.rowIsEditable(rowUUID) ? (
-                    <Button color={"success"} disabled={tableMeta.rowHasValidationErrors(rowUUID)} onClick={onSaveClickHandler}>
-                        <Check />
-                    </Button>
-                ) : (
-                    <Button color={"secondary"} onClick={onEditClickHandler}>
-                        <Pencil />
-                    </Button>
-                )}
-                {row.original.filterType !== "default" ? (
-                    <Button color={"danger"} key={`row-${row.index}-action`} onClick={onDeleteClickHandler} title={"Delete"}>
-                        <Trash key={`row-${row.index}-icon`} />
-                    </Button>
-                ) : null}
-            </>
+            {tableMeta.rowIsEditable(rowUUID) ? (
+                <IconButton color={"success"} disabled={tableMeta.rowHasValidationErrors(rowUUID)} onClick={onSaveClickHandler}>
+                    <CheckIcon />
+                </IconButton>
+            ) : (
+                <IconButton color={"secondary"} onClick={onEditClickHandler}>
+                    <EditIcon />
+                </IconButton>
+            )}
+            {row.original.filterType !== "default" ? (
+                <IconButton color={"error"} key={`row-${row.index}-action`} onClick={onDeleteClickHandler} title={"Delete"}>
+                    <DeleteIcon key={`row-${row.index}-icon`} />
+                </IconButton>
+            ) : null}
         </ButtonGroup>
     )
 }
 
-export const HeaderCell = ({ name, storageKey, table }) => {
+export const ActionHeaderCell = ({ name, storageKey, table }) => {
     const [filterEnabled, setFilterEnabled] = useStorage<boolean>({ instance: storage.extLocalStorage, key: storageKey }, (v) =>
         v === undefined ? false : v
     )
@@ -116,20 +124,23 @@ export const HeaderCell = ({ name, storageKey, table }) => {
         await setFilterEnabled(e.target.checked)
     }
 
+    const label = <Typography>{name}</Typography>
+
     if (table.options.meta.headerControlsVisible) {
         return (
-            <span>
-                {name}{" "}
-                <Input
-                    checked={filterEnabled}
-                    onChange={onChangeHandler}
-                    title={`${name} content filter is ${filterEnabled ? "enabled" : "disabled"}`}
-                    type={"checkbox"}
-                />
-            </span>
+            <FormControlLabel
+                control={<Checkbox checked={filterEnabled} onChange={onChangeHandler} />}
+                label={label}
+                labelPlacement="end"
+                title={`${name} content filter is ${filterEnabled ? "enabled" : "disabled"}`}
+            />
         )
     }
-    return name
+    return label
+}
+
+export const HeaderCell = ({ name }) => {
+    return <Typography>{name}</Typography>
 }
 
 export const FooterCell = ({ table }) => {
@@ -142,14 +153,13 @@ export const FooterCell = ({ table }) => {
     }
 
     return (
-        <div className={"d-flex justify-content-center"}>
-            <Button
-                color={"success"}
-                disabled={tableMeta.tableHasValidationErrors() || tableMeta.rowEditingInProgress()}
-                onClick={onClickHandler}
-                title={"Add new row"}>
-                Add New <Plus />
-            </Button>
-        </div>
+        <Button
+            color={"success"}
+            disabled={tableMeta.tableHasValidationErrors() || tableMeta.rowEditingInProgress()}
+            endIcon={<AddIcon />}
+            onClick={onClickHandler}
+            title={"Add new row"}>
+            Add New
+        </Button>
     )
 }

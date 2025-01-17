@@ -15,7 +15,7 @@ const action = (columnHelper) => {
 const age = (columnHelper, storageKey: string) => {
     return columnHelper.accessor("age", {
         cell: cells.Cell,
-        header: ({ table }) => <cells.HeaderCell name={"Age"} storageKey={storageKey} table={table} />,
+        header: ({ table }) => <cells.ActionHeaderCell name={"Age"} storageKey={storageKey} table={table} />,
         id: "age",
         meta: {
             cast: parseInt,
@@ -30,7 +30,7 @@ const context = (columnHelper) => {
     return columnHelper.accessor("context", {
         cell: cells.Cell,
         filterFn: "equals",
-        header: "Context",
+        header: <cells.HeaderCell name={"Context"} />,
         id: "context",
         meta: {
             cast: String,
@@ -49,7 +49,7 @@ const context = (columnHelper) => {
 const iq = (columnHelper, storageKey: string) => {
     return columnHelper.accessor("iq", {
         cell: cells.Cell,
-        header: ({ table }) => <cells.HeaderCell name={"IQ"} storageKey={storageKey} table={table} />,
+        header: ({ table }) => <cells.ActionHeaderCell name={"IQ"} storageKey={storageKey} table={table} />,
         id: "iq",
         meta: {
             cast: parseInt,
@@ -63,7 +63,7 @@ const iq = (columnHelper, storageKey: string) => {
 const sentimentPolarity = (columnHelper, storageKey: string) => {
     return columnHelper.accessor("sentimentPolarity", {
         cell: cells.Cell,
-        header: ({ table }) => <cells.HeaderCell name={"Polarity"} storageKey={storageKey} table={table} />,
+        header: ({ table }) => <cells.ActionHeaderCell name={"Polarity"} storageKey={storageKey} table={table} />,
         id: "sentimentPolarity",
         meta: {
             cast: parseFloat,
@@ -83,7 +83,7 @@ const sentimentPolarity = (columnHelper, storageKey: string) => {
 const sentimentSubjectivity = (columnHelper, storageKey: string) => {
     return columnHelper.accessor("sentimentSubjectivity", {
         cell: cells.Cell,
-        header: ({ table }) => <cells.HeaderCell name={"Subjectivity"} storageKey={storageKey} table={table} />,
+        header: ({ table }) => <cells.ActionHeaderCell name={"Subjectivity"} storageKey={storageKey} table={table} />,
         id: "sentimentSubjectivity",
         meta: {
             cast: parseFloat,

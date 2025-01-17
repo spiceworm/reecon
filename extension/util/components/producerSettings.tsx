@@ -1,7 +1,6 @@
+import TextField from "@mui/material/TextField"
 import OpenAI from "openai"
 import { useState } from "react"
-import { Eye, EyeSlash } from "react-bootstrap-icons"
-import { Button, FormFeedback, Input, InputGroup, InputGroupText } from "reactstrap"
 
 import { useStorage } from "@plasmohq/storage/dist/hook"
 
@@ -9,10 +8,13 @@ import * as constants from "~util/constants"
 import * as storage from "~util/storage"
 
 const ProducerSettingsApiKeyInput = ({ name, apiKeyStorageKey, apiKeyValidatorFunc }) => {
-    const [keyVisible, setKeyVisible] = useState(false)
     const [showKeyValidationError, setShowKeyValidationError] = useState(false)
-    const [apiKey, _, { setRenderValue, setStoreValue }] = useStorage<string>({ instance: storage.extLocalStorage, key: apiKeyStorageKey }, (v) =>
-        v === undefined ? "" : v
+    const [apiKey, _, { setRenderValue, setStoreValue }] = useStorage<string>(
+        {
+            instance: storage.extLocalStorage,
+            key: apiKeyStorageKey
+        },
+        (v) => (v === undefined ? "" : v)
     )
 
     const validateApiKey = async (e) => {
@@ -33,21 +35,14 @@ const ProducerSettingsApiKeyInput = ({ name, apiKeyStorageKey, apiKeyValidatorFu
     }
 
     return (
-        <InputGroup key={name}>
-            <InputGroupText>{name}</InputGroupText>
-
-            <Input
-                invalid={showKeyValidationError}
-                onBlur={validateApiKey}
-                onChange={(e) => setRenderValue(e.target.value)}
-                placeholder={"API Key"}
-                type={keyVisible ? "text" : "password"}
-                value={apiKey}
-            />
-            {showKeyValidationError ? <FormFeedback tooltip={true}>Invalid {name} API key</FormFeedback> : null}
-
-            <Button onClick={(e) => setKeyVisible(!keyVisible)}>{keyVisible ? <Eye /> : <EyeSlash />}</Button>
-        </InputGroup>
+        <TextField
+            error={showKeyValidationError}
+            onBlur={validateApiKey}
+            onChange={(e) => setRenderValue(e.target.value)}
+            helperText={showKeyValidationError ? `Invalid ${name} API key` : ""}
+            label={`${name} API Key`}
+            value={apiKey}
+        />
     )
 }
 

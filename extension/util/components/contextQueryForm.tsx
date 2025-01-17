@@ -1,29 +1,25 @@
-import { useState } from "react"
-import {
-    Button,
-    Col,
-    DropdownItem,
-    DropdownMenu,
-    DropdownToggle,
-    Form,
-    FormGroup,
-    Input,
-    InputGroup,
-    Label,
-    Modal,
-    ModalBody,
-    ModalHeader,
-    Spinner,
-    UncontrolledAlert,
-    UncontrolledDropdown
-} from "reactstrap"
+import Alert from "@mui/material/Alert"
+import Button from "@mui/material/Button"
+import CircularProgress from "@mui/material/CircularProgress"
+import Dialog from "@mui/material/Dialog"
+import DialogContent from "@mui/material/DialogContent"
+import DialogContentText from "@mui/material/DialogContentText"
+import DialogTitle from "@mui/material/DialogTitle"
+import FormGroup from "@mui/material/FormGroup"
+import InputLabel from "@mui/material/InputLabel"
+import MenuItem from "@mui/material/MenuItem"
+import Select from "@mui/material/Select"
+import Stack from "@mui/material/Stack"
+import TextField from "@mui/material/TextField"
+import Grid from "@mui/material/Unstable_Grid2"
+import { MuiMarkdown } from "mui-markdown"
+import { useRef, useState } from "react"
 import useSWR from "swr"
 
 import { useStorage } from "@plasmohq/storage/dist/hook"
 
 import * as api from "~util/api"
 import * as backgroundMessage from "~util/backgroundMessages"
-import * as markdown from "~util/components/markdown"
 import * as constants from "~util/constants"
 import * as storage from "~util/storage"
 import type * as types from "~util/types"
@@ -48,6 +44,7 @@ export const ContextQueryForm = () => {
 
     const [isLoading, setIsLoading] = useState(false)
     const [queryResponse, setQueryResponse] = useState("")
+    const responseModalDescriptionElementRef = useRef<HTMLElement>(null)
     const [responseModalVisible, setResponseModalVisible] = useState(false)
 
     const [contextQueryingDisabled, setContextQueryingDisabled] = useState(false)
@@ -55,12 +52,12 @@ export const ContextQueryForm = () => {
     const [producerDefaults, setProducerDefaults] = useState({} as types.ProducerDefaultsResponse)
 
     const [llmSelection, setLlmSelection] = useState("")
-    const [llmProducers, setLlmProducers] = useState([] as types.Producer[])
+    const [llmProducers, setLlmProducers] = useState<types.Producer[]>([])
 
     const [nlpSelection, setNlpSelection] = useState("")
-    const [nlpProducers, setNlpProducers] = useState([] as types.Producer[])
+    const [nlpProducers, setNlpProducers] = useState<types.Producer[]>([])
 
-    const [contextSelection, setContextSelection] = useState("Choose")
+    const [contextSelection, setContextSelection] = useState("")
     const [contextInputValue, setContextInputValue] = useState("")
     const [contextInputPlaceholder, setContextInputPlaceholder] = useState("")
     const [promptInputValue, setPromptInputValue] = useState("")
@@ -139,10 +136,10 @@ export const ContextQueryForm = () => {
     })
 
     const onContextChangeHandler = async (e) => {
-        const contextSelection = e.target.innerText
+        const contextSelection = e.target.value
         setContextSelection(contextSelection)
 
-        if (contextSelection === "redditor") {
+        if (contextSelection === "Redditor") {
             setPromptInputValue(producerDefaults.prompts.process_redditor_context_query)
 
             if (redditorProcessingEnabled) {
@@ -168,7 +165,7 @@ export const ContextQueryForm = () => {
     }
 
     const onLlmChangeHandler = async (e) => {
-        setLlmSelection(e.target.innerText)
+        setLlmSelection(e.target.value)
     }
 
     const onSubmitHandler = async (e) => {
@@ -177,7 +174,7 @@ export const ContextQueryForm = () => {
         const producerApiKeyIsUsable = await backgroundMessage.openAiApiKeyIsUsable(producerSettings.openai.api_key)
 
         if (producerApiKeyIsUsable) {
-            if (contextSelection === "redditor") {
+            if (contextSelection === "Redditor") {
                 setApiEndpoint("/api/v1/reddit/redditor/context-query/")
                 setPostBody({
                     llm_name: llmSelection,
@@ -209,114 +206,113 @@ export const ContextQueryForm = () => {
     return (
         <>
             {formErrors.map((formError: string, idx: number) => (
-                <UncontrolledAlert color={"danger"} key={idx}>
+                <Alert color={"error"} key={idx}>
                     {formError}
-                </UncontrolledAlert>
+                </Alert>
             ))}
 
             {requestErrors.map((requestError: string, idx: number) => (
-                <UncontrolledAlert color={"danger"} key={idx}>
+                <Alert color={"error"} key={idx}>
                     {requestError}
-                </UncontrolledAlert>
+                </Alert>
             ))}
 
-            <Form onSubmit={onSubmitHandler}>
-                <div className={"pt-2"}>
-                    <FormGroup row>
-                        <Label for={"contextQueryLlm"} lg={1}>
-                            LLM
-                        </Label>
-                        <Col lg={11}>
-                            <InputGroup id={"contextQueryLlm"}>
-                                <UncontrolledDropdown disabled={isLoading || contextQueryingDisabled}>
-                                    <DropdownToggle caret>{llmSelection} </DropdownToggle>
-                                    <DropdownMenu>
-                                        {llmProducers
-                                            ? llmProducers.map((llmProducer: types.Producer, idx: number) => {
-                                                  return (
-                                                      <DropdownItem key={idx} onClick={onLlmChangeHandler}>
-                                                          {llmProducer.name}
-                                                      </DropdownItem>
-                                                  )
-                                              })
-                                            : null}
-                                    </DropdownMenu>
-                                </UncontrolledDropdown>
-                            </InputGroup>
-                        </Col>
-                    </FormGroup>
+            <Stack component={"form"} onSubmit={onSubmitHandler} spacing={2}>
+                <Grid container spacing={2}>
+                    <Grid xs={3} sm={3} md={3} lg={3} xl={3}>
+                        <FormGroup>
+                            <InputLabel id={"contextQueryLlm"}>LLM</InputLabel>
+                            <Select
+                                labelId={"contextQueryLlm"}
+                                id={"contextQueryLlm"}
+                                value={llmSelection}
+                                onChange={onLlmChangeHandler}
+                                required={true}
+                                variant={"outlined"}>
+                                {llmProducers
+                                    ? llmProducers.map((llmProducer: types.Producer) => {
+                                          return <MenuItem value={llmProducer.name}>{llmProducer.name}</MenuItem>
+                                      })
+                                    : null}
+                            </Select>
+                        </FormGroup>
+                    </Grid>
 
-                    <FormGroup row>
-                        <Label for={"contextQueryContext"} lg={1}>
-                            Context
-                        </Label>
-                        <Col lg={11}>
-                            <InputGroup>
-                                {/* This should not be disabled if `contextQueryingDisabled` because queries may be
-                                disabled for redditors but not threads and vice versa */}
-                                <UncontrolledDropdown disabled={isLoading}>
-                                    <DropdownToggle caret>{contextSelection} </DropdownToggle>
-                                    <DropdownMenu>
-                                        <DropdownItem onClick={onContextChangeHandler}>redditor</DropdownItem>
-                                        <DropdownItem onClick={onContextChangeHandler}>thread</DropdownItem>
-                                    </DropdownMenu>
-                                </UncontrolledDropdown>
-                                <Input
-                                    id={"contextQueryContext"}
-                                    disabled={isLoading || contextQueryingDisabled}
-                                    onChange={(e) => setContextInputValue(e.target.value)}
-                                    placeholder={contextInputPlaceholder}
-                                    required={true}
-                                    type={contextSelection === "thread" ? "url" : "text"}
-                                    value={contextInputValue}
-                                />
-                            </InputGroup>
-                        </Col>
-                    </FormGroup>
+                    <Grid xs={3} sm={3} md={3} lg={3} xl={3}>
+                        <FormGroup>
+                            <InputLabel id={"contextQueryContextType"}>Context Type</InputLabel>
+                            <Select
+                                labelId={"contextQueryContextType"}
+                                value={contextSelection}
+                                onChange={onContextChangeHandler}
+                                required={true}
+                                variant={"outlined"}>
+                                <MenuItem value={"Redditor"}>{"Redditor"}</MenuItem>
+                                <MenuItem value={"Thread"}>{"Thread"}</MenuItem>
+                            </Select>
+                        </FormGroup>
+                    </Grid>
 
-                    <FormGroup row>
-                        <Label for={"contextQueryPrompt"} lg={1}>
-                            Prompt
-                        </Label>
-                        <Col lg={11}>
-                            <Input
+                    <Grid xs={6} sm={6} md={6} lg={6} xl={6}>
+                        <FormGroup>
+                            <InputLabel htmlFor={"contextQueryContextValue"}>Context Value</InputLabel>
+                            <TextField
+                                id={"contextQueryContextValue"}
+                                disabled={isLoading || contextQueryingDisabled || !contextSelection}
+                                fullWidth={true}
+                                onChange={(e) => setContextInputValue(e.target.value)}
+                                placeholder={contextInputPlaceholder}
+                                required={true}
+                                type={contextSelection === "Thread" ? "url" : "text"}
+                                value={contextInputValue}
+                                variant={"outlined"}
+                            />
+                        </FormGroup>
+                    </Grid>
+                </Grid>
+
+                <Grid container spacing={2}>
+                    <Grid xs={12} sm={12} md={12} lg={12} xl={12}>
+                        <FormGroup>
+                            <InputLabel htmlFor={"contextQueryPrompt"}>Prompt</InputLabel>
+                            <TextField
                                 disabled={isLoading || contextQueryingDisabled}
-                                id={"contextQueryPrompt"}
+                                multiline={true}
                                 onChange={(e) => setPromptInputValue(e.target.value)}
                                 required={true}
-                                type={"textarea"}
                                 value={promptInputValue}
+                                variant={"outlined"}
                             />
-                        </Col>
-                    </FormGroup>
-                </div>
+                        </FormGroup>
+                    </Grid>
+                </Grid>
 
-                <div className={"d-flex justify-content-center"}>
-                    <Button color={"primary"} disabled={isLoading || contextQueryingDisabled} type={"submit"}>
-                        {!isLoading ? (
-                            "Submit"
-                        ) : (
-                            <>
-                                {/*
+                <Button color={"primary"} disabled={isLoading || contextQueryingDisabled} type={"submit"}>
+                    {!isLoading ? (
+                        "Submit"
+                    ) : (
+                        <>
+                            {/*
                                 TODO: show the spinner on a modal where we can display text about how the
                                 request will appear in their query history if it is taking too long and they
                                 do not want to sit and wait for a response. Showing it on a modal also prevents
                                 them from modifying the form and sending additional queries.
                                 */}
-                                <Spinner size={"sm"} />
-                                <span> Loading</span>
-                            </>
-                        )}
-                    </Button>
-                </div>
-            </Form>
+                            <CircularProgress />
+                            <span> Loading</span>
+                        </>
+                    )}
+                </Button>
+            </Stack>
 
-            <Modal isOpen={responseModalVisible} size={"xl"} toggle={toggleResponseModalVisibility}>
-                <ModalHeader toggle={toggleResponseModalVisibility} />
-                <ModalBody>
-                    <markdown.Markdown>{queryResponse}</markdown.Markdown>
-                </ModalBody>
-            </Modal>
+            <Dialog open={responseModalVisible} onClose={toggleResponseModalVisibility}>
+                <DialogTitle>Response</DialogTitle>
+                <DialogContent dividers={true}>
+                    <DialogContentText ref={responseModalDescriptionElementRef} tabIndex={-1}>
+                        <MuiMarkdown>{queryResponse}</MuiMarkdown>
+                    </DialogContentText>
+                </DialogContent>
+            </Dialog>
         </>
     )
 }

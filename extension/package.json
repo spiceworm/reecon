@@ -11,19 +11,19 @@
     "package": "plasmo package"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^6.4.0",
+    "@mui/material": "^6.4.0",
     "@plasmohq/messaging": "^0.6.2",
     "@plasmohq/storage": "^1.13.0",
     "@tanstack/react-table": "^8.20.6",
-    "bootstrap": "^5.3.3",
-    "jwt-decode": "^4.0.0",
     "marked": "^15.0.6",
     "openai": "^4.78.1",
     "plasmo": "0.89.4",
     "react": "18.2.0",
-    "react-bootstrap-icons": "^1.11.5",
     "react-dom": "18.2.0",
-    "react-router-dom": "^7.1.1",
-    "reactstrap": "^9.2.3",
+    "react-router-dom": "^7.1.2",
     "swr": "^2.3.0"
   },
   "devDependencies": {

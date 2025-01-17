@@ -1,5 +1,3 @@
-import "bootstrap/dist/css/bootstrap.min.css"
-
 import { MemoryRouter, Navigate, Route, Routes } from "react-router-dom"
 
 import { ActiveSettingsView } from "~popup/views/activeSettings"

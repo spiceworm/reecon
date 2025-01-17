@@ -1,19 +1,32 @@
-import { Button, Form, Input, Label } from "reactstrap"
+import Button from "@mui/material/Button"
+import Checkbox from "@mui/material/Checkbox"
+import FormControlLabel from "@mui/material/FormControlLabel"
+import Stack from "@mui/material/Stack"
+import Grid from "@mui/material/Unstable_Grid2"
 
 import { useStorage } from "@plasmohq/storage/dist/hook"
 
 import * as navigation from "~popup/navigation"
+import * as bases from "~util/components/bases"
 import { CommentFilterTable, ThreadFilterTable } from "~util/components/filterTable/tables"
 import * as constants from "~util/constants"
 import * as storage from "~util/storage"
 import type * as types from "~util/types"
 
 export const ActiveSettingsView = () => {
-    const [activeCommentFilter] = useStorage<types.CommentFilter>({ instance: storage.extLocalStorage, key: constants.ACTIVE_COMMENT_FILTER }, (v) =>
-        v === undefined ? constants.defaultCommentFilter : v
+    const [activeCommentFilter] = useStorage<types.CommentFilter>(
+        {
+            instance: storage.extLocalStorage,
+            key: constants.ACTIVE_COMMENT_FILTER
+        },
+        (v) => (v === undefined ? constants.defaultCommentFilter : v)
     )
-    const [activeThreadFilter] = useStorage<types.ThreadFilter>({ instance: storage.extLocalStorage, key: constants.ACTIVE_THREAD_FILTER }, (v) =>
-        v === undefined ? constants.defaultThreadFilter : v
+    const [activeThreadFilter] = useStorage<types.ThreadFilter>(
+        {
+            instance: storage.extLocalStorage,
+            key: constants.ACTIVE_THREAD_FILTER
+        },
+        (v) => (v === undefined ? constants.defaultThreadFilter : v)
     )
     const [disableExtension, setDisableExtension] = useStorage<boolean>(
         { instance: storage.extLocalStorage, key: constants.DISABLE_EXTENSION },
@@ -37,93 +50,87 @@ export const ActiveSettingsView = () => {
     }
 
     return (
-        <navigation.PopupNavigation>
-            <Form>
-                <div className={"form-check pt-2"}>
-                    <Input
-                        className={"form-check-input"}
-                        checked={disableExtension}
-                        id={"disableExtension"}
-                        onChange={(e) => setDisableExtension(e.target.checked)}
-                        type="checkbox"
+        <bases.Base>
+            <Stack>
+                <navigation.PopupNavigation />
+
+                <Stack spacing={2}>
+                    <Grid container>
+                        <Grid xs={6} sm={6} md={6} lg={6} xl={6}>
+                            <FormControlLabel
+                                control={<Checkbox checked={disableExtension} onChange={(e) => setDisableExtension(e.target.checked)} />}
+                                label={"Disable reecon"}
+                            />
+                        </Grid>
+                        <Grid xs={6} sm={6} md={6} lg={6} xl={6}>
+                            <FormControlLabel
+                                control={<Checkbox checked={hideIgnoredRedditors} onChange={(e) => setHideIgnoredRedditors(e.target.checked)} />}
+                                label={"Hide ignored redditors"}
+                            />
+                        </Grid>
+                        <Grid xs={6} sm={6} md={6} lg={6} xl={6}>
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={hideUnprocessableRedditors}
+                                        onChange={(e) => setHideUnprocessableRedditors(e.target.checked)}
+                                    />
+                                }
+                                label={"Hide unprocessable redditors"}
+                            />
+                        </Grid>
+                        <Grid xs={6} sm={6} md={6} lg={6} xl={6}>
+                            <FormControlLabel
+                                control={
+                                    <Checkbox checked={hideUnprocessableThreads} onChange={(e) => setHideUnprocessableThreads(e.target.checked)} />
+                                }
+                                label={"Hide unprocessable threads"}
+                            />
+                        </Grid>
+                    </Grid>
+
+                    <ThreadFilterTable
+                        columnFilters={[
+                            {
+                                id: "context",
+                                value: activeThreadFilter.context
+                            }
+                        ]}
+                        columnVisibility={{
+                            context: true,
+                            sentimentPolarity: true,
+                            sentimentSubjectivity: true,
+                            action: true
+                        }}
+                        footerVisible={false}
+                        headerControlsVisible={true}
                     />
-                    <Label for={"disableExtension"}>Disable reecon</Label>
-                </div>
-
-                <div className={"form-check pt-2"}>
-                    <Input
-                        className={"form-check-input"}
-                        checked={hideIgnoredRedditors}
-                        id={"hideIgnoredRedditors"}
-                        onChange={(e) => setHideIgnoredRedditors(e.target.checked)}
-                        type="checkbox"
+                    <CommentFilterTable
+                        columnFilters={[
+                            {
+                                id: "context",
+                                value: activeCommentFilter.context
+                            }
+                        ]}
+                        columnVisibility={{
+                            context: true,
+                            age: true,
+                            iq: true,
+                            sentimentPolarity: true,
+                            sentimentSubjectivity: true,
+                            action: true
+                        }}
+                        footerVisible={false}
+                        headerControlsVisible={true}
                     />
-                    <Label for={"hideIgnoredRedditors"}>Hide ignored redditors</Label>
-                </div>
 
-                <div className={"form-check pt-2"}>
-                    <Input
-                        className={"form-check-input"}
-                        checked={hideUnprocessableRedditors}
-                        id={"hideUnprocessableRedditors"}
-                        onChange={(e) => setHideUnprocessableRedditors(e.target.checked)}
-                        type="checkbox"
-                    />
-                    <Label for={"hideUnprocessableRedditors"}>Hide unprocessable redditors</Label>
-                </div>
-
-                <div className={"form-check pt-2"}>
-                    <Input
-                        className={"form-check-input"}
-                        checked={hideUnprocessableThreads}
-                        id={"hideUnprocessableThreads"}
-                        onChange={(e) => setHideUnprocessableThreads(e.target.checked)}
-                        type="checkbox"
-                    />
-                    <Label for={"hideUnprocessableThreads"}>Hide unprocessable threads</Label>
-                </div>
-            </Form>
-
-            <ThreadFilterTable
-                columnFilters={[
-                    {
-                        id: "context",
-                        value: activeThreadFilter.context
-                    }
-                ]}
-                columnVisibility={{
-                    context: true,
-                    sentimentPolarity: true,
-                    sentimentSubjectivity: true,
-                    action: true
-                }}
-                footerVisible={false}
-                headerControlsVisible={true}
-            />
-            <CommentFilterTable
-                columnFilters={[
-                    {
-                        id: "context",
-                        value: activeCommentFilter.context
-                    }
-                ]}
-                columnVisibility={{
-                    context: true,
-                    age: true,
-                    iq: true,
-                    sentimentPolarity: true,
-                    sentimentSubjectivity: true,
-                    action: true
-                }}
-                footerVisible={false}
-                headerControlsVisible={true}
-            />
-
-            <div className={"d-flex justify-content-center"}>
-                <Button color={"primary"} onClick={handleAllSettingsBtnClick} type={"button"}>
-                    More
-                </Button>
-            </div>
-        </navigation.PopupNavigation>
+                    <Stack alignItems="center" display="flex" justifyContent="center">
+                        <Button color={"primary"} onClick={handleAllSettingsBtnClick}>
+                            More
+                        </Button>
+                    </Stack>
+                </Stack>
+            </Stack>
+        </bases.Base>
     )
 }
