@@ -82,9 +82,6 @@ class _RedditService(abc.ABC):
     def get_inputs(self, *args, **kwargs):
         pass
 
-    # FIXME: I dont this works as expected. The output of `./manage.py redditor redditor Pythagaris data get-inputs`
-    #    shows some values that I would have expected to be filtered out because of their length or length after removing
-    #    URLs.
     def filter_submission(self, *, text: str) -> str:
         if not text or text == "[deleted]":
             return ""
@@ -95,6 +92,9 @@ class _RedditService(abc.ABC):
 
         # Remove excessive leading and trailing whitespace from each line.
         text = "\n".join(line.strip() for line in text.splitlines())
+
+        # Strip any existing markdown that is present.
+        text = util.strip_markdown(text)
 
         # Remove sentences containing URLs while preserving surrounding sentences.
         sentences = []
