@@ -1,10 +1,9 @@
 # Many server dependencies are installed via reecon package
 coreapi==2.3.3
-django-cors-headers==4.6.0
-django-filter==24.3
+django-cors-headers==4.7.0
 djangorestframework-simplejwt[crypto]==5.4.0
 docutils==0.21.2
 drf-spectacular==0.28.0
-drf-spectacular-sidecar==2024.12.1
+drf-spectacular-sidecar==2025.2.1
 markdown==3.7
 pygments==2.18.0

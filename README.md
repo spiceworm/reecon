@@ -137,7 +137,6 @@ $ . ~/venv/reecon/bin/activate
 - If an already processed entity is submitted and needs to be re-processed because it is stale, but that job in the low priority queue
 
 # Enhancements:
-- Add option to hide comments for unprocessable redditors
 - Have some way to inspect list of hidden threads
 - Recommend threads to users based on their interests determined from their submissions history.
 - Hide thread posts from redditors that trigger filter rule for current context
