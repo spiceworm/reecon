@@ -98,7 +98,8 @@ REDIS_SSL=True / False
 ```
 
 # Bump version
-### Change version variable in:
+### Change version variables in:
+- terraform/reecon.tfvars
 - backend/.env
 - backend/.env.production
 - extension/package.json
