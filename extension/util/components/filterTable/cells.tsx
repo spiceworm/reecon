@@ -47,25 +47,26 @@ export const Cell = ({ getValue, row, column, table }) => {
         tableMeta.updateRenderedData(rowUUID, column.id, value)
     }
 
+    const fieldDisabled = isDefaultContextCell || !tableMeta.rowIsEditable(rowUUID)
     const validationError = tableMeta.getCellValidationError(rowUUID, column.id)
 
     if (columnMeta.element === "input") {
         return (
             <TextField
-                disabled={isDefaultContextCell || !tableMeta.rowIsEditable(rowUUID)}
+                disabled={fieldDisabled}
                 error={validationError.length > 0}
                 fullWidth={true}
                 key={`row-${row.index}-col-${column.id}-input`}
                 onChange={onChangeHandler}
                 title={validationError.length > 0 ? validationError : renderValue}
-                type={columnMeta.type}
+                type={fieldDisabled ? "text" : columnMeta.type}
                 value={renderValue}
                 inputProps={{
                     step: columnMeta.step ? columnMeta.step : ""
                 }}
                 InputProps={{
-                    readOnly: isDefaultContextCell || !tableMeta.rowIsEditable(rowUUID),
-                    disableUnderline: isDefaultContextCell || !tableMeta.rowIsEditable(rowUUID),
+                    readOnly: fieldDisabled,
+                    disableUnderline: fieldDisabled,
                     startAdornment: isContextCell && !isDefaultContextCell ? <InputAdornment position="start">/r/</InputAdornment> : null
                 }}
             />
