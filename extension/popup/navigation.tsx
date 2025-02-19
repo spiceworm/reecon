@@ -6,7 +6,7 @@ import MenuItem from "@mui/material/MenuItem"
 import Tab from "@mui/material/Tab"
 import Tabs from "@mui/material/Tabs"
 import Grid from "@mui/material/Unstable_Grid2"
-import { useState, type MouseEvent, type SyntheticEvent } from "react"
+import { useState, type MouseEvent } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import useSWR from "swr"
 
@@ -15,12 +15,11 @@ import { useStorage } from "@plasmohq/storage/dist/hook"
 import * as api from "~util/api"
 import { EmptyBadge, UIThemeControls } from "~util/components/mui"
 import * as constants from "~util/constants"
+import { useRouteMatch } from "~util/routing"
 import * as storage from "~util/storage"
 import type * as types from "~util/types"
 
 const NavigationTabs = () => {
-    const [currentTab, setCurrentTab] = useState(0)
-
     const { error, isLoading } = useSWR("updateApiStatusMessages", api.updateApiStatusMessages)
     const [statusMessages] = useStorage<(types.ApiStatusMessage | types.ExtensionStatusMessage)[]>(
         { instance: storage.extLocalStorage, key: constants.ALL_STATUS_MESSAGES },
@@ -28,12 +27,11 @@ const NavigationTabs = () => {
     )
     const activeStatusMessages = statusMessages.filter((message: types.ApiStatusMessage | types.ExtensionStatusMessage) => message.active)
 
-    const handleTabChange = (event: SyntheticEvent, tabIndex: number) => {
-        setCurrentTab(tabIndex)
-    }
+    const routeMatch = useRouteMatch(["/active-settings", "/status"])
+    const currentTab = routeMatch?.pattern?.path
 
     return (
-        <Tabs value={currentTab} onChange={handleTabChange} variant="fullWidth">
+        <Tabs value={currentTab} variant="fullWidth">
             <Tab component={Link} label="Active Settings" to={"/active-settings"} value={"/active-settings"} />
             <Tab
                 component={Link}
