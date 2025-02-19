@@ -1,6 +1,6 @@
 import DataObjectIcon from "@mui/icons-material/DataObject"
 import LaunchIcon from "@mui/icons-material/Launch"
-import Button from "@mui/material/Button"
+import LoadingButton from "@mui/lab/LoadingButton"
 import Dialog from "@mui/material/Dialog"
 import DialogContent from "@mui/material/DialogContent"
 import DialogContentText from "@mui/material/DialogContentText"
@@ -51,6 +51,7 @@ export const ContextQueryHistory = () => {
     const getQueryMetadata = (contextQuery: types.RedditorContextQuery | types.ThreadContextQuery) => {
         return {
             created: contextQuery?.created,
+            identifier: contextQuery?.context.identifier,
             inputs: contextQuery?.total_inputs,
             llm: contextQuery?.response.producer.name,
             submitter: contextQuery?.submitter.username
@@ -70,16 +71,13 @@ export const ContextQueryHistory = () => {
 
     const toggleModalVisibility = () => setModalVisible(!modalVisible)
 
+    const isLoading = redditorContextQueriesAreLoading || threadContextQueriesAreLoading
+
     return (
         <Stack>
-            <Button
-                disabled={redditorContextQueriesAreLoading || threadContextQueriesAreLoading}
-                onClick={loadHistoryButtonHandler}
-                // loading={redditorContextQueriesAreLoading || threadContextQueriesAreLoading}
-                // loadingPosition={"end"}
-            >
-                Load History
-            </Button>
+            <LoadingButton disabled={isLoading} onClick={loadHistoryButtonHandler} loading={isLoading}>
+                <span>load history</span>
+            </LoadingButton>
 
             <List>
                 {[...redditorContextQueryHistory, ...threadContextQueryHistory]

@@ -1,9 +1,8 @@
 import InfoIcon from "@mui/icons-material/Info"
 import VisibilityIcon from "@mui/icons-material/Visibility"
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff"
+import LoadingButton from "@mui/lab/LoadingButton"
 import Alert from "@mui/material/Alert"
-import Button from "@mui/material/Button"
-import CircularProgress from "@mui/material/CircularProgress"
 import Divider from "@mui/material/Divider"
 import IconButton from "@mui/material/IconButton"
 import InputAdornment from "@mui/material/InputAdornment"
@@ -57,8 +56,6 @@ export const SignupView = ({ onSuccessRedirectPath }) => {
         })
     }
 
-    const formFieldsMissing = password.length === 0 || username.length === 0
-
     return (
         <bases.Base>
             <Stack component={"form"} onSubmit={handleSubmit} spacing={2}>
@@ -73,6 +70,7 @@ export const SignupView = ({ onSuccessRedirectPath }) => {
                     autoFocus={true}
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder={"Username"}
+                    required={true}
                     type="text"
                     endAdornment={
                         <InputAdornment position={"end"}>
@@ -89,6 +87,7 @@ export const SignupView = ({ onSuccessRedirectPath }) => {
                 <OutlinedInput
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder={"Password"}
+                    required={true}
                     type={passwordVisible ? "text" : "password"}
                     endAdornment={
                         <InputAdornment position={"end"}>
@@ -100,17 +99,13 @@ export const SignupView = ({ onSuccessRedirectPath }) => {
                 />
 
                 <Stack direction="row" divider={<Divider orientation="vertical" flexItem />} justifyContent="center" alignItems="center" spacing={2}>
-                    <Button color={"primary"} disabled={signupIsLoading || loginIsLoading || formFieldsMissing} type={"submit"}>
-                        {!signupIsLoading && !loginIsLoading ? (
-                            "Signup"
-                        ) : (
-                            <>
-                                <CircularProgress />
-                                <span> Loading</span>
-                            </>
-                        )}
-                    </Button>
-
+                    <LoadingButton
+                        color={"primary"}
+                        disabled={signupIsLoading || loginIsLoading}
+                        loading={signupIsLoading || loginIsLoading}
+                        type={"submit"}>
+                        <span>signup</span>
+                    </LoadingButton>
                     <NavLink to="/auth/login">Login</NavLink>
                 </Stack>
             </Stack>

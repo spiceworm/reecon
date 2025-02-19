@@ -1,6 +1,5 @@
+import LoadingButton from "@mui/lab/LoadingButton"
 import Alert from "@mui/material/Alert"
-import Button from "@mui/material/Button"
-import CircularProgress from "@mui/material/CircularProgress"
 import Dialog from "@mui/material/Dialog"
 import DialogContent from "@mui/material/DialogContent"
 import DialogContentText from "@mui/material/DialogContentText"
@@ -168,9 +167,7 @@ export const ContextQueryForm = () => {
         setLlmSelection(e.target.value)
     }
 
-    const onSubmitHandler = async (e) => {
-        e.preventDefault()
-
+    const onClickHandler = async () => {
         const producerApiKeyIsUsable = await backgroundMessage.openAiApiKeyIsUsable(producerSettings.openai.api_key)
 
         if (producerApiKeyIsUsable) {
@@ -217,12 +214,13 @@ export const ContextQueryForm = () => {
                 </Alert>
             ))}
 
-            <Stack component={"form"} onSubmit={onSubmitHandler} spacing={2}>
+            <Stack spacing={2}>
                 <Grid container spacing={2}>
                     <Grid xs={3} sm={3} md={3} lg={3} xl={3}>
                         <FormGroup>
                             <InputLabel id={"contextQueryLlm"}>LLM</InputLabel>
                             <Select
+                                disabled={isLoading}
                                 labelId={"contextQueryLlm"}
                                 id={"contextQueryLlm"}
                                 value={llmSelection}
@@ -242,6 +240,7 @@ export const ContextQueryForm = () => {
                         <FormGroup>
                             <InputLabel id={"contextQueryContextType"}>Context Type</InputLabel>
                             <Select
+                                disabled={isLoading}
                                 labelId={"contextQueryContextType"}
                                 value={contextSelection}
                                 onChange={onContextChangeHandler}
@@ -287,22 +286,9 @@ export const ContextQueryForm = () => {
                     </Grid>
                 </Grid>
 
-                <Button color={"primary"} disabled={isLoading || contextQueryingDisabled} type={"submit"}>
-                    {!isLoading ? (
-                        "Submit"
-                    ) : (
-                        <>
-                            {/*
-                                TODO: show the spinner on a modal where we can display text about how the
-                                request will appear in their query history if it is taking too long and they
-                                do not want to sit and wait for a response. Showing it on a modal also prevents
-                                them from modifying the form and sending additional queries.
-                                */}
-                            <CircularProgress />
-                            <span> Loading</span>
-                        </>
-                    )}
-                </Button>
+                <LoadingButton color={"primary"} disabled={isLoading || contextQueryingDisabled} loading={isLoading} onClick={onClickHandler}>
+                    <span>submit query</span>
+                </LoadingButton>
             </Stack>
 
             <Dialog open={responseModalVisible} onClose={toggleResponseModalVisibility}>
