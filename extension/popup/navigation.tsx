@@ -13,7 +13,7 @@ import useSWR from "swr"
 import { useStorage } from "@plasmohq/storage/dist/hook"
 
 import * as api from "~util/api"
-import { EmptyBadge } from "~util/components/mui"
+import { EmptyBadge, UIThemeControls } from "~util/components/mui"
 import * as constants from "~util/constants"
 import * as storage from "~util/storage"
 import type * as types from "~util/types"
@@ -66,6 +66,9 @@ const NavigationDropdown = () => {
             </IconButton>
 
             <Menu anchorEl={dropdownAnchorEl} open={dropdownIsOpen} onClose={() => setDropdownAnchorEl(null)}>
+                <MenuItem>
+                    <UIThemeControls />
+                </MenuItem>
                 <MenuItem onClick={logoutClickHandler}>Logout</MenuItem>
             </Menu>
         </Box>

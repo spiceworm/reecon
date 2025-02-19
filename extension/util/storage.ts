@@ -3,6 +3,7 @@ import { Storage } from "@plasmohq/storage"
 import * as api from "~util/api"
 import * as backgroundMessage from "~util/backgroundMessages"
 import * as constants from "~util/constants"
+import { DEFAULT_UI_THEME } from "~util/constants"
 import * as misc from "~util/misc"
 import type * as types from "~util/types"
 
@@ -27,6 +28,7 @@ export const init = async (): Promise<void> => {
     await setMany({
         [constants.AUTH]: null,
         [constants.DISABLE_EXTENSION]: false,
+        [constants.UI_THEME]: constants.DEFAULT_UI_THEME,
 
         [constants.ACTIVE_COMMENT_FILTER]: constants.defaultCommentFilter,
         [constants.ACTIVE_THREAD_FILTER]: constants.defaultThreadFilter,

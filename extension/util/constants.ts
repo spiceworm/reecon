@@ -2,6 +2,8 @@ import type * as types from "~util/types"
 
 export const AUTH = "_auth"
 export const DISABLE_EXTENSION = "_disableExtension"
+export const UI_THEME = "_uiTheme"
+export const DEFAULT_UI_THEME = "light"
 
 export const ACTIVE_COMMENT_FILTER = "_activeCommentFilter"
 export const ACTIVE_THREAD_FILTER = "_activeThreadFilter"
