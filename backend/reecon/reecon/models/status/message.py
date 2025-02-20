@@ -20,9 +20,10 @@ class StatusMessage(models.Model):
     )
     category = models.CharField(
         choices=[
-            ("danger", "danger"),
+            ("success", "success"),
             ("info", "info"),
             ("warning", "warning"),
+            ("error", "error"),
         ],
         null=False,
         help_text="Corresponds to how the message is rendered in the extension Status tab.",

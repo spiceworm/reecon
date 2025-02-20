@@ -82,7 +82,7 @@ class Migration(migrations.Migration):
                 (
                     "category",
                     models.CharField(
-                        choices=[("danger", "danger"), ("info", "info"), ("warning", "warning")],
+                        choices=[("success", "success"), ("info", "info"), ("warning", "warning"), ("error", "error")],
                         help_text="Corresponds to how the message is rendered in the extension Status tab.",
                     ),
                 ),

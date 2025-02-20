@@ -1,7 +1,8 @@
 import CheckIcon from "@mui/icons-material/Check"
 import Alert from "@mui/material/Alert"
-import AlertTitle from "@mui/material/AlertTitle"
 import Stack from "@mui/material/Stack"
+import Tooltip from "@mui/material/Tooltip"
+import Typography from "@mui/material/Typography"
 
 import { useStorage } from "@plasmohq/storage/dist/hook"
 
@@ -19,8 +20,6 @@ export const StatusView = () => {
 
     const activeStatusMessage = statusMessages.filter((message: types.ApiStatusMessage | types.ExtensionStatusMessage) => message.active)
 
-    // {/* FIXME: update message categories of `message.category` attribute to match MUI color categories. (current using bootstraps color categories) */}
-
     return (
         <bases.Base>
             <Stack>
@@ -28,15 +27,16 @@ export const StatusView = () => {
 
                 <Stack m={2} spacing={2}>
                     {activeStatusMessage.length === 0 ? (
-                        <Alert icon={<CheckIcon />} severity={"success"}>
+                        <Alert icon={<CheckIcon />} severity={"success"} variant={"outlined"}>
                             No status messages
                         </Alert>
                     ) : (
                         <>
                             {activeStatusMessage.map((message, idx: number) => (
-                                <Alert key={`status-message-${idx}`} severity={"info"}>
-                                    <AlertTitle>{message.source}</AlertTitle>
-                                    {message.message}
+                                <Alert key={`status-message-${idx}`} severity={message.category} variant={"outlined"}>
+                                    <Tooltip title={`Status message source: ${message.source}`}>
+                                        <Typography>{message.message}</Typography>
+                                    </Tooltip>
                                 </Alert>
                             ))}
                         </>

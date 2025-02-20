@@ -76,7 +76,7 @@ export const defaultProducerSettings: types.ProducerSettings = {
 export const extensionStatusMessages: types.ExtensionStatusMessage[] = [
     {
         active: false,
-        category: "danger",
+        category: "error",
         message: "",
         name: "apiRequestError",
         source: "extension"
@@ -104,7 +104,7 @@ export const extensionStatusMessages: types.ExtensionStatusMessage[] = [
     },
     {
         active: false,
-        category: "danger",
+        category: "error",
         message: "", // set from the error message returned after attempting a test chat with the openai api
         name: "unusableOpenAiApiKey",
         source: "extension"

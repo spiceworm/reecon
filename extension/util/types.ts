@@ -68,10 +68,10 @@ interface RedditorData extends RedditData {
 
 interface StatusMessage {
     active: boolean
-    category: string
+    category: "success" | "info" | "warning" | "error"
     message: string
     name: string
-    source: string
+    source: "api" | "extension"
 }
 
 interface ThreadData extends RedditData {
