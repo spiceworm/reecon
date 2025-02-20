@@ -63,8 +63,8 @@ export const SignupView = ({ onSuccessRedirectPath }) => {
                     <Typography variant={"h6"}>Signup</Typography>
                 </Stack>
 
-                {!signupError ? null : <Alert color={"error"}>{JSON.parse(signupError.message).detail}</Alert>}
-                {!loginError ? null : <Alert color={"error"}>{JSON.parse(loginError.message).detail}</Alert>}
+                {!signupError ? null : <Alert color={"error"}>{signupError.message}</Alert>}
+                {!loginError ? null : <Alert color={"error"}>{loginError.message}</Alert>}
 
                 <OutlinedInput
                     autoFocus={true}

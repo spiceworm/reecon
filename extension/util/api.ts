@@ -27,16 +27,22 @@ const _apiRequest = async (urlPath: string, method: string, body: object = {}, s
         options["body"] = JSON.stringify(body)
     }
 
-    const response = await fetch(`${process.env.PLASMO_PUBLIC_BASE_URL}${urlPath}`, options)
+    try {
+        const response = await fetch(`${process.env.PLASMO_PUBLIC_BASE_URL}${urlPath}`, options)
 
-    if (response.ok) {
-        await storage.setExtensionStatusMessage("apiRequestError", false)
-        return response.json()
-    } else {
-        console.error(response)
-        const errorJson = await response.json()
-        await storage.setExtensionStatusMessage("apiRequestError", true, `Error returned from API: ${errorJson.detail}`)
-        throw new Error(JSON.stringify(errorJson))
+        if (response.ok) {
+            await storage.setExtensionStatusMessage("apiRequestError", false)
+            return response.json()
+        } else {
+            console.error(response)
+            const errorJson = await response.json()
+            await storage.setExtensionStatusMessage("apiRequestError", true, `Error returned from API: ${errorJson.detail}`)
+            throw new Error(errorJson.detail)
+        }
+    } catch (error) {
+        console.error(error)
+        await storage.setExtensionStatusMessage("apiRequestError", true, `Error making request to API: ${error.message}`)
+        throw error
     }
 }
 
@@ -57,11 +63,6 @@ export const authPost = async (urlPath: string, body: object): Promise<any> => {
 }
 
 export const updateApiStatusMessages = async (): Promise<void> => {
-    try {
-        const apiStatusMessages = await authGet("/api/v1/status/messages/")
-        await storage.setApiStatusMessages(apiStatusMessages)
-    } catch (error) {
-        await storage.setApiStatusMessages([])
-        throw error
-    }
+    const apiStatusMessages = await authGet("/api/v1/status/messages/")
+    await storage.setApiStatusMessages(apiStatusMessages)
 }

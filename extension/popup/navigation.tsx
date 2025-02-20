@@ -20,7 +20,7 @@ import * as storage from "~util/storage"
 import type * as types from "~util/types"
 
 const NavigationTabs = () => {
-    const { error, isLoading } = useSWR("updateApiStatusMessages", api.updateApiStatusMessages)
+    const { error } = useSWR("updateApiStatusMessages", api.updateApiStatusMessages)
     const [statusMessages] = useStorage<(types.ApiStatusMessage | types.ExtensionStatusMessage)[]>(
         { instance: storage.extLocalStorage, key: constants.ALL_STATUS_MESSAGES },
         (v) => (v === undefined ? [] : v)

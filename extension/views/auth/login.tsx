@@ -57,7 +57,7 @@ export const LoginView = ({ onSuccessRedirectPath }) => {
                     <Typography variant={"h6"}>Login</Typography>
                 </Stack>
 
-                {error ? <Alert severity={"error"}>{JSON.parse(error.message).detail}</Alert> : null}
+                {error ? <Alert severity={"error"}>{error.message}</Alert> : null}
 
                 <OutlinedInput autoFocus={true} onChange={(e) => setUsername(e.target.value)} placeholder={"Username"} required={true} type="text" />
 
