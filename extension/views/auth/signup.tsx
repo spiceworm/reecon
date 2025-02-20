@@ -58,7 +58,7 @@ export const SignupView = ({ onSuccessRedirectPath }) => {
 
     return (
         <bases.Base>
-            <Stack component={"form"} onSubmit={handleSubmit} spacing={2}>
+            <Stack component={"form"} m={2} onSubmit={handleSubmit} spacing={2}>
                 <Stack justifyContent="center" alignItems="center">
                     <Typography variant={"h6"}>Signup</Typography>
                 </Stack>

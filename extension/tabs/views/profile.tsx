@@ -10,7 +10,7 @@ export const ProfileView = () => {
             <Stack>
                 <navigation.TabsNavigation />
 
-                <Stack spacing={2}>
+                <Stack m={2} spacing={2}>
                     <ProfileData />
                 </Stack>
             </Stack>

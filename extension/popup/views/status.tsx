@@ -26,20 +26,22 @@ export const StatusView = () => {
             <Stack>
                 <navigation.PopupNavigation />
 
-                {activeStatusMessage.length === 0 ? (
-                    <Alert icon={<CheckIcon />} severity={"success"}>
-                        No status messages
-                    </Alert>
-                ) : (
-                    <Stack>
-                        {activeStatusMessage.map((message, idx: number) => (
-                            <Alert key={`status-message-${idx}`} severity={"info"}>
-                                <AlertTitle>{message.source}</AlertTitle>
-                                {message.message}
-                            </Alert>
-                        ))}
-                    </Stack>
-                )}
+                <Stack m={2} spacing={2}>
+                    {activeStatusMessage.length === 0 ? (
+                        <Alert icon={<CheckIcon />} severity={"success"}>
+                            No status messages
+                        </Alert>
+                    ) : (
+                        <>
+                            {activeStatusMessage.map((message, idx: number) => (
+                                <Alert key={`status-message-${idx}`} severity={"info"}>
+                                    <AlertTitle>{message.source}</AlertTitle>
+                                    {message.message}
+                                </Alert>
+                            ))}
+                        </>
+                    )}
+                </Stack>
             </Stack>
         </bases.Base>
     )

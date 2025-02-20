@@ -10,7 +10,7 @@ export const DebugView = () => {
             <Stack>
                 <navigation.TabsNavigation />
 
-                <Stack spacing={2}>
+                <Stack m={2} spacing={2}>
                     <CheckStorageSize />
                 </Stack>
             </Stack>

@@ -54,7 +54,7 @@ export const ActiveSettingsView = () => {
             <Stack>
                 <navigation.PopupNavigation />
 
-                <Stack spacing={2}>
+                <Stack m={2} spacing={2}>
                     <Grid container>
                         <Grid xs={6} sm={6} md={6} lg={6} xl={6}>
                             <FormControlLabel

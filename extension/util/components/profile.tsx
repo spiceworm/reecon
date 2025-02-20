@@ -1,5 +1,8 @@
+import Button from "@mui/material/Button"
+import Stack from "@mui/material/Stack"
+import Typography from "@mui/material/Typography"
 import { useState } from "react"
-import useSWR from "swr/immutable"
+import useSWR from "swr"
 
 import * as api from "~util/api"
 import type * as types from "~util/types"
@@ -29,24 +32,26 @@ export const ProfileData = () => {
     }).toString()
 
     return (
-        <>
-            <p>Date joined: {profile?.user.date_joined.toString()}</p>
-            <p>Reecon username: {profile?.user.username}</p>
-            <p>
-                Reddit username:{" "}
-                {profile?.reddit_username === null ? (
-                    <a href={`https://old.reddit.com/message/compose?${linkAccountsArgs}`} target="_blank" rel="noopener noreferrer">
+        <Stack spacing={2}>
+            <Typography>Date joined: {profile?.user.date_joined.toString()}</Typography>
+            <Typography>Reecon username: {profile?.user.username}</Typography>
+            <Stack alignItems={"center"} direction={"row"} spacing={2}>
+                <Typography>Reddit username:</Typography>
+
+                {!profile?.reddit_username ? (
+                    <Button href={`https://old.reddit.com/message/compose?${linkAccountsArgs}`} target="_blank">
                         Link reddit username
-                    </a>
+                    </Button>
                 ) : (
-                    <span>
-                        {profile?.reddit_username}{" "}
-                        <a href={`https://old.reddit.com/message/compose?${unlinkAccountsArgs}`} target="_blank" rel="noopener noreferrer">
+                    <>
+                        <Typography>{profile?.reddit_username}</Typography>
+
+                        <Button href={`https://old.reddit.com/message/compose?${unlinkAccountsArgs}`} target="_blank">
                             Unlink reddit username
-                        </a>
-                    </span>
+                        </Button>
+                    </>
                 )}
-            </p>
-        </>
+            </Stack>
+        </Stack>
     )
 }
