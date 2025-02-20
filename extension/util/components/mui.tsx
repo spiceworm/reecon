@@ -25,7 +25,7 @@ export const CopyToClipboardButton = ({ text }) => {
     )
 }
 
-export const EmptyBadge = styled(Badge)`
+export const IconlessBadge = styled(Badge)`
     & .${badgeClasses.badge} {
         top: -12px;
         right: -6px;

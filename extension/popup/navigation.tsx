@@ -13,7 +13,7 @@ import useSWR from "swr"
 import { useStorage } from "@plasmohq/storage/dist/hook"
 
 import * as api from "~util/api"
-import { EmptyBadge, UIThemeControls } from "~util/components/mui"
+import { IconlessBadge, UIThemeControls } from "~util/components/mui"
 import * as constants from "~util/constants"
 import { useRouteMatch } from "~util/routing"
 import * as storage from "~util/storage"
@@ -35,7 +35,7 @@ const NavigationTabs = () => {
             <Tab component={Link} label="Active Settings" to={"/active-settings"} value={"/active-settings"} />
             <Tab
                 component={Link}
-                icon={<EmptyBadge badgeContent={activeStatusMessages.length} color={error ? "error" : "info"} />}
+                icon={<IconlessBadge badgeContent={activeStatusMessages.length} color={error ? "error" : "info"} />}
                 iconPosition={"end"}
                 label="Status"
                 to={"/status"}
