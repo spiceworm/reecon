@@ -75,10 +75,10 @@ export const SignupView = ({ onSuccessRedirectPath }) => {
                     endAdornment={
                         <InputAdornment position={"end"}>
                             <Tooltip
-                                title={
-                                    "Password reset is currently only possible if your reecon username matches your reddit account username. " +
-                                    "This is because a DM must be sent to /u/reecon-admin in order to retrieve a password reset link."
-                                }>
+                                title={`Bot actions, such as password reset, are performed by sending a reddit DM to /u/${process.env.PLASMO_PUBLIC_REDDIT_BOT}.
+                                        Bot actions are only possible for reecon accounts that have successfully verified their reddit username.
+                                        You can only verify your reddit username if it matches your reecon username.
+                                        IT IS STRONGLY RECOMMENDED TO USE THE SAME USERNAME FOR REECON AS YOU USE FOR REDDIT.`}>
                                 <InfoIcon />
                             </Tooltip>
                         </InputAdornment>

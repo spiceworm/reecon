@@ -1,7 +1,7 @@
 import Stack from "@mui/material/Stack"
 import Table from "@mui/material/Table"
 import TableBody from "@mui/material/TableBody"
-import TableCell from "@mui/material/TableCell"
+import TableCell, { tableCellClasses } from "@mui/material/TableCell"
 import TableContainer from "@mui/material/TableContainer"
 import TableFooter from "@mui/material/TableFooter"
 import TableHead from "@mui/material/TableHead"
@@ -149,17 +149,19 @@ const FilterTable = <T extends types.ContentFilter>({
 
     return (
         <TableContainer>
-            <Table size={"small"}>
+            <Table
+                padding={"none"}
+                sx={{
+                    [`& .${tableCellClasses.root}`]: {
+                        borderBottom: "none"
+                    }
+                }}>
                 <TableHead>
                     {table.getHeaderGroups().map((headerGroup) => {
                         return (
-                            <TableRow key={`tr-${headerGroup.id}`}>
-                                {headerGroup.headers.map((header, idx) => {
-                                    return (
-                                        <TableCell key={`tr-${headerGroup.id}-th-${header.id}-${idx}`} padding={"none"}>
-                                            {flexRender(header.column.columnDef.header, header.getContext())}
-                                        </TableCell>
-                                    )
+                            <TableRow key={headerGroup.id}>
+                                {headerGroup.headers.map((header) => {
+                                    return <TableCell key={header.id}>{flexRender(header.column.columnDef.header, header.getContext())}</TableCell>
                                 })}
                             </TableRow>
                         )
@@ -168,13 +170,9 @@ const FilterTable = <T extends types.ContentFilter>({
                 <TableBody>
                     {table.getRowModel().rows.map((row) => {
                         return (
-                            <TableRow key={`tr-${row.id}`}>
+                            <TableRow key={row.id}>
                                 {row.getVisibleCells().map((cell) => {
-                                    return (
-                                        <TableCell key={`tr-${row.id}-td-${cell.id}`} padding={"none"}>
-                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                        </TableCell>
-                                    )
+                                    return <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                                 })}
                             </TableRow>
                         )
@@ -183,7 +181,7 @@ const FilterTable = <T extends types.ContentFilter>({
                 <TableFooter>
                     {footerVisible ? (
                         <TableRow key={"tr-footer"}>
-                            <TableCell align={"center"} colSpan={table.getCenterLeafColumns().length} padding={"none"}>
+                            <TableCell align={"center"} colSpan={table.getCenterLeafColumns().length}>
                                 <cells.FooterCell table={table} />
                             </TableCell>
                         </TableRow>
@@ -236,7 +234,7 @@ export const CommentFilterTable = ({ columnFilters, columnVisibility, footerVisi
     return (
         <Stack>
             <Stack justifyContent="center" alignItems="center">
-                <Typography variant={"h6"}>Comment Filters</Typography>
+                <Typography>Comment Filters</Typography>
             </Stack>
             <FilterTable<types.CommentFilter>
                 columns={commentFilterTableColumns}
@@ -287,7 +285,7 @@ export const ThreadFilterTable = ({ columnFilters, columnVisibility, footerVisib
     return (
         <Stack>
             <Stack justifyContent="center" alignItems="center">
-                <Typography variant={"h6"}>Thread Filters</Typography>
+                <Typography>Thread Filters</Typography>
             </Stack>
             <FilterTable<types.ThreadFilter>
                 columns={threadFilterTableColumns}

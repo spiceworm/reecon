@@ -8,6 +8,7 @@ import FormGroup from "@mui/material/FormGroup"
 import InputLabel from "@mui/material/InputLabel"
 import MenuItem from "@mui/material/MenuItem"
 import Select from "@mui/material/Select"
+import Snackbar from "@mui/material/Snackbar"
 import Stack from "@mui/material/Stack"
 import TextField from "@mui/material/TextField"
 import Grid from "@mui/material/Unstable_Grid2"
@@ -60,6 +61,9 @@ export const ContextQueryForm = () => {
     const [contextInputValue, setContextInputValue] = useState("")
     const [contextInputPlaceholder, setContextInputPlaceholder] = useState("")
     const [promptInputValue, setPromptInputValue] = useState("")
+
+    const [snackBarMessage, setSnackBarMessage] = useState("")
+    const [snackBarVisible, setSnackBarVisible] = useState(false)
 
     const [apiEndpoint, setApiEndpoint] = useState("")
     const [postBody, setPostBody] = useState(null)
@@ -140,25 +144,21 @@ export const ContextQueryForm = () => {
 
         if (contextSelection === "Redditor") {
             setPromptInputValue(producerDefaults.prompts.process_redditor_context_query)
+            setContextQueryingDisabled(!redditorProcessingEnabled)
+            setContextInputPlaceholder("Redditor Username")
 
-            if (redditorProcessingEnabled) {
-                setContextQueryingDisabled(false)
-                setContextInputPlaceholder("Redditor Username")
-            } else {
-                setContextQueryingDisabled(true)
-                // TODO: the below message should appear in a toast and not in the input field
-                setContextInputPlaceholder("Redditor context query processing is disabled")
+            if (contextQueryingDisabled) {
+                setSnackBarMessage("Redditor context querying is currently disabled")
+                setSnackBarVisible(true)
             }
         } else {
             setPromptInputValue(producerDefaults.prompts.process_thread_context_query)
+            setContextQueryingDisabled(!threadProcessingEnabled)
+            setContextInputPlaceholder("Thread URL")
 
-            if (threadProcessingEnabled) {
-                setContextQueryingDisabled(false)
-                setContextInputPlaceholder("Thread URL")
-            } else {
-                setContextQueryingDisabled(true)
-                // TODO: the below message should appear in a toast and not in the input field
-                setContextInputPlaceholder("Thread context query processing is disabled")
+            if (contextQueryingDisabled) {
+                setSnackBarMessage("Thread context querying is currently disabled")
+                setSnackBarVisible(true)
             }
         }
     }
@@ -299,6 +299,8 @@ export const ContextQueryForm = () => {
                     </DialogContentText>
                 </DialogContent>
             </Dialog>
+
+            <Snackbar open={snackBarVisible} autoHideDuration={6000} onClose={() => setSnackBarVisible(false)} message={snackBarMessage} />
         </>
     )
 }

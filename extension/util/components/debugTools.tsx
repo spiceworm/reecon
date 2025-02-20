@@ -1,3 +1,6 @@
+import Stack from "@mui/material/Stack"
+import Typography from "@mui/material/Typography"
+
 import { useStorage } from "@plasmohq/storage/dist/hook"
 
 import * as constants from "~util/constants"
@@ -36,14 +39,20 @@ export const CheckStorageSize = () => {
     )
 
     return (
-        <>
-            <p>ignoredRedditors = {Object.keys(ignoredRedditors).length}</p>
-            <p>pendingRedditors = {Object.keys(pendingRedditors).length}</p>
-            <p>processedRedditors = {Object.keys(processedRedditors).length}</p>
-            <p>unprocessableRedditors = {Object.keys(unprocessableRedditors).length}</p>
-            <p>pendingThreads = {Object.keys(pendingThreads).length}</p>
-            <p>processedThreads = {Object.keys(processedThreads).length}</p>
-            <p>unprocessableThreads = {Object.keys(unprocessableThreads).length}</p>
-        </>
+        <Stack spacing={2}>
+            {[
+                { label: "Ignored Redditors", obj: ignoredRedditors },
+                { label: "Pending Redditors", obj: pendingRedditors },
+                { label: "Processed Redditors", obj: processedRedditors },
+                { label: "Unprocessable Redditors", obj: unprocessableRedditors },
+                { label: "Pending Threads", obj: pendingThreads },
+                { label: "Processed Threads", obj: processedThreads },
+                { label: "Unprcessable Threads", obj: unprocessableThreads }
+            ].map((item) => (
+                <Typography>
+                    {item.label}: {Object.keys(item.obj).length}
+                </Typography>
+            ))}
+        </Stack>
     )
 }
