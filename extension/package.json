@@ -49,7 +49,6 @@
     ],
     "permissions": [
       "declarativeNetRequestWithHostAccess",
-      "storage",
       "tabs",
       "unlimitedStorage",
       "webRequest"
