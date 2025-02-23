@@ -1,13 +1,13 @@
-Django==5.1.6
+Django==5.1.7
 django-constance[redis]==4.3.2
 django-redis==5.4.0
 django-rq==3.0.0
 djangorestframework==3.15.2
 hiredis==3.1.0
 markdown==3.7
-openai==1.63.2
+openai==1.66.5
 praw==7.8.1
-psycopg[c]==3.2.4
+psycopg[c]==3.2.6
 pydantic==2.10.6
 python-decouple==3.8
 tenacity==9.0.0
