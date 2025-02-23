@@ -246,6 +246,10 @@ export const getThreadUrlPaths = (): string[] => {
     return [...getThreadRowElements()].map((el) => el.getAttribute("data-permalink"))
 }
 
+export const getThreadTitleFromUrlPath = (urlPath: string): string => {
+    return getThreadTitleElement(urlPath).innerText
+}
+
 const getUsernameElements = (): HTMLCollectionOf<HTMLLinkElement> => {
     return document.getElementsByClassName("author") as HTMLCollectionOf<HTMLLinkElement>
 }
