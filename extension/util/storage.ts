@@ -3,7 +3,6 @@ import { Storage } from "@plasmohq/storage"
 import * as api from "~util/api"
 import * as backgroundMessage from "~util/backgroundMessages"
 import * as constants from "~util/constants"
-import { DEFAULT_UI_THEME } from "~util/constants"
 import * as misc from "~util/misc"
 import type * as types from "~util/types"
 
@@ -66,14 +65,6 @@ export const init = async (): Promise<void> => {
     })
 }
 
-export const getActiveCommentFilter = async (): Promise<types.CommentFilter> => {
-    return get<types.CommentFilter>(constants.ACTIVE_COMMENT_FILTER)
-}
-
-export const getActiveThreadFilter = async (): Promise<types.ThreadFilter> => {
-    return get<types.ThreadFilter>(constants.ACTIVE_THREAD_FILTER)
-}
-
 export const getAuth = async (): Promise<types.Auth | null> => {
     const auth: types.Auth = await get(constants.AUTH)
 
@@ -107,14 +98,6 @@ export const getProducerSettings = async (): Promise<types.ProducerSettings> => 
 
 export const getRedditorDataProcessingEnabled = async (): Promise<boolean> => {
     return get<boolean>(constants.REDDITOR_DATA_PROCESSING_ENABLED)
-}
-
-export const getSentimentPolarityContentFilterEnabled = async (): Promise<boolean> => {
-    return get<boolean>(constants.COMMENT_SENTIMENT_POLARITY_CONTENT_FILTER_ENABLED)
-}
-
-export const getSentimentSubjectivityContentFilterEnabled = async (): Promise<boolean> => {
-    return get<boolean>(constants.COMMENT_SENTIMENT_SUBJECTIVITY_CONTENT_FILTER_ENABLED)
 }
 
 export const getThreadDataProcessingEnabled = async (): Promise<boolean> => {
