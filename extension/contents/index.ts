@@ -1,15 +1,57 @@
 import type { PlasmoCSConfig } from "plasmo"
 
-import * as contents from "~util/contents"
+import * as backgroundMessage from "~util/backgroundMessages"
+import * as dom from "~util/dom"
+import * as storage from "~util/storage"
+
+let lastExecution = null
 
 export const config: PlasmoCSConfig = {
     matches: ["https://*.reddit.com/", "https://*.reddit.com/r/*", "https://*.reddit.com/user/*"]
 }
 
+const execute = async () => {
+    if (lastExecution !== null && Date.now() - lastExecution < 1000) {
+        return
+    }
+
+    if (await storage.shouldExecuteContentScript()) {
+        lastExecution = Date.now()
+
+        // TODO: Do not pass content filter to annotate functions. All filtering is done via separate content scripts
+        const contentFilter = await storage.getActiveCommentFilter()
+        const producerSettings = await storage.getProducerSettings()
+
+        if (await storage.getThreadDataProcessingEnabled()) {
+            const urlPaths = dom.getThreadUrlPaths()
+            const processThreadDataResponse = await backgroundMessage.processThreadData(producerSettings, urlPaths)
+
+            await Promise.all([
+                dom.annotatePendingThreads(processThreadDataResponse.pending, contentFilter),
+                dom.annotateProcessedThreads(processThreadDataResponse.processed, contentFilter),
+                dom.annotateUnprocessableThreads(processThreadDataResponse.unprocessable, contentFilter)
+            ])
+        }
+
+        if (await storage.getRedditorDataProcessingEnabled()) {
+            const usernameElementsMap = dom.getUsernameElementsMap()
+            const usernames = Object.keys(usernameElementsMap)
+            const processRedditorDataResponse = await backgroundMessage.processRedditorData(producerSettings, usernames)
+
+            await Promise.all([
+                dom.annotateIgnoredRedditors(processRedditorDataResponse.ignored, usernameElementsMap, contentFilter),
+                dom.annotatePendingRedditors(processRedditorDataResponse.pending, usernameElementsMap, contentFilter),
+                dom.annotateProcessedRedditors(processRedditorDataResponse.processed, usernameElementsMap, contentFilter),
+                dom.annotateUnprocessableRedditors(processRedditorDataResponse.unprocessable, usernameElementsMap, contentFilter)
+            ])
+        }
+    }
+}
+
 const rowObserver = new MutationObserver(async (mutationRecords) => {
     for (const mutationRecord of mutationRecords) {
         if ((mutationRecord.target as HTMLDivElement).id === "siteTable") {
-            await contents.execute()
+            await execute()
             break
         }
     }
@@ -18,7 +60,7 @@ const rowObserver = new MutationObserver(async (mutationRecords) => {
 const commentObserver = new MutationObserver(async (mutationRecords) => {
     for (const mutationRecord of mutationRecords) {
         if ((mutationRecord.target as HTMLDivElement).id.startsWith("siteTable")) {
-            await contents.execute()
+            await execute()
             break
         }
     }
@@ -26,10 +68,10 @@ const commentObserver = new MutationObserver(async (mutationRecords) => {
 
 if (document.readyState !== "loading") {
     // run content script the first time the page loads. Subsequent executions are handled by `MutationObserver`s
-    contents.execute().then()
+    execute().then()
 
     // run content script every 30 seconds to update the DOM with newly processed results
-    setInterval(contents.execute, 30_000)
+    setInterval(execute, 30_000)
 
     const observerOptions = {
         subtree: true,
