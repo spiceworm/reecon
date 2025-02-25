@@ -4,12 +4,9 @@ Browser extension that:
 - The usernames and thread paths are sent to server for processing of submissions
 - Based on found submissions, the server generates data for each redditor and thread using natural language processing and large language models
 - The extension then injects the generated data onto the page so it is visible when browsing
-- Data currently include age, IQ, sentiment polarity, and a brief summary about the user based on their submissions.
 
-# Admin View
+# UI Endpoints
 - Django admin - https://reecon.xyz/admin/
-
-# Documentation
 - Swagger API v1 Docs - https://reecon.xyz/api/v1/docs/
 - Redoc API v1 Docs - https://reecon.xyz/api/v1/docs/redoc/
 
@@ -17,8 +14,7 @@ Browser extension that:
 ## Start extension development server
 ```bash
 cd reecon/extension
-nvm install 21
-nvm use 21
+nvm use --lts # v22.13.1
 pnpm install
 pnpm build --target=firefox-mv3  # `pnpm dev` is problematic after loading the extension into the browser so use `pnpm build`
 ```
@@ -34,8 +30,6 @@ docker compose up --build
 ### View Logs
 ```bash
 docker exec -it reecon-backend-server-1 tail -f /var/log/supervisor/gunicorn/app.log
-docker exec -it reecon-backend-server-1 tail -f /var/log/supervisor/rq-worker/worker.log
-
 docker exec -it reecon-backend-worker-1 tail -f /var/log/supervisor/rq-worker/worker.log
 ```
 
