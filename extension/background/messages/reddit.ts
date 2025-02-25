@@ -4,9 +4,6 @@ import * as api from "~util/api"
 import * as cache from "~util/storageCache"
 import type * as types from "~util/types"
 
-// TODO: delete this once `Set.prototype.difference` is available
-const difference = <T>(a: Set<T>, b: Set<T>) => new Set([...a].filter((x) => !b.has(x)))
-
 const processRedditorData = async (producerSettings: types.ProducerSettings, usernames: string[]): Promise<types.SubmitRedditorDataResponse> => {
     let allCachedIgnored = await cache.getIgnoredRedditors()
     const cachedIgnored = usernames.map((username) => allCachedIgnored[username]).filter((obj) => obj !== undefined)
@@ -25,12 +22,12 @@ const processRedditorData = async (producerSettings: types.ProducerSettings, use
             obj.value.username
     )
 
-    const usernamesToProcess = [...difference(new Set(usernames), new Set(cachedUsernames))]
+    const usernamesToProcess = new Set(usernames).difference(new Set(cachedUsernames))
 
-    if (usernamesToProcess.length > 0) {
+    if (usernamesToProcess.size > 0) {
         let response: types.SubmitRedditorDataResponse = await api.authPost("/api/v1/reddit/redditor/data/", {
             producer_settings: producerSettings,
-            usernames: usernamesToProcess
+            usernames: [...usernamesToProcess]
         })
 
         response.ignored.map((obj) => {
@@ -108,12 +105,12 @@ const processThreadData = async (producerSettings: types.ProducerSettings, urlPa
         (obj: types.CachedPendingThread | types.CachedProcessedThread | types.CachedUnprocessableThread) => obj.value.path
     )
 
-    const urlPathsToProcess = [...difference(new Set(urlPaths), new Set(cachedUrlPaths))]
+    const urlPathsToProcess = new Set(urlPaths).difference(new Set(cachedUrlPaths))
 
-    if (urlPathsToProcess.length > 0) {
+    if (urlPathsToProcess.size > 0) {
         let response: types.SubmitThreadDataResponse = await api.authPost("/api/v1/reddit/thread/data/", {
             producer_settings: producerSettings,
-            paths: urlPathsToProcess
+            paths: [...urlPathsToProcess]
         })
 
         response.pending.map((obj) => {
