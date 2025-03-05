@@ -196,7 +196,6 @@ const HiddenThreadsFab = ({ threads }: { threads: types.CachedProcessedThread[] 
                 <span className="fab-dots fab-dots-3"></span>
             </label>
             <div className="fab-items">
-                {/* FIXME: types.CachedProcessedThread does not have an attribute for the threat title. Add it and use it here so the thread url is only used for the href */}
                 {[...threadUrlsToTitles].map((obj, idx) => (
                     <a className="fab-item" href={obj.url} key={idx} target={"_blank"} title={obj.title}>
                         <p className={"fab-content truncate"}>{obj.title}</p>

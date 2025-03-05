@@ -22,26 +22,13 @@ const execute = async () => {
 
         if (await storage.getThreadDataProcessingEnabled()) {
             const urlPaths = dom.getThreadUrlPaths()
-            const processThreadDataResponse = await backgroundMessage.processThreadData(producerSettings, urlPaths)
-
-            await Promise.all([
-                dom.annotatePendingThreads(processThreadDataResponse.pending),
-                dom.annotateProcessedThreads(processThreadDataResponse.processed),
-                dom.annotateUnprocessableThreads(processThreadDataResponse.unprocessable)
-            ])
+            await backgroundMessage.processThreadData(producerSettings, urlPaths)
         }
 
         if (await storage.getRedditorDataProcessingEnabled()) {
             const usernameElementsMap = dom.getUsernameElementsMap()
             const usernames = Object.keys(usernameElementsMap)
-            const processRedditorDataResponse = await backgroundMessage.processRedditorData(producerSettings, usernames)
-
-            await Promise.all([
-                dom.annotateIgnoredRedditors(processRedditorDataResponse.ignored, usernameElementsMap),
-                dom.annotatePendingRedditors(processRedditorDataResponse.pending, usernameElementsMap),
-                dom.annotateProcessedRedditors(processRedditorDataResponse.processed, usernameElementsMap),
-                dom.annotateUnprocessableRedditors(processRedditorDataResponse.unprocessable, usernameElementsMap)
-            ])
+            await backgroundMessage.processRedditorData(producerSettings, usernames)
         }
     }
 }
