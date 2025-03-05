@@ -1,7 +1,9 @@
 name: "reecon-backend"
 
 services:
-  # This is the base image that all other services are built off of
+  # This is the base image that all other services are built off of.
+  # It runs once to build the base image containing python package required
+  # for child images.
   reecon:
     image: "reecon:${VERSION}"
     build:
@@ -10,6 +12,7 @@ services:
       context: "./reecon"
     environment:
       VERSION: "${VERSION}"
+    restart: "no"
 
   service:
     image: "${REGISTRY_URL}/${CONTAINER_REPO}/${APP_NAME}/service:${VERSION}"
@@ -18,7 +21,8 @@ services:
         VERSION: "${VERSION}"
       context: "./service"
     depends_on:
-      - reecon
+      reecon:
+        condition: service_completed_successfully
     environment: &shared_env
       DEBUG: "${DEBUG}"
       LOG_LEVEL: "${LOG_LEVEL}"
@@ -46,7 +50,8 @@ services:
         VERSION: "${VERSION}"
       context: "./server"
     depends_on:
-      - reecon
+      reecon:
+        condition: service_completed_successfully
     environment:
       <<: *shared_env
       ADMIN_PASSWORD: "${ADMIN_PASSWORD}"
@@ -67,7 +72,8 @@ services:
         VERSION: "${VERSION}"
       context: "./worker"
     depends_on:
-      - reecon
+      reecon:
+        condition: service_completed_successfully
     deploy:
       mode: replicated
       replicas: 1
