@@ -51,6 +51,7 @@
       "https://*/*"
     ],
     "permissions": [
+      "alarms",
       "declarativeNetRequestWithHostAccess",
       "tabs",
       "unlimitedStorage",

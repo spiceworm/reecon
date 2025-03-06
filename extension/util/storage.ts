@@ -158,12 +158,6 @@ const setAllStatusMessages = async (messages: (types.ApiStatusMessage | types.Ex
 export const shouldExecuteContentScript = async (): Promise<boolean> => {
     const auth = await getAuth()
     const disableExtension = await getDisableExtension()
-
-    if (auth !== null && !disableExtension) {
-        // Retrieve status messages which will be used to set local variables.
-        await api.updateApiStatusMessages()
-    }
-
     const producerSettings = await getProducerSettings()
 
     // NOTE: producer API key checks are currently hardcoded to only care about the openai key for now

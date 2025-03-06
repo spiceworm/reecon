@@ -1,5 +1,20 @@
+import * as api from "~util/api"
 import * as storage from "~util/storage"
 import * as cache from "~util/storageCache"
+
+chrome.alarms.create("updateApiStatusMessages", { periodInMinutes: 5 })
+
+chrome.alarms.onAlarm.addListener(async (alarm) => {
+    if (alarm.name === "updateApiStatusMessages") {
+        const auth = await storage.getAuth()
+        const disableExtension = await storage.getDisableExtension()
+
+        if (auth !== null && !disableExtension) {
+            // Retrieve status messages which will be used to set local variables.
+            await api.updateApiStatusMessages()
+        }
+    }
+})
 
 chrome.tabs.onActivated.addListener(async (tabActiveInfo) => {
     const tabs = await chrome.tabs.query({ active: true, currentWindow: true })
