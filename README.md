@@ -116,11 +116,9 @@ $ . ~/venv/reecon/bin/activate
 - Think about how to handle local settings after logout. Logging back in as a different user will currently load the initial users settings
     - Add option to back up settings to file and another option to import from file
 - Generate a bell curve using recent processed redditor data to determine high, medium, and low values for sentiment polarity and subjectivity
-- Make annotated data render nicer
 - Implement password reset bot for reecon-admin
     - User sends DM that says "forgot password" and bot responds back with a password reset link
 - Lookup how extension updates are performed and stored keys are impacted (new and existing ones)
-- Auto updates to the DOM that change 'pending' to something else causes a collapsed comment with any pending child comments to uncollapse when the update occurs
 - Add terms of service aggreements checkbox that links to a TOS document
     - All data generated using user api keys is owned by me
     - There should be no expectation of accuracy for generated data
@@ -129,11 +127,11 @@ $ . ~/venv/reecon/bin/activate
 - Redo storage initialization so variables are only set to defaults if the storage key is currently unset (or lookup the proper way to do this so extension updates work without accidentally modifying existing storage values)
 - Only return objects from redis cache from api requests and enqueue eveything else. Queued entries will either result in a refreshing of the redis entry or processing
 - If an already processed entity is submitted and needs to be re-processed because it is stale, but that job in the low priority queue
+- If you manually collapse a comment, the extension will uncollapse it almost instantly because you collapsed a comment that does not trigger a filter rule.
+    - Could hide threads and comments by overlaying a blurry div on top of filtered posts. This prevents them from being seen and does not touch the comment collapse behavior.
 
 # Enhancements:
-- Have some way to inspect list of hidden threads
 - Recommend threads to users based on their interests determined from their submissions history.
-- Hide thread posts from redditors that trigger filter rule for current context
 - Do not expose producer api keys when looking at RQ job arguments in admin panel
 - Add contributions tab that shows how many submissions the user has paid for with their key
 - Show contribution rank next to each redditors username
