@@ -32,6 +32,10 @@ export const render = async ({ anchor, createRootContainer }) => {
 }
 
 const ThreadAnchor = (props: PlasmoCSUIContainerProps) => {
+    const [disableExtension] = useStorage<boolean>({ instance: storage.extLocalStorage, key: constants.DISABLE_EXTENSION }, (v) =>
+        v === undefined ? false : v
+    )
+
     const [cachedPendingThreads] = useStorage<Record<string, types.CachedPendingThread>>(
         {
             instance: storage.extLocalStorage,
@@ -53,9 +57,30 @@ const ThreadAnchor = (props: PlasmoCSUIContainerProps) => {
         },
         (v) => (v === undefined ? {} : v)
     )
-    const [disableExtension] = useStorage<boolean>({ instance: storage.extLocalStorage, key: constants.DISABLE_EXTENSION }, (v) =>
-        v === undefined ? false : v
+
+    const [activeFilter] = useStorage<types.ThreadFilter>(
+        {
+            instance: storage.extLocalStorage,
+            key: constants.ACTIVE_THREAD_FILTER
+        },
+        (v) => (v === undefined ? constants.defaultThreadFilter : v)
     )
+    const [sentimentPolarityFilterEnabled] = useStorage<boolean>(
+        { instance: storage.extLocalStorage, key: constants.THREAD_SENTIMENT_POLARITY_CONTENT_FILTER_ENABLED },
+        (v) => (v === undefined ? false : v)
+    )
+    const [sentimentSubjectivityFilterEnabled] = useStorage<boolean>(
+        { instance: storage.extLocalStorage, key: constants.THREAD_SENTIMENT_SUBJECTIVITY_CONTENT_FILTER_ENABLED },
+        (v) => (v === undefined ? false : v)
+    )
+    const [hideUnprocessableThreadsEnabled] = useStorage<boolean>(
+        { instance: storage.extLocalStorage, key: constants.HIDE_UNPROCESSABLE_THREADS_ENABLED },
+        (v) => (v === undefined ? false : v)
+    )
+
+    if (disableExtension) {
+        return
+    }
 
     const threadTitleLinkEl = props.anchor.element as HTMLLinkElement
     const threadRow: HTMLDivElement = threadTitleLinkEl.closest("div[id]")
@@ -65,16 +90,13 @@ const ThreadAnchor = (props: PlasmoCSUIContainerProps) => {
     const cachedProcessed = cachedProcessedThreads[threadUrlPath]
     const cachedUnprocessable = cachedUnprocessableThreads[threadUrlPath]
 
-    if (disableExtension) {
-        return
-    }
-
-    const el = dom.getOrCreateCSUIInlineElement(threadUrlPath)
+    const inlineEl = dom.getOrCreateCSUIInlineElement(threadUrlPath)
+    let shouldHideThreadRow = false
 
     if (cachedProcessed) {
         const processedThread = cachedProcessed.value
-        el.style.filter = "none"
-        el.title = [
+        inlineEl.style.filter = "none"
+        inlineEl.title = [
             `processed: ${processedThread.data.created}`,
             `keywords: ${processedThread.data.keywords.value}`,
             `sentiment_polarity: ${processedThread.data.sentiment_polarity.value}`,
@@ -82,17 +104,32 @@ const ThreadAnchor = (props: PlasmoCSUIContainerProps) => {
             `total_inputs: ${processedThread.data.total_inputs}`,
             `summary: ${processedThread.data.summary.value}`
         ].join("\u000d")
+
+        shouldHideThreadRow = [
+            sentimentPolarityFilterEnabled && processedThread.data.sentiment_polarity.value < activeFilter.sentimentPolarity,
+            sentimentSubjectivityFilterEnabled && processedThread.data.sentiment_subjectivity.value < activeFilter.sentimentSubjectivity
+        ].some((shouldHide) => shouldHide)
     } else if (cachedUnprocessable) {
         const unprocessableThread = cachedUnprocessable.value
-        el.style.filter = "invert(0.5)"
-        el.title = `[unprocessable] ${unprocessableThread.reason}`
+        inlineEl.style.filter = "invert(0.5)"
+        inlineEl.title = `[unprocessable] ${unprocessableThread.reason}`
+
+        shouldHideThreadRow = hideUnprocessableThreadsEnabled
     } else if (cachedPending) {
         const pendingThread = cachedPending.value
-        el.style.filter = "grayscale(1)"
-        el.title = "[pending] submitted for processing"
+        inlineEl.style.filter = "grayscale(1)"
+        inlineEl.title = "[pending] submitted for processing"
     } else {
         return
     }
 
-    return parse(DOMPurify.sanitize(el.outerHTML))
+    if (shouldHideThreadRow) {
+        threadRow.setAttribute(`${process.env.PLASMO_PUBLIC_APP_NAME}-thread-filter`, "true")
+        threadRow.style.display = "none"
+    } else {
+        threadRow.setAttribute(`${process.env.PLASMO_PUBLIC_APP_NAME}-thread-filter`, "false")
+        threadRow.style.display = "block"
+    }
+
+    return parse(DOMPurify.sanitize(inlineEl.outerHTML))
 }
