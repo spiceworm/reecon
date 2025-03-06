@@ -78,10 +78,6 @@ const ThreadAnchor = (props: PlasmoCSUIContainerProps) => {
         (v) => (v === undefined ? false : v)
     )
 
-    if (disableExtension) {
-        return
-    }
-
     const threadTitleLinkEl = props.anchor.element as HTMLLinkElement
     const threadRow: HTMLDivElement = threadTitleLinkEl.closest("div[id]")
     const threadUrlPath = threadRow.getAttribute("data-permalink")
@@ -123,13 +119,15 @@ const ThreadAnchor = (props: PlasmoCSUIContainerProps) => {
         return
     }
 
-    if (shouldHideThreadRow) {
+    if (shouldHideThreadRow && !disableExtension) {
         threadRow.setAttribute(`${process.env.PLASMO_PUBLIC_APP_NAME}-thread-filter`, "true")
         threadRow.style.display = "none"
     } else {
         threadRow.setAttribute(`${process.env.PLASMO_PUBLIC_APP_NAME}-thread-filter`, "false")
         threadRow.style.display = "block"
     }
+
+    inlineEl.style.display = disableExtension ? "none" : "inline-block"
 
     return parse(DOMPurify.sanitize(inlineEl.outerHTML))
 }

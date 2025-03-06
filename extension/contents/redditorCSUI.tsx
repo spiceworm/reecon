@@ -104,10 +104,6 @@ const RedditorAnchor = (props: PlasmoCSUIContainerProps) => {
         (v) => (v === undefined ? false : v)
     )
 
-    if (disableExtension) {
-        return
-    }
-
     const postTaglineParagraphElement = props.anchor.element as HTMLParagraphElement
     const redditorComment: HTMLDivElement = postTaglineParagraphElement.closest("div[id]")
     const redditorUsernameLinkElement: HTMLLinkElement = postTaglineParagraphElement.querySelector(".author")
@@ -162,7 +158,7 @@ const RedditorAnchor = (props: PlasmoCSUIContainerProps) => {
         return
     }
 
-    if (shouldHideComment) {
+    if (shouldHideComment && !disableExtension) {
         redditorComment.setAttribute(`${process.env.PLASMO_PUBLIC_APP_NAME}-comment-filter`, "true")
         redditorComment.classList.remove("noncollapsed")
         redditorComment.classList.add("collapsed")
@@ -171,6 +167,8 @@ const RedditorAnchor = (props: PlasmoCSUIContainerProps) => {
         redditorComment.classList.remove("collapsed")
         redditorComment.classList.add("noncollapsed")
     }
+
+    inlineEl.style.display = disableExtension ? "none" : "inline-block"
 
     return parse(DOMPurify.sanitize(inlineEl.outerHTML))
 }
