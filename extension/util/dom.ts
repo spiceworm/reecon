@@ -54,11 +54,4 @@ export const getThreadTitleFromUrlPath = (urlPath: string): string => getThreadT
 
 export const getUsernameElements = (): HTMLLinkElement[] => Array.from(document.querySelectorAll(".author"))
 
-export const getUsernameElementsMap = (): Record<string, HTMLLinkElement[]> => {
-    let usernameElements: Record<string, HTMLLinkElement[]> = {}
-    for (const el of getUsernameElements()) {
-        const username = el.innerText
-        username in usernameElements ? usernameElements[username].push(el) : (usernameElements[username] = [el])
-    }
-    return usernameElements
-}
+export const getUsernames = (): string[] => [...new Set(getUsernameElements().map((el) => el.innerText))]

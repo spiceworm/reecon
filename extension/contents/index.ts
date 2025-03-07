@@ -26,8 +26,7 @@ const execute = async () => {
         }
 
         if (await storage.getRedditorDataProcessingEnabled()) {
-            const usernameElementsMap = dom.getUsernameElementsMap()
-            const usernames = Object.keys(usernameElementsMap)
+            const usernames = dom.getUsernames()
             await backgroundMessage.processRedditorData(producerSettings, usernames)
         }
     }
