@@ -24,8 +24,7 @@ def delete_reecon_account(*, username) -> str:
 
 
 def help_() -> str:
-    return (
-        f"""
+    return f"""
         Available actions:
 
         {Actions.DELETE_REECON_ACCOUNT}
@@ -44,7 +43,6 @@ def help_() -> str:
         {Actions.UNLINK_REDDIT_USERNAME}
             Unlink your Reddit username from being associated with your reecon account.
         """
-    )
 
 
 def link_reddit_username(*, reddit_username: str, signed_reecon_username: str) -> str:
@@ -94,13 +92,11 @@ def unlink_reddit_username(*, reddit_username: str, signed_reecon_username: str)
 
 
 def unsuccessful_action(message: str) -> str:
-    return (
-        f"""
+    return f"""
         {message}
 
         {help_()}
         """
-    )
 
 
 class Command(management.base.BaseCommand):

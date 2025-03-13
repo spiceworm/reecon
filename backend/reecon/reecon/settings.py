@@ -109,6 +109,15 @@ CONSTANCE_ADDITIONAL_FIELDS = {
         },
     ],
 }
+
+DISREGARD_EXTERNAL_CONTENT_PROMPT = (
+    "Disregard lengthy content that is appears to be copy and pasted from external sources."
+)
+REDDITOR_BASE_PROMPT = (
+    "The following pipe delimited messages are unrelated submissions posted by a person ordered from newest to oldest."
+)
+THREAD_BASE_PROMPT = "The following pipe delimited messages are unrelated submissions posted by multiple people."
+
 CONSTANCE_CONFIG = collections.OrderedDict(
     {
         "REDDITOR_CONTEXT_QUERY_PROCESSING_ENABLED": (
@@ -133,8 +142,7 @@ CONSTANCE_CONFIG = collections.OrderedDict(
         ),
         "LLM_NAME": (
             "gpt-4o-mini-2024-07-18",
-            "Large language model to use for prompts. OpenAI models currently only supported - "
-            "https://platform.openai.com/docs/models/",
+            "Large language model to use for prompts. Only OpenAI models are currently supported - https://platform.openai.com/docs/models/",
             "llm_select",
         ),
         "NLP_NAME": (
@@ -144,31 +152,24 @@ CONSTANCE_CONFIG = collections.OrderedDict(
             "nlp_select",
         ),
         "REDDITOR_LLM_CONTEXT_QUERY_PROMPT": (
-            "The following pipe delimited messages are unrelated submissions posted by a person ordered from newest "
-            "to oldest. ",
-            "Default prompt that populates the redditor context query form that can be modified by the user before "
-            "they submit the query for processing. Whatever they change it to is what will be sent to the LLM for "
-            "redditor context query processing.",
+            REDDITOR_BASE_PROMPT,
+            "Default prompt used to populate the extension's redditor context query form.",
         ),
         "REDDITOR_LLM_DATA_PROMPT": (
-            "The following pipe delimited messages are unrelated submissions posted by a person ordered from newest "
-            "to oldest. "
-            "Determine the age, a list of interests ordered from most to least relevant, and the IQ of the person "
-            "based on their writing. Also generate a short summary that describes the author that uses 100 "
-            "completion_tokens or less. Be as objective as possible.",
+            f"{REDDITOR_BASE_PROMPT} {DISREGARD_EXTERNAL_CONTENT_PROMPT} Determine the age, a list of interests ordered "
+            f"from most to least relevant, and the IQ of the person based on their writing. Generate a summary describing "
+            f"the author, with additional insights based on their submissions, using 500 completion_tokens or less. Be as "
+            f"objective as possible.",
             "Prompt sent to the LLM for redditor data processing.",
         ),
         "THREAD_LLM_CONTEXT_QUERY_PROMPT": (
-            "The following pipe delimited messages are unrelated submissions posted by multiple people.",
-            "Default prompt that populates the thread context query form that can be modified by the user before "
-            "they submit the query for processing. Whatever they change it to is what will be sent to the LLM for "
-            "thread context query processing.",
+            f"{THREAD_BASE_PROMPT} {DISREGARD_EXTERNAL_CONTENT_PROMPT}",
+            "Default prompt used to populate the extension's thread context query form.",
         ),
         "THREAD_LLM_DATA_PROMPT": (
-            "The following pipe delimited messages are unrelated submissions posted by multiple people. Determine "
-            "a list of keywords that describe the discussion ordered from most to least relevant. Also generate a "
-            "brief summary of what is being discussed that uses 100 completion_tokens or less. Be as objective as "
-            "possible.",
+            f"{THREAD_BASE_PROMPT} Determine a list of keywords that describe the discussion ordered from most to least "
+            f"relevant. Generate a summary of the discussion, with additional insights based on submissions, using 500 "
+            f"completion_tokens or less. Be as objective as possible.",
             "Prompt sent to the LLM for thread data processing.",
         ),
         "LLM_MAX_CONTEXT_WINDOW_FOR_INPUTS": (

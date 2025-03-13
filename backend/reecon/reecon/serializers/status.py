@@ -3,9 +3,7 @@ from rest_framework import serializers
 from reecon.models import StatusMessage
 
 
-__all__ = (
-    "StatusMessageSerializer",
-)
+__all__ = ("StatusMessageSerializer",)
 
 
 class StatusMessageSerializer(serializers.ModelSerializer):
