@@ -79,6 +79,12 @@ def create_hardcoded_producers():
             128_000,
             "https://platform.openai.com/docs/models/gpt-4o",
         ),
+        (
+            "o3-mini-2025-01-31",
+            llm_category,
+            200_000,
+            "https://platform.openai.com/docs/models/o3-mini",
+        ),
         ("textblob", nlp_category, None, "https://textblob.readthedocs.io/en/dev/"),
     ):
         Producer.objects.update_or_create(
