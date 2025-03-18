@@ -15,16 +15,19 @@ export const config: PlasmoCSConfig = {
     run_at: "document_idle"
 }
 
+// 'Magic' plasmo function
 export const getInlineAnchorList: PlasmoGetInlineAnchorList = async () => {
-    const anchors = dom.getThreadTitleParagraphElements()
+    const anchors = dom.getThreadTitleElements()
     return [...anchors].map((element) => ({
         element,
         insertPosition: "beforeend"
     }))
 }
 
+// 'Magic' plasmo function
 export const getRootContainer = dom.getCSUIRootContainer
 
+// 'Magic' plasmo function
 export const render = async ({ anchor, createRootContainer }) => {
     const rootContainer = await createRootContainer(anchor)
     const root = createRoot(rootContainer)
@@ -78,15 +81,15 @@ const ThreadAnchor = (props: PlasmoCSUIContainerProps) => {
         (v) => (v === undefined ? false : v)
     )
 
-    const threadTitleLinkEl = props.anchor.element as HTMLLinkElement
-    const threadRow: HTMLDivElement = threadTitleLinkEl.closest("div[id]")
+    const threadTitleEl = props.anchor.element as HTMLLinkElement
+    const threadRow: HTMLDivElement = threadTitleEl.closest("div[id]")
     const threadUrlPath = threadRow.getAttribute("data-permalink")
 
     const cachedPending = cachedPendingThreads[threadUrlPath]
     const cachedProcessed = cachedProcessedThreads[threadUrlPath]
     const cachedUnprocessable = cachedUnprocessableThreads[threadUrlPath]
 
-    const inlineEl = dom.getOrCreateCSUIInlineElement(threadUrlPath)
+    const { created, element: inlineEl } = dom.getOrCreateCSUIInlineElement(threadUrlPath)
     let shouldHideThreadRow = false
 
     if (cachedProcessed) {
@@ -114,7 +117,7 @@ const ThreadAnchor = (props: PlasmoCSUIContainerProps) => {
     } else if (cachedPending) {
         const pendingThread = cachedPending.value
         inlineEl.style.filter = "grayscale(1)"
-        inlineEl.title = "[pending] submitted for processing"
+        inlineEl.title = "[pending] thread submitted for processing"
     } else {
         return
     }

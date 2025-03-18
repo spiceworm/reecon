@@ -15,16 +15,19 @@ export const config: PlasmoCSConfig = {
     run_at: "document_idle"
 }
 
+// 'Magic' plasmo function
 export const getInlineAnchorList: PlasmoGetInlineAnchorList = async () => {
-    const anchors = dom.getPostTaglineParagraphElements()
+    const anchors = dom.getSubmissionTaglineElements()
     return [...anchors].map((element) => ({
         element,
         insertPosition: "beforeend"
     }))
 }
 
+// 'Magic' plasmo function
 export const getRootContainer = dom.getCSUIRootContainer
 
+// 'Magic' plasmo function
 export const render = async ({ anchor, createRootContainer }) => {
     const rootContainer = await createRootContainer(anchor)
     const root = createRoot(rootContainer)
@@ -104,17 +107,22 @@ const RedditorAnchor = (props: PlasmoCSUIContainerProps) => {
         (v) => (v === undefined ? false : v)
     )
 
-    const postTaglineParagraphElement = props.anchor.element as HTMLParagraphElement
-    const redditorComment: HTMLDivElement = postTaglineParagraphElement.closest("div[id]")
-    const redditorUsernameLinkElement: HTMLLinkElement = postTaglineParagraphElement.querySelector(".author")
-    const redditorUsername = redditorUsernameLinkElement.innerText
+    const postTaglineEl = props.anchor.element as HTMLParagraphElement
+
+    // Ignore comments from deleted redditors
+    if (postTaglineEl.querySelector('em')?.innerText === "[deleted]") {
+        return
+    }
+
+    const redditorUsernameEl: HTMLLinkElement = postTaglineEl.querySelector(".author")
+    const redditorUsername = redditorUsernameEl.innerText
 
     const cachedIgnored = cachedIgnoredRedditors[redditorUsername]
     const cachedPending = cachedPendingRedditors[redditorUsername]
     const cachedProcessed = cachedProcessedRedditors[redditorUsername]
     const cachedUnprocessable = cachedUnprocessableRedditors[redditorUsername]
 
-    const inlineEl = dom.getOrCreateCSUIInlineElement(redditorUsername)
+    const { created, element: inlineEl } = dom.getOrCreateCSUIInlineElement(redditorUsername)
     let shouldHideComment = false
 
     if (cachedIgnored) {
@@ -153,19 +161,30 @@ const RedditorAnchor = (props: PlasmoCSUIContainerProps) => {
     } else if (cachedPending) {
         const pendingRedditor = cachedPending.value
         inlineEl.style.filter = "grayscale(1)"
-        inlineEl.title = "[pending] submitted for processing"
+        inlineEl.title = "[pending] redditor submitted for processing"
     } else {
         return
     }
 
-    if (shouldHideComment && !disableExtension) {
-        redditorComment.setAttribute(`${process.env.PLASMO_PUBLIC_APP_NAME}-comment-filter`, "true")
-        redditorComment.classList.remove("noncollapsed")
-        redditorComment.classList.add("collapsed")
-    } else {
-        redditorComment.setAttribute(`${process.env.PLASMO_PUBLIC_APP_NAME}-comment-filter`, "false")
-        redditorComment.classList.remove("collapsed")
-        redditorComment.classList.add("noncollapsed")
+    const submission: HTMLDivElement = postTaglineEl.closest("div[id]")
+    const commentMd: HTMLDivElement | null = submission.querySelector("div[class=md]")
+
+    // This content script runs on pages that show a list of thread rows as well as comments. Do not execute the below
+    // code if the `submission` is a thread row element on a thread listing page. Only execute it if we are looking at
+    // a page containing comments.
+    if (commentMd) {
+        const { created, element: commentFilterEl } = dom.getOrCreateCSUICommentFilterElement(submission.id)
+
+        if (created) {
+            commentMd.querySelectorAll("p").forEach((p) => commentFilterEl.appendChild(p))
+            commentMd.appendChild(commentFilterEl)
+        }
+
+        if (shouldHideComment && !disableExtension) {
+            commentFilterEl.style.display = "none"
+        } else {
+            commentFilterEl.style.display = "block"
+        }
     }
 
     inlineEl.style.display = disableExtension ? "none" : "inline-block"
