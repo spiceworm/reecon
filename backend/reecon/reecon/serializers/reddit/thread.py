@@ -83,6 +83,9 @@ class ThreadContextQuerySerializer(serializers.ModelSerializer):
     response = ProducedTextSerializer(
         read_only=True,
     )
+    submitter = UserSerializer(
+        read_only=True,
+    )
 
     class Meta:
         model = ThreadContextQuery
