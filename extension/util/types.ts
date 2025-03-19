@@ -1,15 +1,13 @@
 interface ContextQuery {
     created: Date
-    id: number
     prompt: string
     response: ProducedText
-    submitter: User
+    submitter: UserUsername
     total_inputs: number
 }
 
 interface ProducedData {
-    contributor: User
-    id: number
+    contributor: UserUsername
     producer: Producer
 }
 
@@ -30,9 +28,7 @@ interface ProducedTextList extends ProducedData {
 }
 
 interface ProducerCategory {
-    created: Date
     description: string
-    id: number
     name: string
 }
 
@@ -44,7 +40,6 @@ export interface Profile {
 
 interface RedditData {
     created: Date
-    id: number
     sentiment_polarity: ProducedFloat
     sentiment_subjectivity: ProducedFloat
     summary: ProducedText
@@ -53,11 +48,10 @@ interface RedditData {
 
 interface RedditEntity {
     created: Date
-    id: number
     identifier: string
     last_processed: Date
     source: string
-    submitter: User
+    submitter: UserUsername
 }
 
 interface RedditorData extends RedditData {
@@ -80,23 +74,20 @@ interface ThreadData extends RedditData {
 
 interface UnprocessableRedditContextQuery {
     created: Date
-    id: number
     reason: string
-    submitter: User
+    submitter: UserUsername
 }
 
 interface UnprocessableRedditEntity {
     created: Date
-    id: number
     identifier: string
     reason: string
     source: string
-    submitter: User
+    submitter: UserUsername
 }
 
 interface User {
     date_joined: Date
-    id: number
     is_active: boolean
     is_staff: boolean
     is_superuser: boolean
@@ -104,9 +95,9 @@ interface User {
     username: string
 }
 
-export interface ApiStatusMessage extends StatusMessage {
-    id: number
-}
+type UserUsername = Pick<User, "username">
+
+export interface ApiStatusMessage extends StatusMessage {}
 
 export interface Auth {
     access: string
@@ -171,7 +162,6 @@ export interface CachedUnprocessableThread extends CachedRecord {
 export interface ExtensionStatusMessage extends StatusMessage {}
 
 export interface IgnoredRedditor {
-    id: number
     identifier: string
     reason: string
     source: string
@@ -190,9 +180,7 @@ export interface PendingThread {
 export interface Producer {
     category: ProducerCategory
     context_window: number | null
-    created: Date
     description: string
-    id: number
     name: string
 }
 

@@ -1,4 +1,3 @@
-from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from reecon.models import (
@@ -8,22 +7,18 @@ from reecon.models import (
 
 
 __all__ = (
-    "ContributorSerializer",
     "ProducerSerializer",
     "ProducedCategorySerializer",
 )
 
 
-class ContributorSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = get_user_model()
-        fields = ("username",)
-
-
 class ProducedCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ProducerCategory
-        fields = "__all__"
+        exclude = (
+            "created",
+            "id",
+        )
 
 
 class ProducerSerializer(serializers.ModelSerializer):
@@ -33,4 +28,7 @@ class ProducerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Producer
-        fields = "__all__"
+        exclude = (
+            "created",
+            "id",
+        )

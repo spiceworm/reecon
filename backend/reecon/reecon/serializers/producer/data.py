@@ -8,14 +8,13 @@ from reecon.models import (
     ProducedTextList,
 )
 
-from .producer import (
-    ContributorSerializer,
-    ProducerSerializer,
-)
+from .producer import ProducerSerializer
+from ..user import UserSerializer
 
 
 class ProducedBinarySerializer(serializers.ModelSerializer):
-    contributor = ContributorSerializer(
+    contributor = UserSerializer(
+        fields=("username",),
         read_only=True,
     )
     producer = ProducerSerializer(
@@ -24,11 +23,12 @@ class ProducedBinarySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProducedBinary
-        fields = "__all__"
+        exclude = ("id",)
 
 
 class ProducedFloatSerializer(serializers.ModelSerializer):
-    contributor = ContributorSerializer(
+    contributor = UserSerializer(
+        fields=("username",),
         read_only=True,
     )
     producer = ProducerSerializer(
@@ -37,11 +37,12 @@ class ProducedFloatSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProducedFloat
-        fields = "__all__"
+        exclude = ("id",)
 
 
 class ProducedIntegerSerializer(serializers.ModelSerializer):
-    contributor = ContributorSerializer(
+    contributor = UserSerializer(
+        fields=("username",),
         read_only=True,
     )
     producer = ProducerSerializer(
@@ -50,11 +51,12 @@ class ProducedIntegerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProducedInteger
-        fields = "__all__"
+        exclude = ("id",)
 
 
 class ProducedTextSerializer(serializers.ModelSerializer):
-    contributor = ContributorSerializer(
+    contributor = UserSerializer(
+        fields=("username",),
         read_only=True,
     )
     producer = ProducerSerializer(
@@ -63,11 +65,12 @@ class ProducedTextSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProducedText
-        fields = "__all__"
+        exclude = ("id",)
 
 
 class ProducedTextListSerializer(serializers.ModelSerializer):
-    contributor = ContributorSerializer(
+    contributor = UserSerializer(
+        fields=("username",),
         read_only=True,
     )
     producer = ProducerSerializer(
@@ -76,4 +79,4 @@ class ProducedTextListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProducedTextList
-        fields = "__all__"
+        exclude = ("id",)

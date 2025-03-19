@@ -110,7 +110,7 @@ const RedditorAnchor = (props: PlasmoCSUIContainerProps) => {
     const postTaglineEl = props.anchor.element as HTMLParagraphElement
 
     // Ignore comments from deleted redditors
-    if (postTaglineEl.querySelector('em')?.innerText === "[deleted]") {
+    if (postTaglineEl.querySelector("em")?.innerText === "[deleted]") {
         return
     }
 
