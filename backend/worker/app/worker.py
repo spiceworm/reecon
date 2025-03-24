@@ -22,11 +22,9 @@ log = logging.getLogger("app.worker.jobs.reddit")
 def _ensure_redditor_context_query_processable(
     *,
     redditor_username: str,
-    llm_contributor: models.AppUser,
-    llm_producer: models.Producer,
-    nlp_contributor: models.AppUser,
-    nlp_producer: models.Producer,
-    producer_settings: dict,
+    contributor: models.AppUser,
+    llm: models.LLM,
+    llm_providers_settings: dict,
     submitter: models.AppUser,
     env: schemas.WorkerEnv,
 ) -> models.UnprocessableRedditorContextQuery | None:
@@ -41,20 +39,16 @@ def _ensure_redditor_context_query_processable(
     except models.IgnoredRedditor.DoesNotExist:
         obj: models.RedditorData | models.UnprocessableRedditor = _ensure_redditor_data(
             redditor_username=redditor_username,
-            llm_contributor=llm_contributor,
-            llm_producer=llm_producer,
-            nlp_contributor=nlp_contributor,
-            nlp_producer=nlp_producer,
-            producer_settings=producer_settings,
+            contributor=contributor,
+            llm=llm,
+            llm_providers_settings=llm_providers_settings,
             submitter=submitter,
             env=env,
         )
         if isinstance(obj, models.UnprocessableRedditor):
             unprocessable_reason = f"Cannot perform context query for {redditor_username}. Unprocessable: {obj.reason}"
     else:
-        unprocessable_reason = (
-            f"Cannot perform context query for {redditor_username}. Ignored: {ignored_redditor.reason}"
-        )
+        unprocessable_reason = f"Cannot perform context query for {redditor_username}. Ignored: {ignored_redditor.reason}"
 
     if unprocessable_reason:
         unprocessable_obj, _ = models.UnprocessableRedditorContextQuery.objects.update_or_create(
@@ -75,11 +69,9 @@ def _ensure_redditor_context_query_processable(
 def _ensure_redditor_data(
     *,
     redditor_username: str,
-    llm_contributor: models.AppUser,
-    llm_producer: models.Producer,
-    nlp_contributor: models.AppUser,
-    nlp_producer: models.Producer,
-    producer_settings: dict,
+    contributor: models.AppUser,
+    llm: models.LLM,
+    llm_providers_settings: dict,
     submitter: models.AppUser,
     env: schemas.WorkerEnv,
 ) -> models.RedditorData | models.UnprocessableRedditor:
@@ -93,11 +85,9 @@ def _ensure_redditor_data(
     except models.Redditor.DoesNotExist:
         return process_redditor_data(
             redditor_username=redditor_username,
-            llm_contributor=llm_contributor,
-            llm_producer=llm_producer,
-            nlp_contributor=nlp_contributor,
-            nlp_producer=nlp_producer,
-            producer_settings=producer_settings,
+            contributor=contributor,
+            llm=llm,
+            llm_providers_settings=llm_providers_settings,
             submitter=submitter,
             env=env,
         )
@@ -108,11 +98,9 @@ def _ensure_redditor_data(
 def _ensure_thread_context_query_processable(
     *,
     thread_url: str,
-    llm_contributor: models.AppUser,
-    llm_producer: models.Producer,
-    nlp_contributor: models.AppUser,
-    nlp_producer: models.Producer,
-    producer_settings: dict,
+    contributor: models.AppUser,
+    llm: models.LLM,
+    llm_providers_settings: dict,
     submitter: models.AppUser,
     env: schemas.WorkerEnv,
 ) -> models.UnprocessableThreadContextQuery | None:
@@ -122,11 +110,9 @@ def _ensure_thread_context_query_processable(
     """
     obj: models.ThreadData | models.UnprocessableThread = _ensure_thread_data(
         thread_url=thread_url,
-        llm_contributor=llm_contributor,
-        llm_producer=llm_producer,
-        nlp_contributor=nlp_contributor,
-        nlp_producer=nlp_producer,
-        producer_settings=producer_settings,
+        contributor=contributor,
+        llm=llm,
+        llm_providers_settings=llm_providers_settings,
         submitter=submitter,
         env=env,
     )
@@ -150,11 +136,9 @@ def _ensure_thread_context_query_processable(
 def _ensure_thread_data(
     *,
     thread_url: str,
-    llm_contributor: models.AppUser,
-    llm_producer: models.Producer,
-    nlp_contributor: models.AppUser,
-    nlp_producer: models.Producer,
-    producer_settings: dict,
+    contributor: models.AppUser,
+    llm: models.LLM,
+    llm_providers_settings: dict,
     submitter: models.AppUser,
     env: schemas.WorkerEnv,
 ) -> models.ThreadData | models.UnprocessableThread:
@@ -167,11 +151,9 @@ def _ensure_thread_data(
     except models.Thread.DoesNotExist:
         return process_thread_data(
             thread_url=thread_url,
-            llm_contributor=llm_contributor,
-            llm_producer=llm_producer,
-            nlp_contributor=nlp_contributor,
-            nlp_producer=nlp_producer,
-            producer_settings=producer_settings,
+            contributor=contributor,
+            llm=llm,
+            llm_providers_settings=llm_providers_settings,
             submitter=submitter,
             env=env,
         )
@@ -182,23 +164,18 @@ def _ensure_thread_data(
 def process_redditor_context_query(
     *,
     redditor_username: str,
-    llm_contributor: models.AppUser,
-    llm_context_query_producer: models.Producer,
-    llm_data_producer: models.Producer,
-    nlp_contributor: models.AppUser,
-    nlp_context_query_producer: models.Producer,
-    nlp_data_producer: models.Producer,
-    producer_settings: dict,
+    contributor: models.AppUser,
+    context_query_llm: models.LLM,
+    data_llm: models.LLM,
+    llm_providers_settings: dict,
     submitter: models.AppUser,
     env: schemas.WorkerEnv,
 ) -> models.RedditorContextQuery | models.UnprocessableRedditorContextQuery:
     obj = _ensure_redditor_context_query_processable(
         redditor_username=redditor_username,
-        llm_contributor=llm_contributor,
-        llm_producer=llm_data_producer,
-        nlp_contributor=nlp_contributor,
-        nlp_producer=nlp_data_producer,
-        producer_settings=producer_settings,
+        contributor=contributor,
+        llm=data_llm,
+        llm_providers_settings=llm_providers_settings,
         submitter=submitter,
         env=env,
     )
@@ -208,11 +185,9 @@ def process_redditor_context_query(
 
     service = services.RedditorContextQueryService(
         identifier=redditor_username,
-        llm_contributor=llm_contributor,
-        llm_producer=llm_context_query_producer,
-        nlp_contributor=nlp_contributor,
-        nlp_producer=nlp_context_query_producer,
-        producer_settings=producer_settings,
+        contributor=contributor,
+        llm=context_query_llm,
+        llm_providers_settings=llm_providers_settings,
         submitter=submitter,
         env=env,
     )
@@ -227,21 +202,17 @@ def process_redditor_context_query(
 def process_redditor_data(
     *,
     redditor_username: str,
-    llm_contributor: models.AppUser,
-    llm_producer: models.Producer,
-    nlp_contributor: models.AppUser,
-    nlp_producer: models.Producer,
-    producer_settings: dict,
+    contributor: models.AppUser,
+    llm: models.LLM,
+    llm_providers_settings: dict,
     submitter: models.AppUser,
     env: schemas.WorkerEnv,
 ) -> models.RedditorData | models.UnprocessableRedditor:
     service = services.RedditorDataService(
         identifier=redditor_username,
-        llm_contributor=llm_contributor,
-        llm_producer=llm_producer,
-        nlp_contributor=nlp_contributor,
-        nlp_producer=nlp_producer,
-        producer_settings=producer_settings,
+        contributor=contributor,
+        llm=llm,
+        llm_providers_settings=llm_providers_settings,
         submitter=submitter,
         env=env,
     )
@@ -259,23 +230,18 @@ def process_redditor_data(
 def process_thread_context_query(
     *,
     thread_url: str,
-    llm_contributor: models.AppUser,
-    llm_context_query_producer: models.Producer,
-    llm_data_producer: models.Producer,
-    nlp_contributor: models.AppUser,
-    nlp_context_query_producer: models.Producer,
-    nlp_data_producer: models.Producer,
-    producer_settings: dict,
+    contributor: models.AppUser,
+    context_query_llm: models.LLM,
+    data_llm: models.LLM,
+    llm_providers_settings: dict,
     submitter: models.AppUser,
     env: schemas.WorkerEnv,
 ) -> models.ThreadContextQuery | models.UnprocessableThreadContextQuery:
     obj = _ensure_thread_context_query_processable(
         thread_url=thread_url,
-        llm_contributor=llm_contributor,
-        llm_producer=llm_data_producer,
-        nlp_contributor=nlp_contributor,
-        nlp_producer=nlp_data_producer,
-        producer_settings=producer_settings,
+        contributor=contributor,
+        llm=data_llm,
+        llm_providers_settings=llm_providers_settings,
         submitter=submitter,
         env=env,
     )
@@ -285,11 +251,9 @@ def process_thread_context_query(
 
     service = services.ThreadContextQueryService(
         identifier=thread_url,
-        llm_contributor=llm_contributor,
-        llm_producer=llm_context_query_producer,
-        nlp_contributor=nlp_contributor,
-        nlp_producer=nlp_context_query_producer,
-        producer_settings=producer_settings,
+        contributor=contributor,
+        llm=context_query_llm,
+        llm_providers_settings=llm_providers_settings,
         submitter=submitter,
         env=env,
     )
@@ -304,21 +268,17 @@ def process_thread_context_query(
 def process_thread_data(
     *,
     thread_url: str,
-    llm_contributor: models.AppUser,
-    llm_producer: models.Producer,
-    nlp_contributor: models.AppUser,
-    nlp_producer: models.Producer,
-    producer_settings: dict,
+    contributor: models.AppUser,
+    llm: models.LLM,
+    llm_providers_settings: dict,
     submitter: models.AppUser,
     env: schemas.WorkerEnv,
 ) -> models.ThreadData | models.UnprocessableThread:
     service = services.ThreadDataService(
         identifier=thread_url,
-        llm_contributor=llm_contributor,
-        llm_producer=llm_producer,
-        nlp_contributor=nlp_contributor,
-        nlp_producer=nlp_producer,
-        producer_settings=producer_settings,
+        contributor=contributor,
+        llm=llm,
+        llm_providers_settings=llm_providers_settings,
         submitter=submitter,
         env=env,
     )

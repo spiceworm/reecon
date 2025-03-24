@@ -18,16 +18,16 @@ const execute = async () => {
     if (await storage.shouldExecuteContentScript()) {
         lastExecution = Date.now()
 
-        const producerSettings = await storage.getProducerSettings()
+        const llmProvidersSettings = await storage.getLlmProvidersSettings()
 
         if (await storage.getThreadDataProcessingEnabled()) {
             const urlPaths = dom.getThreadUrlPaths()
-            await backgroundMessage.processThreadData(producerSettings, urlPaths)
+            await backgroundMessage.processThreadData(llmProvidersSettings, urlPaths)
         }
 
         if (await storage.getRedditorDataProcessingEnabled()) {
             const usernames = dom.getUsernames()
-            await backgroundMessage.processRedditorData(producerSettings, usernames)
+            await backgroundMessage.processRedditorData(llmProvidersSettings, usernames)
         }
     }
 }

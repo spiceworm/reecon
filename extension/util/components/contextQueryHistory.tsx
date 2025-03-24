@@ -53,7 +53,7 @@ export const ContextQueryHistory = () => {
             created: contextQuery?.created,
             identifier: contextQuery?.context.identifier,
             inputs: contextQuery?.total_inputs,
-            llm: contextQuery?.response.producer.name,
+            llm: contextQuery?.response.llm.name,
             submitter: contextQuery?.submitter.username
         }
     }

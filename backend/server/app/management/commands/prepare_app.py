@@ -18,8 +18,8 @@ from django import db
 
 from reecon.models import (
     IgnoredRedditor,
-    Producer,
-    ProducerCategory,
+    LLM,
+    LlmProvider,
     StatusMessage,
 )
 
@@ -45,60 +45,57 @@ def create_hardcoded_ignored_redditors():
         )
 
 
-def create_hardcoded_producer_categories():
-    for name, description in (
-        ("LLM", "Large language model"),
-        ("NLP", "Natural language processing"),
-    ):
-        ProducerCategory.objects.update_or_create(
+def create_hardcoded_llm_providers():
+    for name, display_name, description in (("openai", "OpenAI", "https://openai.com/"),):
+        LlmProvider.objects.update_or_create(
             name=name,
             defaults={
                 "description": description,
+                "display_name": display_name,
             },
             create_defaults={
                 "description": description,
+                "display_name": display_name,
                 "name": name,
             },
         )
 
 
-def create_hardcoded_producers():
-    llm_category = ProducerCategory.objects.get(name="LLM")
-    nlp_category = ProducerCategory.objects.get(name="NLP")
+def create_hardcoded_llms():
+    openai_provider = LlmProvider.objects.get(name="openai")
 
-    for name, category, context_window, description in (
+    for name, provider, context_window, description in (
         (
             "gpt-4o-mini-2024-07-18",
-            llm_category,
+            openai_provider,
             128_000,
             "https://platform.openai.com/docs/models/gpt-4o-mini",
         ),
         (
             "gpt-4o-2024-08-06",
-            llm_category,
+            openai_provider,
             128_000,
             "https://platform.openai.com/docs/models/gpt-4o",
         ),
         (
             "o3-mini-2025-01-31",
-            llm_category,
+            openai_provider,
             200_000,
             "https://platform.openai.com/docs/models/o3-mini",
         ),
-        ("textblob", nlp_category, None, "https://textblob.readthedocs.io/en/dev/"),
     ):
-        Producer.objects.update_or_create(
+        LLM.objects.update_or_create(
             name=name,
             defaults={
-                "category": category,
-                "description": description,
                 "context_window": context_window,
+                "description": description,
+                "provider": provider,
             },
             create_defaults={
-                "category": category,
-                "description": description,
                 "context_window": context_window,
+                "description": description,
                 "name": name,
+                "provider": provider,
             },
         )
 
@@ -200,8 +197,8 @@ class Command(management.base.BaseCommand):
             self.ensure_db_connection()
             create_hardcoded_users()
             create_hardcoded_ignored_redditors()
-            create_hardcoded_producer_categories()
-            create_hardcoded_producers()
+            create_hardcoded_llm_providers()
+            create_hardcoded_llms()
             create_hardcoded_status_messages()
         if options["all"] or options["generate_api_schema"]:
             # Generate API documentation schema (viewable to /api/v1/schema/{redoc,swagger-ui})

@@ -5,7 +5,7 @@ import { useStorage } from "@plasmohq/storage/dist/hook"
 import { ContentFiltersView } from "~tabs/views/contentFilters"
 import { ContextQueryView } from "~tabs/views/contextQuery"
 import { DebugView } from "~tabs/views/debug"
-import { ProducerSettingsView } from "~tabs/views/producerSettings"
+import { LlmProvidersSettingsView } from "~tabs/views/llmProvidersSettings"
 import { ProfileView } from "~tabs/views/profile"
 import { RequireAuthentication } from "~util/components/authentication"
 import * as constants from "~util/constants"
@@ -15,21 +15,22 @@ import { LoginView } from "~views/auth/login"
 import { SignupView } from "~views/auth/signup"
 
 export default function TabsIndex() {
-    const [producerSettings] = useStorage({ instance: storage.extLocalStorage, key: constants.PRODUCER_SETTINGS }, (v: types.ProducerSettings) =>
-        v === undefined ? constants.defaultProducerSettings : v
+    const [llmProvidersSettings] = useStorage(
+        { instance: storage.extLocalStorage, key: constants.LLM_PROVIDERS_SETTINGS },
+        (v: types.LlmProvidersSettings) => (v === undefined ? constants.defaultLlmProvidersSettings : v)
     )
 
-    const producerApiKeyMissing = producerSettings.openai.api_key.length === 0
+    const apiKeyMissing = llmProvidersSettings.openai.api_key.length === 0
 
     return (
         <MemoryRouter>
             <Routes>
-                <Route path={"/"} element={<Navigate to={"/producer-settings"} replace={true} />} />
+                <Route path={"/"} element={<Navigate to={"/llm-providers-settings"} replace={true} />} />
                 <Route
-                    path="/producer-settings"
+                    path="/llm-providers-settings"
                     element={
                         <RequireAuthentication>
-                            <ProducerSettingsView />
+                            <LlmProvidersSettingsView />
                         </RequireAuthentication>
                     }
                 />
@@ -39,7 +40,7 @@ export default function TabsIndex() {
                 <Route path="/debug" element={<DebugView />} />
                 <Route path="/profile" element={<ProfileView />} />
 
-                {producerApiKeyMissing ? null : (
+                {apiKeyMissing ? null : (
                     <>
                         <Route
                             path="/context-query"

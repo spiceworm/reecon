@@ -26,9 +26,7 @@ RUN pip install --upgrade pip \
 
 COPY ./requirements.txt /tmp/
 RUN pip install -r /tmp/requirements.txt \
-    && rm /tmp/requirements.txt \
-    && python -m textblob.download_corpora \
-    && python -m nltk.downloader punkt_tab
+    && rm /tmp/requirements.txt
 
 COPY . /reecon
 

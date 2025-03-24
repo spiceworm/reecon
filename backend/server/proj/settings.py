@@ -189,9 +189,9 @@ CONSTANCE_REDIS_CONNECTION = reecon_settings.CONSTANCE_REDIS_CONNECTION
 CONSTANCE_ADDITIONAL_FIELDS = reecon_settings.CONSTANCE_ADDITIONAL_FIELDS
 CONSTANCE_CONFIG = reecon_settings.CONSTANCE_CONFIG
 
-# The DEFAULT_PRODUCER_SETTINGS should only be used when running management commands.
+# The DEFAULT_LLM_PROVIDER_SETTINGS should only be used when running management commands.
 # Users provide their own API key in the extension which is then sent to the backend API when processing occurs.
-DEFAULT_PRODUCER_SETTINGS = {
+DEFAULT_LLM_PROVIDERS_SETTINGS = {
     "openai": {
         "name": "openai",
         "api_key": decouple.config("DEFAULT_OPENAI_API_KEY"),

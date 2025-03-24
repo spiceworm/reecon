@@ -15,13 +15,16 @@ export const openAiApiKeyIsUsable = async (apiKey: string): Promise<boolean> => 
     return resp.message
 }
 
-export const processRedditorData = async (producerSettings: object, usernames: string[]): Promise<types.SubmitRedditorDataResponse> => {
+export const processRedditorData = async (
+    llmProvidersSettings: types.LlmProvidersSettings,
+    usernames: string[]
+): Promise<types.SubmitRedditorDataResponse> => {
     const resp = await sendToBackground({
         name: "reddit",
         body: {
             action: "processRedditorData",
             kwargs: {
-                producerSettings: producerSettings,
+                llmProvidersSettings: llmProvidersSettings,
                 usernames: usernames
             }
         }
@@ -29,13 +32,16 @@ export const processRedditorData = async (producerSettings: object, usernames: s
     return resp.message
 }
 
-export const processThreadData = async (producerSettings: object, urlPaths: string[]): Promise<types.SubmitThreadDataResponse> => {
+export const processThreadData = async (
+    llmProvidersSettings: types.LlmProvidersSettings,
+    urlPaths: string[]
+): Promise<types.SubmitThreadDataResponse> => {
     const resp = await sendToBackground({
         name: "reddit",
         body: {
             action: "processThreadData",
             kwargs: {
-                producerSettings: producerSettings,
+                llmProvidersSettings: llmProvidersSettings,
                 urlPaths: urlPaths
             }
         }

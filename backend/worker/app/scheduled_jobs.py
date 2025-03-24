@@ -13,9 +13,7 @@ __all__ = (
 
 
 def delete_unprocessable_redditors():
-    return UnprocessableRedditor.objects.filter(
-        created__lte=timezone.now() - config.UNPROCESSABLE_REDDITOR_EXP_TD
-    ).delete()
+    return UnprocessableRedditor.objects.filter(created__lte=timezone.now() - config.UNPROCESSABLE_REDDITOR_EXP_TD).delete()
 
 
 def delete_unprocessable_threads():

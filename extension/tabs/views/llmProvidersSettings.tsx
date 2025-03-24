@@ -2,16 +2,16 @@ import Stack from "@mui/material/Stack"
 
 import * as navigation from "~tabs/navigation"
 import * as bases from "~util/components/bases"
-import { ProducerSettingsInputs } from "~util/components/producerSettings"
+import { LlmProvidersSettingsInputs } from "~util/components/llmProvidersSettings"
 
-export const ProducerSettingsView = () => {
+export const LlmProvidersSettingsView = () => {
     return (
         <bases.Base>
             <Stack>
                 <navigation.TabsNavigation />
 
                 <Stack m={2} spacing={2}>
-                    <ProducerSettingsInputs />
+                    <LlmProvidersSettingsInputs />
                 </Stack>
             </Stack>
         </bases.Base>

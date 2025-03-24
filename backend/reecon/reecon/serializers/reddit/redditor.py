@@ -1,6 +1,13 @@
 from rest_framework import serializers
 
-from reecon.models import (
+from ..data import (
+    ProducedFloatSerializer,
+    ProducedIntegerSerializer,
+    ProducedTextSerializer,
+    ProducedTextListSerializer,
+)
+from ..user import UserSerializer
+from ...models import (
     IgnoredRedditor,
     Redditor,
     RedditorContextQuery,
@@ -8,15 +15,6 @@ from reecon.models import (
     UnprocessableRedditor,
     UnprocessableRedditorContextQuery,
 )
-
-from ..producer import (
-    ProducedFloatSerializer,
-    ProducedIntegerSerializer,
-    ProducedTextSerializer,
-    ProducedTextListSerializer,
-)
-from ..user import UserSerializer
-
 
 __all__ = (
     "IgnoredRedditorSerializer",

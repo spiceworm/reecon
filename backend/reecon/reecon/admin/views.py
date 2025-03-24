@@ -3,8 +3,8 @@ from django.contrib import admin
 
 from ..models import (
     IgnoredRedditor,
-    Producer,
-    ProducerCategory,
+    LLM,
+    LlmProvider,
     Profile,
     Redditor,
     RedditorContextQuery,
@@ -19,8 +19,8 @@ from ..models import (
 
 __all__ = (
     "IgnoredRedditorAdmin",
-    "ProducerAdmin",
-    "ProducerCategoryAdmin",
+    "LlmAdmin",
+    "LlmProviderAdmin",
     "RedditorAdmin",
     "RedditorContextQueryAdmin",
     "StatusMessageAdmin",
@@ -44,14 +44,14 @@ class IgnoredRedditorAdmin(admin.ModelAdmin):
     list_display = get_list_display(IgnoredRedditor)
 
 
-@admin.register(Producer)
-class ProducerAdmin(admin.ModelAdmin):
-    list_display = get_list_display(Producer)
+@admin.register(LLM)
+class LlmAdmin(admin.ModelAdmin):
+    list_display = get_list_display(LLM)
 
 
-@admin.register(ProducerCategory)
-class ProducerCategoryAdmin(admin.ModelAdmin):
-    list_display = get_list_display(ProducerCategory)
+@admin.register(LlmProvider)
+class LlmProviderAdmin(admin.ModelAdmin):
+    list_display = get_list_display(LlmProvider)
 
 
 @admin.register(Profile)

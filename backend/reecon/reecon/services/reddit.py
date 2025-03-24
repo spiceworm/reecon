@@ -25,10 +25,8 @@ from tenacity import (
     wait_random_exponential,
 )
 import tiktoken
-import nltk
-import validators
 
-from . import producer
+from . import llm_provider
 from .. import (
     exceptions,
     models,
@@ -48,26 +46,20 @@ log = logging.getLogger("reecon.services.reddit")
 
 
 class _RedditService(abc.ABC):
-    TOKENIZER = nltk.data.load("tokenizers/punkt/english.pickle")
-
     def __init__(
         self,
         *,
         identifier: str,
-        llm_contributor: models.AppUser,
-        llm_producer: models.Producer,
-        nlp_contributor: models.AppUser,
-        nlp_producer: models.Producer,
-        producer_settings: dict,
+        contributor: models.AppUser,
+        llm: models.LLM,
+        llm_providers_settings: dict,
         submitter: models.AppUser,
         env: schemas.WorkerEnv,
     ):
         self.identifier = identifier
-        self.llm_contributor = llm_contributor
-        self.llm_producer = llm_producer
-        self.nlp_contributor = nlp_contributor
-        self.nlp_producer = nlp_producer
-        self.producer_settings = producer_settings
+        self.contributor = contributor
+        self.llm = llm
+        self.llm_providers_settings = llm_providers_settings
         self.submitter = submitter
         self.env = env
 
@@ -94,22 +86,7 @@ class _RedditService(abc.ABC):
         text = "\n".join(line.strip() for line in text.splitlines())
 
         # Strip any existing markdown that is present.
-        text = util.strip_markdown(text)
-
-        # Remove sentences containing URLs while preserving surrounding sentences.
-        sentences = []
-        for sentence in self.TOKENIZER.tokenize(text):
-            include_sentence = True
-
-            for fragment in sentence.split():
-                if validators.url(fragment):
-                    include_sentence = False
-                    break
-
-            if include_sentence:
-                sentences.append(sentence)
-
-        retval = " ".join(sentences)
+        retval = util.strip_markdown(text)
 
         # Do not process submissions that are either too short or too long.
         if any(
@@ -139,9 +116,9 @@ class _RedditorService(_RedditService):
         submissions: List[str] = []
         praw_redditor: PrawRedditor = self.reddit_client.redditor(name=self.identifier)
 
-        context_window = self.llm_producer.context_window
+        context_window = self.llm.context_window
         max_input_tokens = int(context_window * self.env.redditor.llm.max_context_window_for_inputs)
-        encoding = tiktoken.encoding_for_model(self.llm_producer.name)
+        encoding = tiktoken.encoding_for_model(self.llm.name)
 
         try:
             # Check if the redditor account is old enough to be processed
@@ -186,9 +163,7 @@ class _RedditorService(_RedditService):
 
         min_submissions = self.env.redditor.submission.min_submissions
         if len(submissions) < min_submissions:
-            raise self.unprocessable_entity(
-                f"Less than {min_submissions} submissions available for processing (found {len(submissions)})"
-            )
+            raise self.unprocessable_entity(f"Less than {min_submissions} submissions available for processing (found {len(submissions)})")
         return submissions
 
     def unprocessable_entity(self, reason):
@@ -224,9 +199,8 @@ class _ThreadService(_RedditService):
         except InvalidURL as e:
             raise self.unprocessable_entity(str(e))
 
-        context_window = self.llm_producer.context_window
-        max_input_tokens = int(context_window * self.env.thread.llm.max_context_window_for_inputs)
-        encoding = tiktoken.encoding_for_model(self.llm_producer.name)
+        max_input_tokens = int(self.llm.context_window * self.env.thread.llm.max_context_window_for_inputs)
+        encoding = tiktoken.encoding_for_model(self.llm.name)
 
         try:
             # Get the thread selftext
@@ -256,9 +230,7 @@ class _ThreadService(_RedditService):
 
         min_submissions = self.env.thread.submission.min_submissions
         if len(submissions) < min_submissions:
-            raise self.unprocessable_entity(
-                f"Less than {min_submissions} submissions available for processing (found {len(submissions)})"
-            )
+            raise self.unprocessable_entity(f"Less than {min_submissions} submissions available for processing (found {len(submissions)})")
         return submissions
 
     def unprocessable_entity(self, reason):
@@ -304,8 +276,8 @@ class RedditorContextQueryService(_ContextQueryService, _RedditorService):
             context=redditor,
             prompt=generated.prompt,
             response=models.ProducedText.objects.create(
-                contributor=self.llm_contributor,
-                producer=self.llm_producer,
+                contributor=self.contributor,
+                llm=self.llm,
                 value=generated.response,
             ),
             submitter=self.submitter,
@@ -313,16 +285,15 @@ class RedditorContextQueryService(_ContextQueryService, _RedditorService):
         )
 
     def generate(self, *, inputs: List[str], prompt: str) -> schemas.GeneratedRedditorContextQuery:
-        llm_service = producer.LlmProducerService(response_format=schemas.LlmGeneratedContextQuery)
-        llm_data = llm_service.generate_data(
+        service = llm_provider.LlmProviderService(response_format=schemas.GeneratedRedditorContextQuery)
+        generated_data = service.generate_data(
             inputs=inputs,
-            llm_name=self.llm_producer.name,
-            producer_settings=self.producer_settings,
+            llm_name=self.llm.name,
+            llm_provider_name=self.llm.provider.name,
+            llm_providers_settings=self.llm_providers_settings,
             prompt=prompt,
         )
-        return schemas.GeneratedRedditorContextQuery.model_validate(
-            {"inputs": inputs, "prompt": prompt, **llm_data.model_dump()}
-        )
+        return schemas.GeneratedRedditorContextQuery.model_validate({"inputs": inputs, "prompt": prompt, **generated_data.model_dump()})
 
 
 class ThreadContextQueryService(_ContextQueryService, _ThreadService):
@@ -332,8 +303,8 @@ class ThreadContextQueryService(_ContextQueryService, _ThreadService):
             context=thread,
             prompt=generated.prompt,
             response=models.ProducedText.objects.create(
-                contributor=self.llm_contributor,
-                producer=self.llm_producer,
+                contributor=self.contributor,
+                llm=self.llm,
                 value=generated.response,
             ),
             submitter=self.submitter,
@@ -341,16 +312,15 @@ class ThreadContextQueryService(_ContextQueryService, _ThreadService):
         )
 
     def generate(self, *, inputs: List[str], prompt: str) -> schemas.GeneratedThreadContextQuery:
-        llm_service = producer.LlmProducerService(response_format=schemas.LlmGeneratedContextQuery)
-        llm_data = llm_service.generate_data(
+        service = llm_provider.LlmProviderService(response_format=schemas.GeneratedThreadContextQuery)
+        generated_data = service.generate_data(
             inputs=inputs,
-            llm_name=self.llm_producer.name,
-            producer_settings=self.producer_settings,
+            llm_name=self.llm.name,
+            llm_provider_name=self.llm.provider.name,
+            llm_providers_settings=self.llm_providers_settings,
             prompt=prompt,
         )
-        return schemas.GeneratedThreadContextQuery.model_validate(
-            {"inputs": inputs, "prompt": prompt, **llm_data.model_dump()}
-        )
+        return schemas.GeneratedThreadContextQuery.model_validate({"inputs": inputs, "prompt": prompt, **generated_data.model_dump()})
 
 
 class RedditorDataService(_DataService, _RedditorService):
@@ -369,56 +339,53 @@ class RedditorDataService(_DataService, _RedditorService):
         )
         return models.RedditorData.objects.create(
             age=models.ProducedInteger.objects.create(
-                contributor=self.llm_contributor,
-                producer=self.llm_producer,
+                contributor=self.contributor,
+                llm=self.llm,
                 value=generated.age,
             ),
             interests=models.ProducedTextList.objects.create(
-                contributor=self.llm_contributor,
-                producer=self.llm_producer,
+                contributor=self.contributor,
+                llm=self.llm,
                 value=generated.normalized_interests(),
             ),
             iq=models.ProducedInteger.objects.create(
-                contributor=self.llm_contributor,
-                producer=self.llm_producer,
+                contributor=self.contributor,
+                llm=self.llm,
                 value=generated.iq,
             ),
             redditor=redditor,
             sentiment_polarity=models.ProducedFloat.objects.create(
-                contributor=self.nlp_contributor,
-                producer=self.nlp_producer,
+                contributor=self.contributor,
+                llm=self.llm,
                 value=generated.sentiment_polarity,
             ),
             sentiment_subjectivity=models.ProducedFloat.objects.create(
-                contributor=self.nlp_contributor,
-                producer=self.nlp_producer,
+                contributor=self.contributor,
+                llm=self.llm,
                 value=generated.sentiment_subjectivity,
             ),
             summary=models.ProducedText.objects.create(
-                contributor=self.llm_contributor,
-                producer=self.llm_producer,
+                contributor=self.contributor,
+                llm=self.llm,
                 value=generated.summary,
             ),
             total_inputs=len(generated.inputs),
         )
 
     def generate(self, *, inputs: List[str], prompt: str) -> schemas.GeneratedRedditorData:
-        nlp_service = producer.NlpProducerService(response_format=schemas.NlpGeneratedRedditorData)
-        nlp_data = nlp_service.generate_data(inputs=inputs, nlp_name=self.nlp_producer.name)
-
-        llm_service = producer.LlmProducerService(response_format=schemas.LlmGeneratedRedditorData)
-        llm_data = llm_service.generate_data(
+        service = llm_provider.LlmProviderService(response_format=schemas.GeneratedRedditorData)
+        generated_data = service.generate_data(
             inputs=inputs,
-            llm_name=self.llm_producer.name,
-            producer_settings=self.producer_settings,
+            llm_name=self.llm.name,
+            llm_provider_name=self.llm.provider.name,
+            llm_providers_settings=self.llm_providers_settings,
             prompt=prompt,
         )
         return schemas.GeneratedRedditorData.model_validate(
             {
                 "inputs": inputs,
                 "prompt": prompt,
-                **nlp_data.model_dump(),
-                **llm_data.model_dump(),
+                **generated_data.model_dump(),
             }
         )
 
@@ -439,23 +406,23 @@ class ThreadDataService(_DataService, _ThreadService):
         )
         return models.ThreadData.objects.create(
             keywords=models.ProducedTextList.objects.create(
-                contributor=self.llm_contributor,
-                producer=self.llm_producer,
+                contributor=self.contributor,
+                llm=self.llm,
                 value=generated.normalized_keywords(),
             ),
             sentiment_polarity=models.ProducedFloat.objects.create(
-                contributor=self.nlp_contributor,
-                producer=self.nlp_producer,
+                contributor=self.contributor,
+                llm=self.llm,
                 value=generated.sentiment_polarity,
             ),
             sentiment_subjectivity=models.ProducedFloat.objects.create(
-                contributor=self.nlp_contributor,
-                producer=self.nlp_producer,
+                contributor=self.contributor,
+                llm=self.llm,
                 value=generated.sentiment_subjectivity,
             ),
             summary=models.ProducedText.objects.create(
-                contributor=self.llm_contributor,
-                producer=self.llm_producer,
+                contributor=self.contributor,
+                llm=self.llm,
                 value=generated.summary,
             ),
             thread=thread,
@@ -463,21 +430,18 @@ class ThreadDataService(_DataService, _ThreadService):
         )
 
     def generate(self, *, inputs: List[str], prompt: str) -> schemas.GeneratedThreadData:
-        nlp_service = producer.NlpProducerService(response_format=schemas.NlpGeneratedThreadData)
-        nlp_data = nlp_service.generate_data(inputs=inputs, nlp_name=self.nlp_producer.name)
-
-        llm_service = producer.LlmProducerService(response_format=schemas.LlmGeneratedThreadData)
-        llm_data = llm_service.generate_data(
+        service = llm_provider.LlmProviderService(response_format=schemas.GeneratedThreadData)
+        generated_data = service.generate_data(
             inputs=inputs,
-            llm_name=self.llm_producer.name,
-            producer_settings=self.producer_settings,
+            llm_name=self.llm.name,
+            llm_provider_name=self.llm.provider.name,
+            llm_providers_settings=self.llm_providers_settings,
             prompt=prompt,
         )
         return schemas.GeneratedThreadData.model_validate(
             {
                 "inputs": inputs,
                 "prompt": prompt,
-                **nlp_data.model_dump(),
-                **llm_data.model_dump(),
+                **generated_data.model_dump(),
             }
         )

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from reecon.models import StatusMessage
+from ..models import StatusMessage
 
 
 __all__ = ("StatusMessageSerializer",)

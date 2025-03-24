@@ -3,15 +3,18 @@ from typing import List
 import pydantic
 
 
-class LlmGeneratedContextQuery(pydantic.BaseModel):
+__all__ = ("GeneratedRedditorContextQuery", "GeneratedThreadContextQuery")
+
+
+class GeneratedContextQueryBase(pydantic.BaseModel):
+    inputs: List[str]
+    prompt: str
     response: str
 
 
-class GeneratedRedditorContextQuery(LlmGeneratedContextQuery):
-    inputs: List[str]
-    prompt: str
+class GeneratedRedditorContextQuery(GeneratedContextQueryBase):
+    pass
 
 
-class GeneratedThreadContextQuery(LlmGeneratedContextQuery):
-    inputs: List[str]
-    prompt: str
+class GeneratedThreadContextQuery(GeneratedContextQueryBase):
+    pass

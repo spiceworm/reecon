@@ -1,19 +1,18 @@
 from rest_framework import serializers
 
-from reecon.models import (
+from ..data import (
+    ProducedFloatSerializer,
+    ProducedTextSerializer,
+    ProducedTextListSerializer,
+)
+from ..user import UserSerializer
+from ...models import (
     Thread,
     ThreadContextQuery,
     ThreadData,
     UnprocessableThread,
     UnprocessableThreadContextQuery,
 )
-
-from ..producer import (
-    ProducedFloatSerializer,
-    ProducedTextSerializer,
-    ProducedTextListSerializer,
-)
-from ..user import UserSerializer
 
 
 __all__ = (

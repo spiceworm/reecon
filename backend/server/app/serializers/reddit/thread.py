@@ -7,7 +7,7 @@ from reecon.serializers import (
     UnprocessableThreadSerializer,
 )
 
-from ..producer import ProducerSettingsSerializer
+from ..llm import LlmProvidersSettingsSerializer
 
 
 __all__ = (
@@ -32,15 +32,13 @@ class PendingThreadSerializer(serializers.Serializer):
 
 class ThreadContextQueryCreateRequestSerializer(serializers.Serializer):
     llm_name = serializers.ChoiceField(choices=[])
-    nlp_name = serializers.ChoiceField(choices=[])
+    llm_providers_settings = LlmProvidersSettingsSerializer()
     path = serializers.CharField()
-    producer_settings = ProducerSettingsSerializer()
     prompt = serializers.CharField()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["llm_name"].choices = util.producer.get_llm_choices()
-        self.fields["nlp_name"].choices = util.producer.get_nlp_choices()
+        self.fields["llm_name"].choices = util.fields.get_llm_choices()
 
 
 class ThreadContextQueryCreateResponseSerializer(serializers.Serializer):
@@ -62,8 +60,8 @@ class ThreadContextQueryRetrieveResponseSerializer(serializers.Serializer):
 
 
 class ThreadDataRequestSerializer(serializers.Serializer):
+    llm_providers_settings = LlmProvidersSettingsSerializer()
     paths = serializers.ListField(child=serializers.CharField())
-    producer_settings = ProducerSettingsSerializer()
 
 
 class ThreadDataResponseSerializer(serializers.Serializer):

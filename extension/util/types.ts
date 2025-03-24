@@ -8,7 +8,7 @@ interface ContextQuery {
 
 interface ProducedData {
     contributor: UserUsername
-    producer: Producer
+    llm: LLM
 }
 
 interface ProducedFloat extends ProducedData {
@@ -25,11 +25,6 @@ interface ProducedText extends ProducedData {
 
 interface ProducedTextList extends ProducedData {
     value: string[]
-}
-
-interface ProducerCategory {
-    description: string
-    name: string
 }
 
 export interface Profile {
@@ -177,16 +172,19 @@ export interface PendingThread {
     url: string
 }
 
-export interface Producer {
-    category: ProducerCategory
+export interface LLM {
     context_window: number | null
     description: string
     name: string
+    provider: LlmProvider
 }
 
-export interface ProducerDefaultsResponse {
-    llm: Producer
-    nlp: Producer
+interface LlmProvider {
+    display_name: string
+    name: string
+}
+
+export interface LlmDefaultsResponse {
     prompts: {
         process_redditor_context_query: string
         process_thread_context_query: string
@@ -195,7 +193,7 @@ export interface ProducerDefaultsResponse {
     }
 }
 
-export interface ProducerSettings {
+export interface LlmProvidersSettings {
     openai: {
         api_key: string
     }

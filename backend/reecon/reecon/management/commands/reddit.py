@@ -60,14 +60,8 @@ class Command(management.base.BaseCommand):
 
                     method_p.add_argument(
                         "--llm",
-                        choices=models.Producer.objects.filter(category__name="LLM").values_list("name", flat=True),
+                        choices=models.LLM.objects.values_list("name", flat=True),
                         default=config.LLM_NAME,
-                    )
-
-                    method_p.add_argument(
-                        "--nlp",
-                        choices=models.Producer.objects.filter(category__name="NLP").values_list("name", flat=True),
-                        default=config.NLP_NAME,
                     )
 
     def echo(self, s):
@@ -87,12 +81,11 @@ class Command(management.base.BaseCommand):
         else:
             log.setLevel("INFO")
 
-        llm_producer = models.Producer.objects.get(name=options["llm"])
-        nlp_producer = models.Producer.objects.get(name=options["nlp"])
+        llm = models.LLM.objects.get(name=options["llm"])
         admin = get_user_model().objects.get(username="admin")
         env = schemas.get_worker_env()
 
-        encoding = tiktoken.encoding_for_model(llm_producer.name)
+        encoding = tiktoken.encoding_for_model(llm.name)
         prompt = ""
 
         if options["entity"] == "redditor":
@@ -118,11 +111,9 @@ class Command(management.base.BaseCommand):
 
         service = service_cls(
             identifier=identifier,
-            llm_contributor=admin,
-            llm_producer=llm_producer,
-            nlp_contributor=admin,
-            nlp_producer=nlp_producer,
-            producer_settings=settings.DEFAULT_PRODUCER_SETTINGS,
+            contributor=admin,
+            llm=llm,
+            llm_providers_settings=settings.DEFAULT_LLM_PROVIDERS_SETTINGS,
             submitter=admin,
             env=env,
         )

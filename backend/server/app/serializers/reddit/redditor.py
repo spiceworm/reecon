@@ -8,7 +8,7 @@ from reecon.serializers import (
     UnprocessableRedditorSerializer,
 )
 
-from ..producer import ProducerSettingsSerializer
+from ..llm import LlmProvidersSettingsSerializer
 
 
 __all__ = (
@@ -30,15 +30,13 @@ class PendingRedditorSerializer(serializers.Serializer):
 
 class RedditorContextQueryCreateRequestSerializer(serializers.Serializer):
     llm_name = serializers.ChoiceField(choices=[])
-    nlp_name = serializers.ChoiceField(choices=[])
-    producer_settings = ProducerSettingsSerializer()
+    llm_providers_settings = LlmProvidersSettingsSerializer()
     prompt = serializers.CharField()
     username = serializers.CharField()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["llm_name"].choices = util.producer.get_llm_choices()
-        self.fields["nlp_name"].choices = util.producer.get_nlp_choices()
+        self.fields["llm_name"].choices = util.fields.get_llm_choices()
 
 
 class RedditorContextQueryCreateResponseSerializer(serializers.Serializer):
@@ -64,7 +62,7 @@ class RedditorDataRequestSerializer(serializers.Serializer):
         child=serializers.CharField(),
         required=True,
     )
-    producer_settings = ProducerSettingsSerializer(
+    llm_providers_settings = LlmProvidersSettingsSerializer(
         required=True,
     )
 

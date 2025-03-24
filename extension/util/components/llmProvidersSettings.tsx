@@ -7,7 +7,7 @@ import { useStorage } from "@plasmohq/storage/dist/hook"
 import * as constants from "~util/constants"
 import * as storage from "~util/storage"
 
-const ProducerSettingsApiKeyInput = ({ name, apiKeyStorageKey, apiKeyValidatorFunc }) => {
+const LlmProvidersSettingsApiKeyInput = ({ name, apiKeyStorageKey, apiKeyValidatorFunc }) => {
     const [showKeyValidationError, setShowKeyValidationError] = useState(false)
     const [apiKey, _, { setRenderValue, setStoreValue }] = useStorage<string>(
         {
@@ -46,8 +46,8 @@ const ProducerSettingsApiKeyInput = ({ name, apiKeyStorageKey, apiKeyValidatorFu
     )
 }
 
-export const ProducerSettingsInputs = () => {
-    const producerSettings = [
+export const LlmProvidersSettingsInputs = () => {
+    const llmProvidersSettings = [
         {
             name: "OpenAI",
             apiKeyStorageKey: constants.OPENAI_API_KEY,
@@ -66,13 +66,13 @@ export const ProducerSettingsInputs = () => {
 
     return (
         <>
-            {producerSettings.map((producerSetting) => {
+            {llmProvidersSettings.map((settings) => {
                 return (
-                    <ProducerSettingsApiKeyInput
-                        key={producerSetting.name}
-                        name={producerSetting.name}
-                        apiKeyStorageKey={producerSetting.apiKeyStorageKey}
-                        apiKeyValidatorFunc={producerSetting.apiKeyValidatorFunc}
+                    <LlmProvidersSettingsApiKeyInput
+                        key={settings.name}
+                        name={settings.name}
+                        apiKeyStorageKey={settings.apiKeyStorageKey}
+                        apiKeyValidatorFunc={settings.apiKeyValidatorFunc}
                     />
                 )
             })}

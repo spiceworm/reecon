@@ -10,22 +10,23 @@ import * as storage from "~util/storage"
 import type * as types from "~util/types"
 
 export const TabsNavigation = () => {
-    const [producerSettings] = useStorage<types.ProducerSettings>({ instance: storage.extLocalStorage, key: constants.PRODUCER_SETTINGS }, (v) =>
-        v === undefined ? constants.defaultProducerSettings : v
+    const [llmProvidersSettings] = useStorage<types.LlmProvidersSettings>(
+        { instance: storage.extLocalStorage, key: constants.LLM_PROVIDERS_SETTINGS },
+        (v) => (v === undefined ? constants.defaultLlmProvidersSettings : v)
     )
 
-    const routeMatch = useRouteMatch(["/producer-settings", "/debug", "/profile", "/content-filters", "/context-query"])
+    const routeMatch = useRouteMatch(["/llm-providers-settings", "/debug", "/profile", "/content-filters", "/context-query"])
     const currentTab = routeMatch?.pattern?.path
 
-    const producerApiKeyMissing = producerSettings.openai.api_key.length === 0
+    const apiKeyMissing = llmProvidersSettings.openai.api_key.length === 0
 
     return (
         <Tabs value={currentTab} sx={{ borderBottom: 1, borderColor: "divider" }} variant="fullWidth">
-            <Tab component={Link} label="Producer Settings" to={"/producer-settings"} value={"/producer-settings"} />
+            <Tab component={Link} label="LLM Providers Settings" to={"/llm-providers-settings"} value={"/llm-providers-settings"} />
             <Tab component={Link} label="Debug" to={"/debug"} value={"/debug"} />
             <Tab component={Link} label="Profile" to={"/profile"} value={"/profile"} />
-            <Tab component={Link} disabled={producerApiKeyMissing} label="Content Filters" to={"/content-filters"} value={"/content-filters"} />
-            <Tab component={Link} disabled={producerApiKeyMissing} label="Context Query" to={"/context-query"} value={"/context-query"} />
+            <Tab component={Link} disabled={apiKeyMissing} label="Content Filters" to={"/content-filters"} value={"/content-filters"} />
+            <Tab component={Link} disabled={apiKeyMissing} label="Context Query" to={"/context-query"} value={"/context-query"} />
         </Tabs>
     )
 }

@@ -61,7 +61,7 @@ export const init = async (): Promise<void> => {
         [constants.THREAD_DATA_PROCESSING_ENABLED]: false,
 
         [constants.OPENAI_API_KEY]: "",
-        [constants.PRODUCER_SETTINGS]: constants.defaultProducerSettings
+        [constants.LLM_PROVIDERS_SETTINGS]: constants.defaultLlmProvidersSettings
     })
 }
 
@@ -92,8 +92,8 @@ export const getDisableExtension = async (): Promise<boolean> => {
     return get<boolean>(constants.DISABLE_EXTENSION)
 }
 
-export const getProducerSettings = async (): Promise<types.ProducerSettings> => {
-    return get<types.ProducerSettings>(constants.PRODUCER_SETTINGS)
+export const getLlmProvidersSettings = async (): Promise<types.LlmProvidersSettings> => {
+    return get<types.LlmProvidersSettings>(constants.LLM_PROVIDERS_SETTINGS)
 }
 
 export const getRedditorDataProcessingEnabled = async (): Promise<boolean> => {
@@ -158,17 +158,17 @@ const setAllStatusMessages = async (messages: (types.ApiStatusMessage | types.Ex
 export const shouldExecuteContentScript = async (): Promise<boolean> => {
     const auth = await getAuth()
     const disableExtension = await getDisableExtension()
-    const producerSettings = await getProducerSettings()
+    const llmProvidersSettings = await getLlmProvidersSettings()
 
-    // NOTE: producer API key checks are currently hardcoded to only care about the openai key for now
-    let producerApiKeyIsUsable = false
+    // NOTE: API key checks are currently hardcoded to only care about the openai key for now
+    let apiKeyIsUsable = false
 
-    const producerApiKeysExist = producerSettings.openai.api_key.length > 0
-    if (producerApiKeysExist) {
-        producerApiKeyIsUsable = await backgroundMessage.openAiApiKeyIsUsable(producerSettings.openai.api_key)
+    const apiKeysExist = llmProvidersSettings.openai.api_key.length > 0
+    if (apiKeysExist) {
+        apiKeyIsUsable = await backgroundMessage.openAiApiKeyIsUsable(llmProvidersSettings.openai.api_key)
     }
 
-    return auth !== null && !disableExtension && producerApiKeyIsUsable
+    return auth !== null && !disableExtension && apiKeyIsUsable
 }
 
 extLocalStorage.watch({
@@ -249,9 +249,9 @@ extLocalStorage.watch({
     [constants.OPENAI_API_KEY]: async (storageChange) => {
         const { oldValue, newValue } = storageChange
 
-        let producerSettings = await getProducerSettings()
-        producerSettings.openai.api_key = newValue
-        await set(constants.PRODUCER_SETTINGS, producerSettings)
+        let llmProvidersSettings = await getLlmProvidersSettings()
+        llmProvidersSettings.openai.api_key = newValue
+        await set(constants.LLM_PROVIDERS_SETTINGS, llmProvidersSettings)
 
         await setExtensionStatusMessage("missingOpenAiApiKey", newValue.length === 0)
     }

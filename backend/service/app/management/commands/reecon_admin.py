@@ -61,9 +61,7 @@ def link_reddit_username(*, reddit_username: str, signed_reecon_username: str) -
             user.profile.save()
             return f"Successfully linked reddit username {reddit_username} to reecon account for {reecon_username}."
         else:
-            return unsuccessful_action(
-                f"Unable to verify reecon username signature. Do not modify the body of the message sent to {settings.REDDIT_BOT_USERNAME}."
-            )
+            return unsuccessful_action(f"Unable to verify reecon username signature. Do not modify the body of the message sent to {settings.REDDIT_BOT_USERNAME}.")
 
 
 def reset_reecon_password() -> str:
@@ -85,9 +83,7 @@ def unlink_reddit_username(*, reddit_username: str, signed_reecon_username: str)
                 user.profile.save()
                 return f"Successfully unlinked reddit username {reddit_username} from reecon account for {reecon_username}."
             else:
-                return unsuccessful_action(
-                    f"Unable to verify reecon username signature. Do not modify the body of the message sent to {settings.REDDIT_BOT_USERNAME}."
-                )
+                return unsuccessful_action(f"Unable to verify reecon username signature. Do not modify the body of the message sent to {settings.REDDIT_BOT_USERNAME}.")
         return unsuccessful_action(f"No reddit username is currently linked to {reecon_username}.")
 
 

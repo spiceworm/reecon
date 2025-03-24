@@ -4,7 +4,10 @@ import * as api from "~util/api"
 import * as cache from "~util/storageCache"
 import type * as types from "~util/types"
 
-const processRedditorData = async (producerSettings: types.ProducerSettings, usernames: string[]): Promise<types.SubmitRedditorDataResponse> => {
+const processRedditorData = async (
+    llmProvidersSettings: types.LlmProvidersSettings,
+    usernames: string[]
+): Promise<types.SubmitRedditorDataResponse> => {
     let allCachedIgnored = await cache.getIgnoredRedditors()
     const cachedIgnored = usernames.map((username) => allCachedIgnored[username]).filter((obj) => obj !== undefined)
 
@@ -26,7 +29,7 @@ const processRedditorData = async (producerSettings: types.ProducerSettings, use
 
     if (usernamesToProcess.size > 0) {
         let response: types.SubmitRedditorDataResponse = await api.authPost("/api/v1/reddit/redditor/data/", {
-            producer_settings: producerSettings,
+            llm_providers_settings: llmProvidersSettings,
             usernames: [...usernamesToProcess]
         })
 
@@ -91,7 +94,7 @@ const processRedditorData = async (producerSettings: types.ProducerSettings, use
     }
 }
 
-const processThreadData = async (producerSettings: types.ProducerSettings, urlPaths: string[]): Promise<types.SubmitThreadDataResponse> => {
+const processThreadData = async (llmProvidersSettings: types.LlmProvidersSettings, urlPaths: string[]): Promise<types.SubmitThreadDataResponse> => {
     let allCachedPending = await cache.getPendingThreads()
     let cachedPending = urlPaths.map((urlPath) => allCachedPending[urlPath]).filter((obj) => obj !== undefined)
 
@@ -109,7 +112,7 @@ const processThreadData = async (producerSettings: types.ProducerSettings, urlPa
 
     if (urlPathsToProcess.size > 0) {
         let response: types.SubmitThreadDataResponse = await api.authPost("/api/v1/reddit/thread/data/", {
-            producer_settings: producerSettings,
+            llm_providers_settings: llmProvidersSettings,
             paths: [...urlPathsToProcess]
         })
 
@@ -165,15 +168,15 @@ const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
 
     if (action === "processRedditorData") {
         const kwargs = req.body.kwargs
-        const producerSettings: types.ProducerSettings = kwargs.producerSettings
+        const llmProvidersSettings: types.LlmProvidersSettings = kwargs.llmProvidersSettings
         const usernames: string[] = kwargs.usernames
-        const message: types.SubmitRedditorDataResponse = await processRedditorData(producerSettings, usernames)
+        const message: types.SubmitRedditorDataResponse = await processRedditorData(llmProvidersSettings, usernames)
         res.send({ message })
     } else if (action === "processThreadData") {
         const kwargs = req.body.kwargs
-        const producerSettings: types.ProducerSettings = kwargs.producerSettings
+        const llmProvidersSettings: types.LlmProvidersSettings = kwargs.llmProvidersSettings
         const urlPaths: string[] = kwargs.urlPaths
-        const message: types.SubmitThreadDataResponse = await processThreadData(producerSettings, urlPaths)
+        const message: types.SubmitThreadDataResponse = await processThreadData(llmProvidersSettings, urlPaths)
         res.send({ message })
     } else {
         console.error(`Unhandled message with action: ${action}`)

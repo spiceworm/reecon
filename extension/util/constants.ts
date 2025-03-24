@@ -33,7 +33,7 @@ export const THREAD_CONTEXT_QUERY_PROCESSING_ENABLED = "_threadContextQueryProce
 export const THREAD_DATA_PROCESSING_ENABLED = "_threadDataProcessingEnabled"
 
 export const OPENAI_API_KEY = "_openaiApiKey"
-export const PRODUCER_SETTINGS = "_producerSettings"
+export const LLM_PROVIDERS_SETTINGS = "llmProvidersSettings"
 
 export const CACHED_PENDING_REDDITORS = "_cachedPendingRedditors"
 export const CACHED_PROCESSED_REDDITORS = "_cachedProcessedRedditors"
@@ -67,7 +67,7 @@ export const defaultThreadFilter: types.ThreadFilter = {
     uuid: crypto.randomUUID()
 }
 
-export const defaultProducerSettings: types.ProducerSettings = {
+export const defaultLlmProvidersSettings: types.LlmProvidersSettings = {
     openai: {
         api_key: ""
     }

@@ -33,12 +33,12 @@ export const ContextQueryForm = () => {
         { instance: storage.extLocalStorage, key: constants.THREAD_CONTEXT_QUERY_PROCESSING_ENABLED },
         (v) => (v === undefined ? false : v)
     )
-    const [producerSettings] = useStorage<types.ProducerSettings>(
+    const [llmProvidersSettings] = useStorage<types.LlmProvidersSettings>(
         {
             instance: storage.extLocalStorage,
-            key: constants.PRODUCER_SETTINGS
+            key: constants.LLM_PROVIDERS_SETTINGS
         },
-        (v) => (v === undefined ? constants.defaultProducerSettings : v)
+        (v) => (v === undefined ? constants.defaultLlmProvidersSettings : v)
     )
     const [jobId, setJobId] = useState("")
 
@@ -49,13 +49,10 @@ export const ContextQueryForm = () => {
 
     const [contextQueryingDisabled, setContextQueryingDisabled] = useState(false)
 
-    const [producerDefaults, setProducerDefaults] = useState({} as types.ProducerDefaultsResponse)
+    const [llmDefaults, setLlmDefaults] = useState({} as types.LlmDefaultsResponse)
 
     const [llmSelection, setLlmSelection] = useState("")
-    const [llmProducers, setLlmProducers] = useState<types.Producer[]>([])
-
-    const [nlpSelection, setNlpSelection] = useState("")
-    const [nlpProducers, setNlpProducers] = useState<types.Producer[]>([])
+    const [llms, setLlms] = useState<types.LLM[]>([])
 
     const [contextSelection, setContextSelection] = useState("")
     const [contextInputValue, setContextInputValue] = useState("")
@@ -70,32 +67,21 @@ export const ContextQueryForm = () => {
     const [formErrors, setFormErrors] = useState([])
     const [requestErrors, setRequestErrors] = useState([])
 
-    useSWR("/api/v1/producers/defaults", api.authGet, {
+    useSWR("/api/v1/llm/defaults", api.authGet, {
         onError: async (error, key, config) => {
             setRequestErrors(requestErrors.concat(JSON.parse(error.message).detail))
         },
-        onSuccess: async (data: types.ProducerDefaultsResponse, key, config) => {
-            setLlmSelection(data.llm.name)
-            setNlpSelection(data.nlp.name)
-            setProducerDefaults(data)
+        onSuccess: async (data: types.LlmDefaultsResponse, key, config) => {
+            setLlmDefaults(data)
         }
     })
 
-    useSWR(llmProducers.length === 0 ? "/api/v1/producers/llm/" : null, api.authGet, {
+    useSWR(llms.length === 0 ? "/api/v1/llm/" : null, api.authGet, {
         onError: async (error, key, config) => {
             setRequestErrors(requestErrors.concat(JSON.parse(error.message).detail))
         },
-        onSuccess: async (data: types.Producer[], key, config) => {
-            setLlmProducers(data)
-        }
-    })
-
-    useSWR(nlpProducers.length === 0 ? "/api/v1/producers/nlp/" : null, api.authGet, {
-        onError: async (error, key, config) => {
-            setRequestErrors(requestErrors.concat(JSON.parse(error.message).detail))
-        },
-        onSuccess: async (data: types.Producer[], key, config) => {
-            setNlpProducers(data)
+        onSuccess: async (data: types.LLM[], key, config) => {
+            setLlms(data)
         }
     })
 
@@ -143,7 +129,7 @@ export const ContextQueryForm = () => {
         setContextSelection(contextSelection)
 
         if (contextSelection === "Redditor") {
-            setPromptInputValue(producerDefaults.prompts.process_redditor_context_query)
+            setPromptInputValue(llmDefaults.prompts.process_redditor_context_query)
             setContextQueryingDisabled(!redditorProcessingEnabled)
             setContextInputPlaceholder("Redditor Username")
 
@@ -152,7 +138,7 @@ export const ContextQueryForm = () => {
                 setSnackBarVisible(true)
             }
         } else {
-            setPromptInputValue(producerDefaults.prompts.process_thread_context_query)
+            setPromptInputValue(llmDefaults.prompts.process_thread_context_query)
             setContextQueryingDisabled(!threadProcessingEnabled)
             setContextInputPlaceholder("Thread URL")
 
@@ -168,15 +154,14 @@ export const ContextQueryForm = () => {
     }
 
     const onClickHandler = async () => {
-        const producerApiKeyIsUsable = await backgroundMessage.openAiApiKeyIsUsable(producerSettings.openai.api_key)
+        const apiKeyIsUsable = await backgroundMessage.openAiApiKeyIsUsable(llmProvidersSettings.openai.api_key)
 
-        if (producerApiKeyIsUsable) {
+        if (apiKeyIsUsable) {
             if (contextSelection === "Redditor") {
                 setApiEndpoint("/api/v1/reddit/redditor/context-query/")
                 setPostBody({
                     llm_name: llmSelection,
-                    nlp_name: nlpSelection,
-                    producer_settings: producerSettings,
+                    llm_providers_settings: llmProvidersSettings,
                     prompt: promptInputValue,
                     username: contextInputValue
                 })
@@ -184,9 +169,8 @@ export const ContextQueryForm = () => {
                 setApiEndpoint("/api/v1/reddit/thread/context-query/")
                 setPostBody({
                     llm_name: llmSelection,
-                    nlp_name: nlpSelection,
                     path: new URL(contextInputValue).pathname,
-                    producer_settings: producerSettings,
+                    llm_providers_settings: llmProvidersSettings,
                     prompt: promptInputValue
                 })
             }
@@ -227,11 +211,7 @@ export const ContextQueryForm = () => {
                                 onChange={onLlmChangeHandler}
                                 required={true}
                                 variant={"outlined"}>
-                                {llmProducers
-                                    ? llmProducers.map((llmProducer: types.Producer) => {
-                                          return <MenuItem value={llmProducer.name}>{llmProducer.name}</MenuItem>
-                                      })
-                                    : null}
+                                {llms ? llms.map((llm: types.LLM) => <MenuItem value={llm.name}>{llm.name}</MenuItem>) : null}
                             </Select>
                         </FormGroup>
                     </Grid>

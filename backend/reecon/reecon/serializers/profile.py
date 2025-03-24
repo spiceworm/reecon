@@ -1,8 +1,7 @@
 from rest_framework import serializers
 
-from reecon.models import Profile
-
 from .user import UserSerializer
+from ..models import Profile
 
 
 __all__ = ("ProfileSerializer",)

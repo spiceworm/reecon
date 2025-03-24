@@ -75,16 +75,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 def get_llm_choices():
     # Importing a model cannot happen at the top of the file.
-    from reecon.util.producer import get_llm_choices
+    from reecon.util.fields import get_llm_choices
 
     return get_llm_choices()
-
-
-def get_nlp_choices():
-    # Importing a model cannot happen at the top of the file.
-    from reecon.util.producer import get_nlp_choices
-
-    return get_nlp_choices()
 
 
 CONSTANCE_BACKEND = "constance.backends.redisd.RedisBackend"
@@ -102,20 +95,10 @@ CONSTANCE_ADDITIONAL_FIELDS = {
             "choices": get_llm_choices,
         },
     ],
-    "nlp_select": [
-        "django.forms.fields.ChoiceField",
-        {
-            "choices": get_nlp_choices,
-        },
-    ],
 }
 
-DISREGARD_EXTERNAL_CONTENT_PROMPT = (
-    "Disregard lengthy content that is appears to be copy and pasted from external sources."
-)
-REDDITOR_BASE_PROMPT = (
-    "The following pipe delimited messages are unrelated submissions posted by a person ordered from newest to oldest."
-)
+DISREGARD_EXTERNAL_CONTENT_PROMPT = "Disregard lengthy content that is appears to be copy and pasted from external sources."
+REDDITOR_BASE_PROMPT = "The following pipe delimited messages are unrelated submissions posted by a person ordered from newest to oldest."
 THREAD_BASE_PROMPT = "The following pipe delimited messages are unrelated submissions posted by multiple people."
 
 CONSTANCE_CONFIG = collections.OrderedDict(
@@ -145,21 +128,16 @@ CONSTANCE_CONFIG = collections.OrderedDict(
             "Large language model to use for prompts. Only OpenAI models are currently supported - https://platform.openai.com/docs/models/",
             "llm_select",
         ),
-        "NLP_NAME": (
-            "textblob",
-            "Natural language processing package to use. textblob currently only supported - "
-            "https://textblob.readthedocs.io/en/dev/",
-            "nlp_select",
-        ),
         "REDDITOR_LLM_CONTEXT_QUERY_PROMPT": (
             REDDITOR_BASE_PROMPT,
             "Default prompt used to populate the extension's redditor context query form.",
         ),
         "REDDITOR_LLM_DATA_PROMPT": (
             f"{REDDITOR_BASE_PROMPT} {DISREGARD_EXTERNAL_CONTENT_PROMPT} Determine the age, a list of interests ordered "
-            f"from most to least relevant, and the IQ of the person based on their writing. Generate a summary describing "
-            f"the author, with additional insights based on their submissions, using 500 completion_tokens or less. Be as "
-            f"objective as possible.",
+            f"from most to least relevant, the IQ of the person based on their writing, a sentiment polarity value within "
+            f"the range [-1.0, 1.0], and a sentiment subjectivity value within the range [0.0, 1.0] where 0.0 is very "
+            f"objective and 1.0 is very subjective. Generate a summary describing the author, with additional insights "
+            f"based on their submissions, using 500 completion_tokens or less. Be as objective as possible.",
             "Prompt sent to the LLM for redditor data processing.",
         ),
         "THREAD_LLM_CONTEXT_QUERY_PROMPT": (
@@ -167,15 +145,16 @@ CONSTANCE_CONFIG = collections.OrderedDict(
             "Default prompt used to populate the extension's thread context query form.",
         ),
         "THREAD_LLM_DATA_PROMPT": (
-            f"{THREAD_BASE_PROMPT} Determine a list of keywords that describe the discussion ordered from most to least "
-            f"relevant. Generate a summary of the discussion, with additional insights based on submissions, using 500 "
-            f"completion_tokens or less. Be as objective as possible.",
+            f"{THREAD_BASE_PROMPT} Generate a list of keywords that describe the discussion ordered from most to least "
+            f"relevant, a sentiment polarity value within the range [-1.0, 1.0], and a sentiment subjectivity value within "
+            f"the range [0.0, 1.0] where 0.0 is very objective and 1.0 is very subjective. Generate a summary of the "
+            f"discussion, with additional insights based on submissions, using 500 completion_tokens or less. Be as "
+            f"objective as possible.",
             "Prompt sent to the LLM for thread data processing.",
         ),
         "LLM_MAX_CONTEXT_WINDOW_FOR_INPUTS": (
             0.8,
-            "The maximum percentage (expressed as a decimal from 0 to 1) of the LLM context window tokens "
-            "that can be used for inputs.",
+            "The maximum percentage (expressed as a decimal from 0 to 1) of the LLM context window tokens " "that can be used for inputs.",
         ),
         "SUBMISSION_FILTER_MAX_LENGTH": (
             3000,
@@ -185,8 +164,7 @@ CONSTANCE_CONFIG = collections.OrderedDict(
         ),
         "SUBMISSION_FILTER_MIN_LENGTH": (
             120,
-            "The minimum number of characters required for the text of a single submission to be included in "
-            "processing. This is the length of the text after filtering.",
+            "The minimum number of characters required for the text of a single submission to be included in " "processing. This is the length of the text after filtering.",
         ),
         "REDDITOR_MIN_SUBMISSIONS": (
             5,

@@ -48,8 +48,7 @@ class RedditorContextQueryViewSet(GenericViewSet):
         submit_serializer.is_valid(raise_exception=True)
 
         llm_name = submit_serializer.validated_data["llm_name"]
-        nlp_name = submit_serializer.validated_data["nlp_name"]
-        producer_settings = submit_serializer.validated_data["producer_settings"]
+        llm_providers_settings = submit_serializer.validated_data["llm_providers_settings"]
         prompt = submit_serializer.validated_data["prompt"]
         username = submit_serializer.validated_data["username"]
 
@@ -67,13 +66,10 @@ class RedditorContextQueryViewSet(GenericViewSet):
                 "app.worker.process_redditor_context_query",  # this function is defined in the worker app
                 kwargs={
                     "redditor_username": username,
-                    "llm_contributor": request.user,
-                    "llm_context_query_producer": models.Producer.objects.get(name=llm_name),
-                    "llm_data_producer": models.Producer.objects.get(name=config.LLM_NAME),
-                    "nlp_contributor": get_user_model().objects.get(username="admin"),
-                    "nlp_context_query_producer": models.Producer.objects.get(name=nlp_name),
-                    "nlp_data_producer": models.Producer.objects.get(name=config.NLP_NAME),
-                    "producer_settings": producer_settings,
+                    "contributor": request.user,
+                    "context_query_llm": models.LLM.objects.get(name=llm_name),
+                    "data_llm": models.LLM.objects.get(name=config.LLM_NAME),
+                    "llm_providers_settings": llm_providers_settings,
                     "submitter": request.user,
                     "env": env,
                 },
@@ -134,7 +130,7 @@ class RedditorDataViewSet(GenericViewSet):
     def create(self, request: Request):
         submit_serializer = serializers.RedditorDataRequestSerializer(data=request.data)
         submit_serializer.is_valid(raise_exception=True)
-        producer_settings = submit_serializer.validated_data["producer_settings"]
+        llm_providers_settings = submit_serializer.validated_data["llm_providers_settings"]
         usernames = set(submit_serializer.validated_data["usernames"])
         log.debug("Received %s", usernames)
 
@@ -156,15 +152,11 @@ class RedditorDataViewSet(GenericViewSet):
         ignored_redditors = models.IgnoredRedditor.objects.filter(username__in=usernames)
         ignored_usernames = set(ignored_redditors.values_list("username", flat=True))
 
-        pending_usernames = (
-            set(usernames) - known_usernames - fresh_usernames - unprocessable_usernames - ignored_usernames
-        )
+        pending_usernames = set(usernames) - known_usernames - fresh_usernames - unprocessable_usernames - ignored_usernames
         pending_redditors = []
 
         if config.REDDITOR_DATA_PROCESSING_ENABLED:
-            llm_producer = models.Producer.objects.get(name=config.LLM_NAME)
-            nlp_contributor = get_user_model().objects.get(username="admin")
-            nlp_producer = models.Producer.objects.get(name=config.NLP_NAME)
+            llm = models.LLM.objects.get(name=config.LLM_NAME)
             env = schemas.get_worker_env()
 
             job_queue = django_rq.get_queue("default")
@@ -179,11 +171,9 @@ class RedditorDataViewSet(GenericViewSet):
                         "app.worker.process_redditor_data",  # this function is defined in the worker app
                         kwargs={
                             "redditor_username": redditor_username,
-                            "llm_contributor": request.user,
-                            "llm_producer": llm_producer,
-                            "nlp_contributor": nlp_contributor,
-                            "nlp_producer": nlp_producer,
-                            "producer_settings": producer_settings,
+                            "contributor": request.user,
+                            "llm": llm,
+                            "llm_providers_settings": llm_providers_settings,
                             "submitter": request.user,
                             "env": env,
                         },
@@ -217,8 +207,7 @@ class ThreadContextQueryViewSet(GenericViewSet):
         submit_serializer.is_valid(raise_exception=True)
 
         llm_name = submit_serializer.validated_data["llm_name"]
-        nlp_name = submit_serializer.validated_data["nlp_name"]
-        producer_settings = submit_serializer.validated_data["producer_settings"]
+        llm_providers_settings = submit_serializer.validated_data["llm_providers_settings"]
         prompt = submit_serializer.validated_data["prompt"]
         url_path = submit_serializer.validated_data["path"]
 
@@ -236,13 +225,10 @@ class ThreadContextQueryViewSet(GenericViewSet):
                 "app.worker.process_thread_context_query",  # this function is defined in the worker app
                 kwargs={
                     "thread_url": f"https://reddit.com{url_path}",
-                    "llm_contributor": request.user,
-                    "llm_context_query_producer": models.Producer.objects.get(name=llm_name),
-                    "llm_data_producer": models.Producer.objects.get(name=config.LLM_NAME),
-                    "nlp_contributor": get_user_model().objects.get(username="admin"),
-                    "nlp_context_query_producer": models.Producer.objects.get(name=nlp_name),
-                    "nlp_data_producer": models.Producer.objects.get(name=config.NLP_NAME),
-                    "producer_settings": producer_settings,
+                    "contributor": request.user,
+                    "context_query_llm": models.LLM.objects.get(name=llm_name),
+                    "data_llm": models.LLM.objects.get(name=config.LLM_NAME),
+                    "llm_providers_settings": llm_providers_settings,
                     "submitter": request.user,
                     "env": env,
                 },
@@ -303,7 +289,7 @@ class ThreadDataViewSet(GenericViewSet):
     def create(self, request: Request):
         submit_serializer = self.get_serializer(data=request.data)
         submit_serializer.is_valid(raise_exception=True)
-        producer_settings = submit_serializer.validated_data["producer_settings"]
+        llm_providers_settings = submit_serializer.validated_data["llm_providers_settings"]
         url_paths = set(submit_serializer.validated_data["paths"])
         log.debug("Received %s", url_paths)
         thread_urls = [f"https://reddit.com{path}" for path in url_paths]
@@ -327,9 +313,7 @@ class ThreadDataViewSet(GenericViewSet):
         pending_threads = []
 
         if config.THREAD_DATA_PROCESSING_ENABLED:
-            llm_producer = models.Producer.objects.get(name=config.LLM_NAME)
-            nlp_contributor = get_user_model().objects.get(username="admin")
-            nlp_producer = models.Producer.objects.get(name=config.NLP_NAME)
+            llm = models.LLM.objects.get(name=config.LLM_NAME)
             env = schemas.get_worker_env()
 
             job_queue = django_rq.get_queue("default")
@@ -351,11 +335,9 @@ class ThreadDataViewSet(GenericViewSet):
                         "app.worker.process_thread_data",  # this function is defined in the worker app
                         kwargs={
                             "thread_url": thread_url,
-                            "llm_contributor": request.user,
-                            "llm_producer": llm_producer,
-                            "nlp_contributor": nlp_contributor,
-                            "nlp_producer": nlp_producer,
-                            "producer_settings": producer_settings,
+                            "contributor": request.user,
+                            "llm": llm,
+                            "llm_providers_settings": llm_providers_settings,
                             "submitter": request.user,
                             "env": env,
                         },
