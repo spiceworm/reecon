@@ -12,6 +12,8 @@ from tenacity import (
     wait_random_exponential,
 )
 
+from .. import types
+
 
 log = logging.getLogger("reecon.services.llm_provider")
 
@@ -34,7 +36,7 @@ class LlmProviderService:
         stop=stop_after_attempt(10),
         wait=wait_random_exponential(min=1, max=60),
     )
-    def generate_data(self, *, inputs: List[str], llm_name: str, llm_provider_name: str, llm_providers_settings: dict, prompt: str) -> pydantic.BaseModel:
+    def generate_data(self, *, inputs: List[str], llm_name: str, llm_provider_name: str, llm_providers_settings: types.LlmProvidersSettings, prompt: str) -> pydantic.BaseModel:
         api_key = llm_providers_settings["openai"]["api_key"]
         api = openai.OpenAI(api_key=api_key)
         chat_completion = api.beta.chat.completions.parse(

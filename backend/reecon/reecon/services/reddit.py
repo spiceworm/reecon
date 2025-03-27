@@ -31,6 +31,7 @@ from .. import (
     exceptions,
     models,
     schemas,
+    types,
     util,
 )
 
@@ -52,7 +53,7 @@ class _RedditService(abc.ABC):
         identifier: str,
         contributor: models.AppUser,
         llm: models.LLM,
-        llm_providers_settings: dict,
+        llm_providers_settings: types.LlmProvidersSettings,
         submitter: models.AppUser,
         env: schemas.WorkerEnv,
     ):

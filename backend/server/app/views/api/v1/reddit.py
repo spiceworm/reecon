@@ -3,7 +3,6 @@ from urllib.parse import urlparse
 
 import rq.exceptions
 from constance import config
-from django.contrib.auth import get_user_model
 from django.utils import timezone
 import django_rq
 from drf_spectacular.utils import (
@@ -20,6 +19,7 @@ from rq.job import Job
 from reecon import (
     models,
     schemas,
+    types,
 )
 
 from .... import serializers
@@ -48,7 +48,7 @@ class RedditorContextQueryViewSet(GenericViewSet):
         submit_serializer.is_valid(raise_exception=True)
 
         llm_name = submit_serializer.validated_data["llm_name"]
-        llm_providers_settings = submit_serializer.validated_data["llm_providers_settings"]
+        llm_providers_settings: types.LlmProvidersSettings = submit_serializer.validated_data["llm_providers_settings"]
         prompt = submit_serializer.validated_data["prompt"]
         username = submit_serializer.validated_data["username"]
 
@@ -130,7 +130,7 @@ class RedditorDataViewSet(GenericViewSet):
     def create(self, request: Request):
         submit_serializer = serializers.RedditorDataRequestSerializer(data=request.data)
         submit_serializer.is_valid(raise_exception=True)
-        llm_providers_settings = submit_serializer.validated_data["llm_providers_settings"]
+        llm_providers_settings: types.LlmProvidersSettings = submit_serializer.validated_data["llm_providers_settings"]
         usernames = set(submit_serializer.validated_data["usernames"])
         log.debug("Received %s", usernames)
 
@@ -207,7 +207,7 @@ class ThreadContextQueryViewSet(GenericViewSet):
         submit_serializer.is_valid(raise_exception=True)
 
         llm_name = submit_serializer.validated_data["llm_name"]
-        llm_providers_settings = submit_serializer.validated_data["llm_providers_settings"]
+        llm_providers_settings: types.LlmProvidersSettings = submit_serializer.validated_data["llm_providers_settings"]
         prompt = submit_serializer.validated_data["prompt"]
         url_path = submit_serializer.validated_data["path"]
 
@@ -289,7 +289,7 @@ class ThreadDataViewSet(GenericViewSet):
     def create(self, request: Request):
         submit_serializer = self.get_serializer(data=request.data)
         submit_serializer.is_valid(raise_exception=True)
-        llm_providers_settings = submit_serializer.validated_data["llm_providers_settings"]
+        llm_providers_settings: types.LlmProvidersSettings = submit_serializer.validated_data["llm_providers_settings"]
         url_paths = set(submit_serializer.validated_data["paths"])
         log.debug("Received %s", url_paths)
         thread_urls = [f"https://reddit.com{path}" for path in url_paths]

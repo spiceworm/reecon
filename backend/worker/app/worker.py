@@ -5,6 +5,7 @@ from reecon import (
     models,
     schemas,
     services,
+    types,
 )
 
 
@@ -24,7 +25,7 @@ def _ensure_redditor_context_query_processable(
     redditor_username: str,
     contributor: models.AppUser,
     llm: models.LLM,
-    llm_providers_settings: dict,
+    llm_providers_settings: types.LlmProvidersSettings,
     submitter: models.AppUser,
     env: schemas.WorkerEnv,
 ) -> models.UnprocessableRedditorContextQuery | None:
@@ -71,7 +72,7 @@ def _ensure_redditor_data(
     redditor_username: str,
     contributor: models.AppUser,
     llm: models.LLM,
-    llm_providers_settings: dict,
+    llm_providers_settings: types.LlmProvidersSettings,
     submitter: models.AppUser,
     env: schemas.WorkerEnv,
 ) -> models.RedditorData | models.UnprocessableRedditor:
@@ -100,7 +101,7 @@ def _ensure_thread_context_query_processable(
     thread_url: str,
     contributor: models.AppUser,
     llm: models.LLM,
-    llm_providers_settings: dict,
+    llm_providers_settings: types.LlmProvidersSettings,
     submitter: models.AppUser,
     env: schemas.WorkerEnv,
 ) -> models.UnprocessableThreadContextQuery | None:
@@ -138,7 +139,7 @@ def _ensure_thread_data(
     thread_url: str,
     contributor: models.AppUser,
     llm: models.LLM,
-    llm_providers_settings: dict,
+    llm_providers_settings: types.LlmProvidersSettings,
     submitter: models.AppUser,
     env: schemas.WorkerEnv,
 ) -> models.ThreadData | models.UnprocessableThread:
@@ -167,7 +168,7 @@ def process_redditor_context_query(
     contributor: models.AppUser,
     context_query_llm: models.LLM,
     data_llm: models.LLM,
-    llm_providers_settings: dict,
+    llm_providers_settings: types.LlmProvidersSettings,
     submitter: models.AppUser,
     env: schemas.WorkerEnv,
 ) -> models.RedditorContextQuery | models.UnprocessableRedditorContextQuery:
@@ -204,7 +205,7 @@ def process_redditor_data(
     redditor_username: str,
     contributor: models.AppUser,
     llm: models.LLM,
-    llm_providers_settings: dict,
+    llm_providers_settings: types.LlmProvidersSettings,
     submitter: models.AppUser,
     env: schemas.WorkerEnv,
 ) -> models.RedditorData | models.UnprocessableRedditor:
@@ -233,7 +234,7 @@ def process_thread_context_query(
     contributor: models.AppUser,
     context_query_llm: models.LLM,
     data_llm: models.LLM,
-    llm_providers_settings: dict,
+    llm_providers_settings: types.LlmProvidersSettings,
     submitter: models.AppUser,
     env: schemas.WorkerEnv,
 ) -> models.ThreadContextQuery | models.UnprocessableThreadContextQuery:
@@ -270,7 +271,7 @@ def process_thread_data(
     thread_url: str,
     contributor: models.AppUser,
     llm: models.LLM,
-    llm_providers_settings: dict,
+    llm_providers_settings: types.LlmProvidersSettings,
     submitter: models.AppUser,
     env: schemas.WorkerEnv,
 ) -> models.ThreadData | models.UnprocessableThread:
