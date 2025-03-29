@@ -92,24 +92,24 @@ class Command(management.base.BaseCommand):
             identifier = options["username"]
 
             if options["service"] == "context-query":
-                service_cls = services.RedditorContextQueryService
+                reddit_service_cls = services.RedditorContextQueryService
                 if options["method"] in ("generate", "create-object"):
                     prompt = input_with_default("prompt: ", env.redditor.llm.prompts.process_context_query)
             else:
                 prompt = env.redditor.llm.prompts.process_data
-                service_cls = services.RedditorDataService
+                reddit_service_cls = services.RedditorDataService
         else:
             identifier = options["url"]
 
             if options["service"] == "context-query":
-                service_cls = services.ThreadContextQueryService
+                reddit_service_cls = services.ThreadContextQueryService
                 if options["method"] in ("generate", "create-object"):
                     prompt = input_with_default("prompt: ", env.thread.llm.prompts.process_context_query)
             else:
                 prompt = env.thread.llm.prompts.process_data
-                service_cls = services.ThreadDataService
+                reddit_service_cls = services.ThreadDataService
 
-        service = service_cls(
+        service = reddit_service_cls(
             identifier=identifier,
             contributor=admin,
             llm=llm,

@@ -16,7 +16,7 @@ def _unmark_element(element, stream=None):
 
 
 # https://stackoverflow.com/a/54923798/4344185
-def strip_markdown(text):
+def strip(text):
     markdown.Markdown.output_formats["plain"] = _unmark_element
     md = markdown.Markdown(output_format="plain")
     md.stripTopLevelTags = False

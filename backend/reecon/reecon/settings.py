@@ -75,9 +75,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 def get_llm_choices():
     # Importing a model cannot happen at the top of the file.
-    from reecon.util.fields import get_llm_choices
+    from reecon import util
 
-    return get_llm_choices()
+    return util.fields.get_llm_choices()
 
 
 CONSTANCE_BACKEND = "constance.backends.redisd.RedisBackend"

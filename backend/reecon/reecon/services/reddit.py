@@ -24,7 +24,6 @@ from tenacity import (
     stop_after_attempt,
     wait_random_exponential,
 )
-import tiktoken
 
 from . import llm_provider
 from .. import (
@@ -46,7 +45,7 @@ __all__ = (
 log = logging.getLogger("reecon.services.reddit")
 
 
-class _RedditService(abc.ABC):
+class RedditBase(abc.ABC):
     def __init__(
         self,
         *,
@@ -60,7 +59,8 @@ class _RedditService(abc.ABC):
         self.identifier = identifier
         self.contributor = contributor
         self.llm = llm
-        self.llm_providers_settings = llm_providers_settings
+        llm_provider_cls = llm_provider.cls_from_name(llm.provider.name)
+        self.llm_provider = llm_provider_cls(api_key=llm_providers_settings[llm.provider.name]["api_key"])
         self.submitter = submitter
         self.env = env
 
@@ -72,40 +72,18 @@ class _RedditService(abc.ABC):
         )
 
     @abc.abstractmethod
-    def get_inputs(self, *args, **kwargs):
+    def get_inputs(self) -> List[str]:
         pass
 
-    def filter_submission(self, *, text: str) -> str:
-        if not text or text == "[deleted]":
-            return ""
-
-        # Remove block quotes as they are someone else's words and we do not want them included in
-        # the responder's submissions.
-        text = util.regex.match_block_quotes.sub("", text)
-
-        # Remove excessive leading and trailing whitespace from each line.
-        text = "\n".join(line.strip() for line in text.splitlines())
-
-        # Strip any existing markdown that is present.
-        retval = util.strip_markdown(text)
-
-        # Do not process submissions that are either too short or too long.
-        if any(
-            [
-                len(retval) < self.env.reddit.submission.min_length,
-                len(retval) > self.env.reddit.submission.max_length,
-            ]
-        ):
-            retval = ""
-
-        return retval
+    def sanitize_submission(self, s: str) -> str:
+        return util.inputs.sanitize(s, min_length=self.env.reddit.submission.min_length, max_length=self.env.reddit.submission.max_length, disallowed_strings=("[deleted]",))
 
     @abc.abstractmethod
     def unprocessable_entity(self, reason: str) -> exceptions.UnprocessableEntityError:
         pass
 
 
-class _RedditorService(_RedditService):
+class RedditorBase(RedditBase):
     @retry(
         before_sleep=before_sleep_log(log, logging.DEBUG),
         reraise=True,
@@ -117,9 +95,7 @@ class _RedditorService(_RedditService):
         submissions: List[str] = []
         praw_redditor: PrawRedditor = self.reddit_client.redditor(name=self.identifier)
 
-        context_window = self.llm.context_window
-        max_input_tokens = int(context_window * self.env.redditor.llm.max_context_window_for_inputs)
-        encoding = tiktoken.encoding_for_model(self.llm.name)
+        max_input_tokens = int(self.llm.context_window * self.env.redditor.llm.max_context_window_for_inputs)
 
         try:
             # Check if the redditor account is old enough to be processed
@@ -137,10 +113,10 @@ class _RedditorService(_RedditService):
             # Get the body of threads submitted by the user.
             thread: Submission
             for thread in praw_redditor.submissions.new():
-                if text := self.filter_submission(text=thread.selftext):
+                if text := self.sanitize_submission(thread.selftext):
                     if text not in submissions:
                         pending_inputs = "|".join(submissions + [text])
-                        pending_tokens = len(encoding.encode(pending_inputs, disallowed_special=()))
+                        pending_tokens = self.llm_provider.count_tokens(pending_inputs, self.llm.name)
                         if pending_tokens < max_input_tokens:
                             submissions.append(text)
                         else:
@@ -151,10 +127,10 @@ class _RedditorService(_RedditService):
             for comment in praw_redditor.comments.new():
                 if isinstance(comment, MoreComments):
                     continue
-                if text := self.filter_submission(text=comment.body):
+                if text := self.sanitize_submission(comment.body):
                     if text not in submissions:
                         pending_inputs = "|".join(submissions + [text])
-                        pending_tokens = len(encoding.encode(pending_inputs, disallowed_special=()))
+                        pending_tokens = self.llm_provider.count_tokens(pending_inputs, self.llm.name)
                         if pending_tokens < max_input_tokens:
                             submissions.append(text)
                         else:
@@ -183,7 +159,7 @@ class _RedditorService(_RedditService):
         return exceptions.UnprocessableRedditorError(self.identifier, reason, obj)
 
 
-class _ThreadService(_RedditService):
+class ThreadBase(RedditBase):
     @retry(
         before_sleep=before_sleep_log(log, logging.DEBUG),
         reraise=True,
@@ -201,14 +177,13 @@ class _ThreadService(_RedditService):
             raise self.unprocessable_entity(str(e))
 
         max_input_tokens = int(self.llm.context_window * self.env.thread.llm.max_context_window_for_inputs)
-        encoding = tiktoken.encoding_for_model(self.llm.name)
 
         try:
             # Get the thread selftext
-            if text := self.filter_submission(text=praw_submission.selftext):
+            if text := self.sanitize_submission(praw_submission.selftext):
                 if text not in submissions:
                     pending_inputs = "|".join(submissions + [text])
-                    pending_tokens = len(encoding.encode(pending_inputs, disallowed_special=()))
+                    pending_tokens = self.llm_provider.count_tokens(pending_inputs, self.llm.name)
                     if pending_tokens < max_input_tokens:
                         submissions.append(text)
 
@@ -218,10 +193,10 @@ class _ThreadService(_RedditService):
                 if isinstance(comment, MoreComments):
                     continue
                 if comment.author and comment.author.name not in ignored_usernames:
-                    if text := self.filter_submission(text=comment.body):
+                    if text := self.sanitize_submission(comment.body):
                         if text not in submissions:
                             pending_inputs = "|".join(submissions + [text])
-                            pending_tokens = len(encoding.encode(pending_inputs, disallowed_special=()))
+                            pending_tokens = self.llm_provider.count_tokens(pending_inputs, self.llm.name)
                             if pending_tokens < max_input_tokens:
                                 submissions.append(text)
                             else:
@@ -250,7 +225,7 @@ class _ThreadService(_RedditService):
         return exceptions.UnprocessableThreadError(self.identifier, reason, obj)
 
 
-class _ContextQueryService(abc.ABC):
+class LlmActionBase(abc.ABC):
     @abc.abstractmethod
     def create_object(self, *args, **kwargs):
         pass
@@ -260,17 +235,7 @@ class _ContextQueryService(abc.ABC):
         pass
 
 
-class _DataService(abc.ABC):
-    @abc.abstractmethod
-    def create_object(self, *args, **kwargs):
-        pass
-
-    @abc.abstractmethod
-    def generate(self, *args, **kwargs):
-        pass
-
-
-class RedditorContextQueryService(_ContextQueryService, _RedditorService):
+class RedditorContextQueryService(LlmActionBase, RedditorBase):
     def create_object(self, generated: schemas.GeneratedRedditorContextQuery) -> models.RedditorContextQuery:
         redditor = models.Redditor.objects.get(username=self.identifier)
         return models.RedditorContextQuery.objects.create(
@@ -286,18 +251,12 @@ class RedditorContextQueryService(_ContextQueryService, _RedditorService):
         )
 
     def generate(self, *, inputs: List[str], prompt: str) -> schemas.GeneratedRedditorContextQuery:
-        service = llm_provider.LlmProviderService(response_format=schemas.GeneratedRedditorContextQuery)
-        generated_data = service.generate_data(
-            inputs=inputs,
-            llm_name=self.llm.name,
-            llm_provider_name=self.llm.provider.name,
-            llm_providers_settings=self.llm_providers_settings,
-            prompt=prompt,
-        )
+        generated_data = self.llm_provider.generate_data(inputs=inputs, llm_name=self.llm.name, prompt=prompt, response_format=schemas.GeneratedRedditorContextQuery)
+        log.debug("Retry stats: %s", self.llm_provider.generate_data.retry.statistics)
         return schemas.GeneratedRedditorContextQuery.model_validate({"inputs": inputs, "prompt": prompt, **generated_data.model_dump()})
 
 
-class ThreadContextQueryService(_ContextQueryService, _ThreadService):
+class ThreadContextQueryService(LlmActionBase, ThreadBase):
     def create_object(self, *, generated: schemas.GeneratedThreadContextQuery) -> models.ThreadContextQuery:
         thread = models.Thread.objects.get(url=self.identifier)
         return models.ThreadContextQuery.objects.create(
@@ -313,18 +272,17 @@ class ThreadContextQueryService(_ContextQueryService, _ThreadService):
         )
 
     def generate(self, *, inputs: List[str], prompt: str) -> schemas.GeneratedThreadContextQuery:
-        service = llm_provider.LlmProviderService(response_format=schemas.GeneratedThreadContextQuery)
-        generated_data = service.generate_data(
+        generated_data = self.llm_provider.generate_data(
             inputs=inputs,
             llm_name=self.llm.name,
-            llm_provider_name=self.llm.provider.name,
-            llm_providers_settings=self.llm_providers_settings,
             prompt=prompt,
+            response_format=schemas.GeneratedThreadContextQuery,
         )
+        log.debug("Retry stats: %s", self.llm_provider.generate_data.retry.statistics)
         return schemas.GeneratedThreadContextQuery.model_validate({"inputs": inputs, "prompt": prompt, **generated_data.model_dump()})
 
 
-class RedditorDataService(_DataService, _RedditorService):
+class RedditorDataService(LlmActionBase, RedditorBase):
     def create_object(self, *, generated: schemas.GeneratedRedditorData) -> models.RedditorData:
         redditor, _ = models.Redditor.objects.update_or_create(
             username=self.identifier,
@@ -374,14 +332,13 @@ class RedditorDataService(_DataService, _RedditorService):
         )
 
     def generate(self, *, inputs: List[str], prompt: str) -> schemas.GeneratedRedditorData:
-        service = llm_provider.LlmProviderService(response_format=schemas.GeneratedRedditorData)
-        generated_data = service.generate_data(
+        generated_data = self.llm_provider.generate_data(
             inputs=inputs,
             llm_name=self.llm.name,
-            llm_provider_name=self.llm.provider.name,
-            llm_providers_settings=self.llm_providers_settings,
             prompt=prompt,
+            response_format=schemas.GeneratedRedditorData,
         )
+        log.debug("Retry stats: %s", self.llm_provider.generate_data.retry.statistics)
         return schemas.GeneratedRedditorData.model_validate(
             {
                 "inputs": inputs,
@@ -391,7 +348,7 @@ class RedditorDataService(_DataService, _RedditorService):
         )
 
 
-class ThreadDataService(_DataService, _ThreadService):
+class ThreadDataService(LlmActionBase, ThreadBase):
     def create_object(self, *, generated: schemas.GeneratedThreadData) -> models.ThreadData:
         thread, _ = models.Thread.objects.update_or_create(
             url=self.identifier,
@@ -431,14 +388,13 @@ class ThreadDataService(_DataService, _ThreadService):
         )
 
     def generate(self, *, inputs: List[str], prompt: str) -> schemas.GeneratedThreadData:
-        service = llm_provider.LlmProviderService(response_format=schemas.GeneratedThreadData)
-        generated_data = service.generate_data(
+        generated_data = self.llm_provider.generate_data(
             inputs=inputs,
             llm_name=self.llm.name,
-            llm_provider_name=self.llm.provider.name,
-            llm_providers_settings=self.llm_providers_settings,
             prompt=prompt,
+            response_format=schemas.GeneratedThreadData,
         )
+        log.debug("Retry stats: %s", self.llm_provider.generate_data.retry.statistics)
         return schemas.GeneratedThreadData.model_validate(
             {
                 "inputs": inputs,

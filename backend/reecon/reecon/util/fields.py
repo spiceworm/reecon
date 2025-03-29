@@ -3,9 +3,6 @@ from typing import List, Tuple
 from ..models import LLM
 
 
-__all__ = ("get_llm_choices",)
-
-
 def get_llm_choices() -> List[Tuple[str, str]]:
     return [(name, name) for name in _get_llm_names()]
 
