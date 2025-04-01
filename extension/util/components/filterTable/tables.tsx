@@ -17,9 +17,9 @@ import * as columns from "~util/components/filterTable/columns"
 import * as constants from "~util/constants"
 import * as errors from "~util/errors"
 import * as storage from "~util/storage"
-import type * as types from "~util/types"
+import type { CommentFilter, ContentFilter, ThreadFilter } from "~util/types/extension/types"
 
-const FilterTable = <T extends types.ContentFilter>({
+const FilterTable = <T extends ContentFilter>({
     data,
     columns,
     columnFilters,
@@ -202,20 +202,20 @@ const commentFilterTableColumns = [
 ]
 
 export const CommentFilterTable = ({ columnFilters, columnVisibility, footerVisible, headerControlsVisible }) => {
-    const [commentFilters, setCommentFilters, { isLoading }] = useStorage<Record<string, types.CommentFilter>>(
+    const [commentFilters, setCommentFilters, { isLoading }] = useStorage<Record<string, CommentFilter>>(
         { instance: storage.extLocalStorage, key: constants.ALL_COMMENT_FILTERS },
         (v) => (v === undefined ? {} : v)
     )
 
-    const [defaultFilter] = useStorage<types.CommentFilter>(
+    const [defaultFilter] = useStorage<CommentFilter>(
         {
             instance: storage.extLocalStorage,
             key: constants.DEFAULT_COMMENT_FILTER
         },
-        (v) => (v === undefined ? ({} as types.CommentFilter) : v)
+        (v) => (v === undefined ? ({} as CommentFilter) : v)
     )
 
-    const newRow: types.CommentFilter = {
+    const newRow: CommentFilter = {
         age: defaultFilter.age,
         context: "",
         filterType: "custom",
@@ -225,7 +225,7 @@ export const CommentFilterTable = ({ columnFilters, columnVisibility, footerVisi
         uuid: ""
     }
 
-    const [renderData, setRenderedData] = useState<types.CommentFilter[]>([])
+    const [renderData, setRenderedData] = useState<CommentFilter[]>([])
 
     if (!isLoading && renderData.length === 0) {
         setRenderedData(Object.values(commentFilters))
@@ -236,7 +236,7 @@ export const CommentFilterTable = ({ columnFilters, columnVisibility, footerVisi
             <Stack justifyContent="center" alignItems="center">
                 <Typography>Comment Filters</Typography>
             </Stack>
-            <FilterTable<types.CommentFilter>
+            <FilterTable<CommentFilter>
                 columns={commentFilterTableColumns}
                 columnFilters={columnFilters}
                 columnVisibility={columnVisibility}
@@ -255,20 +255,20 @@ export const CommentFilterTable = ({ columnFilters, columnVisibility, footerVisi
 const threadFilterTableColumns = [columns.ThreadContext, columns.ThreadSentimentPolarity, columns.ThreadSentimentSubjectivity, columns.ThreadAction]
 
 export const ThreadFilterTable = ({ columnFilters, columnVisibility, footerVisible, headerControlsVisible }) => {
-    const [threadFilters, setThreadFilters, { isLoading }] = useStorage<Record<string, types.ThreadFilter>>(
+    const [threadFilters, setThreadFilters, { isLoading }] = useStorage<Record<string, ThreadFilter>>(
         { instance: storage.extLocalStorage, key: constants.ALL_THREAD_FILTERS },
         (v) => (v === undefined ? {} : v)
     )
 
-    const [defaultFilter] = useStorage<types.ThreadFilter>(
+    const [defaultFilter] = useStorage<ThreadFilter>(
         {
             instance: storage.extLocalStorage,
             key: constants.DEFAULT_THREAD_FILTER
         },
-        (v) => (v === undefined ? ({} as types.ThreadFilter) : v)
+        (v) => (v === undefined ? ({} as ThreadFilter) : v)
     )
 
-    const newRow: types.ThreadFilter = {
+    const newRow: ThreadFilter = {
         context: "",
         filterType: "custom",
         sentimentPolarity: defaultFilter.sentimentPolarity,
@@ -276,7 +276,7 @@ export const ThreadFilterTable = ({ columnFilters, columnVisibility, footerVisib
         uuid: ""
     }
 
-    const [renderData, setRenderedData] = useState<types.ThreadFilter[]>([])
+    const [renderData, setRenderedData] = useState<ThreadFilter[]>([])
 
     if (!isLoading && renderData.length === 0) {
         setRenderedData(Object.values(threadFilters))
@@ -287,7 +287,7 @@ export const ThreadFilterTable = ({ columnFilters, columnVisibility, footerVisib
             <Stack justifyContent="center" alignItems="center">
                 <Typography>Thread Filters</Typography>
             </Stack>
-            <FilterTable<types.ThreadFilter>
+            <FilterTable<ThreadFilter>
                 columns={threadFilterTableColumns}
                 columnFilters={columnFilters}
                 columnVisibility={columnVisibility}

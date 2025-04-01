@@ -20,12 +20,13 @@ import * as api from "~util/api"
 import * as bases from "~util/components/bases"
 import * as constants from "~util/constants"
 import * as storage from "~util/storage"
-import type * as types from "~util/types"
+import type { LoginResponse, SignupRequest, SignupResponse } from "~util/types/backend/server/apiSerializers"
+import type { Auth } from "~util/types/extension/types"
 
 export const SignupView = ({ onSuccessRedirectPath }) => {
-    const [_, setAuth] = useStorage<types.Auth>({ instance: storage.extLocalStorage, key: constants.AUTH })
+    const [_, setAuth] = useStorage<Auth>({ instance: storage.extLocalStorage, key: constants.AUTH })
     const [passwordVisible, setPasswordVisible] = useState(false)
-    const [signupCredentials, setSignupCredentials] = useState(null)
+    const [signupCredentials, setSignupCredentials] = useState<SignupRequest>(null)
     const [password, setPassword] = useState<string>("")
     const [username, setUsername] = useState<string>("")
     const navigate = useNavigate()
@@ -34,14 +35,15 @@ export const SignupView = ({ onSuccessRedirectPath }) => {
         data: signupResponse,
         error: signupError,
         isLoading: signupIsLoading
-    } = useSWRImmutable(signupCredentials ? ["/api/v1/auth/signup/", signupCredentials] : null, ([urlPath, credentials]) =>
-        api.post(urlPath, credentials)
+    }: { data: SignupResponse; error: any; isLoading: boolean } = useSWRImmutable(
+        signupCredentials ? ["/api/v1/auth/signup/", signupCredentials] : null,
+        ([urlPath, credentials]) => api.post(urlPath, credentials)
     )
     const { error: loginError, isLoading: loginIsLoading } = useSWRImmutable(
         signupResponse && !signupError && !signupIsLoading ? ["/api/v1/auth/token/", signupCredentials] : null,
         ([urlPath, credentials]) => api.post(urlPath, credentials),
         {
-            onSuccess: async (data, key, config) => {
+            onSuccess: async (data: LoginResponse, key, config) => {
                 await setAuth({ access: data.access, refresh: data.refresh })
                 navigate(onSuccessRedirectPath, { replace: true })
             }

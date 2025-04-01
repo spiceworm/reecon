@@ -2,7 +2,7 @@ import { createColumnHelper } from "@tanstack/react-table"
 
 import * as cells from "~util/components/filterTable/cells"
 import * as constants from "~util/constants"
-import type * as types from "~util/types"
+import type { CommentFilter, ThreadFilter } from "~util/types/extension/types"
 import * as validators from "~util/validators"
 
 const action = (columnHelper) => {
@@ -100,7 +100,7 @@ const sentimentSubjectivity = (columnHelper, storageKey: string) => {
     })
 }
 
-const commentColumnHelper = createColumnHelper<types.CommentFilter>()
+const commentColumnHelper = createColumnHelper<CommentFilter>()
 export const CommentAction = action(commentColumnHelper)
 export const CommentAge = age(commentColumnHelper, constants.COMMENT_AGE_CONTENT_FILTER_ENABLED)
 export const CommentContext = context(commentColumnHelper)
@@ -111,7 +111,7 @@ export const CommentSentimentSubjectivity = sentimentSubjectivity(
     constants.COMMENT_SENTIMENT_SUBJECTIVITY_CONTENT_FILTER_ENABLED
 )
 
-const threadColumnHelper = createColumnHelper<types.ThreadFilter>()
+const threadColumnHelper = createColumnHelper<ThreadFilter>()
 export const ThreadAction = action(threadColumnHelper)
 export const ThreadContext = context(threadColumnHelper)
 export const ThreadSentimentPolarity = sentimentPolarity(threadColumnHelper, constants.THREAD_SENTIMENT_POLARITY_CONTENT_FILTER_ENABLED)

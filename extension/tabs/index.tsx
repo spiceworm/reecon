@@ -10,14 +10,14 @@ import { ProfileView } from "~tabs/views/profile"
 import { RequireAuthentication } from "~util/components/authentication"
 import * as constants from "~util/constants"
 import * as storage from "~util/storage"
-import type * as types from "~util/types"
+import type { LlmProvidersSettings } from "~util/types/backend/server/apiSerializers"
 import { LoginView } from "~views/auth/login"
 import { SignupView } from "~views/auth/signup"
 
 export default function TabsIndex() {
     const [llmProvidersSettings] = useStorage(
         { instance: storage.extLocalStorage, key: constants.LLM_PROVIDERS_SETTINGS },
-        (v: types.LlmProvidersSettings) => (v === undefined ? constants.defaultLlmProvidersSettings : v)
+        (v: LlmProvidersSettings) => (v === undefined ? constants.defaultLlmProvidersSettings : v)
     )
 
     const apiKeyMissing = llmProvidersSettings.openai.api_key.length === 0

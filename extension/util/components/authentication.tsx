@@ -4,9 +4,10 @@ import { useStorage } from "@plasmohq/storage/dist/hook"
 
 import * as constants from "~util/constants"
 import * as storage from "~util/storage"
+import type { Auth } from "~util/types/extension/types"
 
 export const RequireAuthentication = ({ children }) => {
-    const [auth] = useStorage({
+    const [auth] = useStorage<Auth>({
         instance: storage.extLocalStorage,
         key: constants.AUTH
     })

@@ -1,4 +1,5 @@
-import type * as types from "~util/types"
+import type { LlmProvidersSettings } from "~util/types/backend/server/apiSerializers"
+import type { CommentFilter, ExtensionStatusMessage, ThreadFilter } from "~util/types/extension/types"
 
 export const AUTH = "_auth"
 export const DISABLE_EXTENSION = "_disableExtension"
@@ -46,7 +47,7 @@ export const CACHED_UNPROCESSABLE_THREADS = "_cachedUnprocessableThreads"
 // Do not reference the `defaultCommentFilter` object as a whole. If you do, updates to the default filter
 // in storage will not be reflected because this is a static value. This exists mainly to initialize the default
 // filter in storage and to prevent hardcoding string values.
-export const defaultCommentFilter: types.CommentFilter = {
+export const defaultCommentFilter: CommentFilter = {
     age: 0,
     context: "Default",
     iq: 0,
@@ -59,7 +60,7 @@ export const defaultCommentFilter: types.CommentFilter = {
 // Do not reference the `defaultThreadFilter` object as a whole. If you do, updates to the default filter
 // in storage will not be reflected because this is a static value. This exists mainly to initialize the default
 // filter in storage and to prevent hardcoding string values.
-export const defaultThreadFilter: types.ThreadFilter = {
+export const defaultThreadFilter: ThreadFilter = {
     context: "Default",
     sentimentPolarity: 0.05,
     sentimentSubjectivity: 0.5,
@@ -67,13 +68,13 @@ export const defaultThreadFilter: types.ThreadFilter = {
     uuid: crypto.randomUUID()
 }
 
-export const defaultLlmProvidersSettings: types.LlmProvidersSettings = {
+export const defaultLlmProvidersSettings: LlmProvidersSettings = {
     openai: {
         api_key: ""
     }
 }
 
-export const extensionStatusMessages: types.ExtensionStatusMessage[] = [
+export const extensionStatusMessages: ExtensionStatusMessage[] = [
     {
         active: false,
         category: "error",

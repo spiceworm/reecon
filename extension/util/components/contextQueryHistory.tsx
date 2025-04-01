@@ -18,22 +18,22 @@ import useSWR from "swr"
 
 import * as api from "~util/api"
 import { CopyToClipboardButton, TooltipIcon } from "~util/components/mui"
-import type * as types from "~util/types"
+import type { RedditorContextQuery, ThreadContextQuery } from "~util/types/backend/reecon/modelSerializers"
 
 export const ContextQueryHistory = () => {
-    const [redditorContextQueryHistory, setRedditorContextQueryHistory] = useState<types.RedditorContextQuery[]>([])
-    const [threadContextQueryHistory, setThreadContextQueryHistory] = useState<types.ThreadContextQuery[]>([])
+    const [redditorContextQueryHistory, setRedditorContextQueryHistory] = useState<RedditorContextQuery[]>([])
+    const [threadContextQueryHistory, setThreadContextQueryHistory] = useState<ThreadContextQuery[]>([])
 
     const [redditorContextQueriesAreLoading, setRedditorContextQueriesAreLoading] = useState(false)
     const [threadContextQueriesAreLoading, setThreadContextQueriesAreLoading] = useState(false)
     const [shouldFetchHistory, setShouldFetchHistory] = useState(false)
 
-    const [modalContent, setModalContent] = useState<types.RedditorContextQuery | types.ThreadContextQuery>(null)
+    const [modalContent, setModalContent] = useState<RedditorContextQuery | ThreadContextQuery>(null)
     const [modalVisible, setModalVisible] = useState(false)
     const responseModalDescriptionElementRef = useRef<HTMLElement>(null)
 
     useSWR(shouldFetchHistory ? "/api/v1/reddit/redditor/context-query/" : null, api.authGet, {
-        onSuccess: async (data: types.RedditorContextQuery[], key, config) => {
+        onSuccess: async (data: RedditorContextQuery[], key, config) => {
             setRedditorContextQueriesAreLoading(false)
             setShouldFetchHistory(false)
             setRedditorContextQueryHistory(data)
@@ -41,14 +41,14 @@ export const ContextQueryHistory = () => {
     })
 
     useSWR(shouldFetchHistory ? "/api/v1/reddit/thread/context-query/" : null, api.authGet, {
-        onSuccess: async (data: types.ThreadContextQuery[], key, config) => {
+        onSuccess: async (data: ThreadContextQuery[], key, config) => {
             setThreadContextQueriesAreLoading(false)
             setShouldFetchHistory(false)
             setThreadContextQueryHistory(data)
         }
     })
 
-    const getQueryMetadata = (contextQuery: types.RedditorContextQuery | types.ThreadContextQuery) => {
+    const getQueryMetadata = (contextQuery: RedditorContextQuery | ThreadContextQuery) => {
         return {
             created: contextQuery?.created,
             identifier: contextQuery?.context.identifier,
@@ -64,7 +64,7 @@ export const ContextQueryHistory = () => {
         setShouldFetchHistory(true)
     }
 
-    const showContextQueryClickHandler = async (contextQuery: types.RedditorContextQuery | types.ThreadContextQuery) => {
+    const showContextQueryClickHandler = async (contextQuery: RedditorContextQuery | ThreadContextQuery) => {
         setModalContent(contextQuery)
         setModalVisible(true)
     }

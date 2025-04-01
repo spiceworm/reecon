@@ -2,12 +2,24 @@ import type { PlasmoMessaging } from "@plasmohq/messaging"
 
 import * as api from "~util/api"
 import * as cache from "~util/storageCache"
-import type * as types from "~util/types"
+import type {
+    LlmProvidersSettings,
+    RedditorDataRequest,
+    RedditorDataResponse,
+    ThreadDataRequest,
+    ThreadDataResponse
+} from "~util/types/backend/server/apiSerializers"
+import type {
+    CachedIgnoredRedditor,
+    CachedPendingRedditor,
+    CachedPendingThread,
+    CachedProcessedRedditor,
+    CachedProcessedThread,
+    CachedUnprocessableRedditor,
+    CachedUnprocessableThread
+} from "~util/types/extension/cache"
 
-const processRedditorData = async (
-    llmProvidersSettings: types.LlmProvidersSettings,
-    usernames: string[]
-): Promise<types.SubmitRedditorDataResponse> => {
+const processRedditorData = async (llmProvidersSettings: LlmProvidersSettings, usernames: string[]): Promise<RedditorDataResponse> => {
     let allCachedIgnored = await cache.getIgnoredRedditors()
     const cachedIgnored = usernames.map((username) => allCachedIgnored[username]).filter((obj) => obj !== undefined)
 
@@ -21,22 +33,21 @@ const processRedditorData = async (
     let cachedUnprocessable = usernames.map((username) => allCachedUnprocessable[username]).filter((obj) => obj !== undefined)
 
     const cachedUsernames = [...cachedIgnored, ...cachedPending, ...cachedProcessed, ...cachedUnprocessable].map(
-        (obj: types.CachedIgnoredRedditor | types.CachedPendingRedditor | types.CachedProcessedRedditor | types.CachedUnprocessableRedditor) =>
-            obj.value.username
+        (obj: CachedIgnoredRedditor | CachedPendingRedditor | CachedProcessedRedditor | CachedUnprocessableRedditor) => obj.value.username
     )
 
     const usernamesToProcess = new Set(usernames).difference(new Set(cachedUsernames))
 
     if (usernamesToProcess.size > 0) {
-        let response: types.SubmitRedditorDataResponse = await api.authPost("/api/v1/reddit/redditor/data/", {
+        let response: RedditorDataResponse = await api.authPost("/api/v1/reddit/redditor/data/", {
             llm_providers_settings: llmProvidersSettings,
             usernames: [...usernamesToProcess]
-        })
+        } as RedditorDataRequest)
 
         response.ignored.map((obj) => {
             const expires = new Date()
             expires.setMinutes(expires.getMinutes() + parseInt(process.env.PLASMO_PUBLIC_IGNORED_REDDITOR_CACHE_EXP_MINUTES))
-            allCachedIgnored[obj.username] = { expires: expires.toString(), value: obj } as types.CachedIgnoredRedditor
+            allCachedIgnored[obj.username] = { expires: expires.toString(), value: obj } as CachedIgnoredRedditor
 
             // ignored is a finalized state, delete from pending cache
             delete allCachedPending[obj.username]
@@ -46,13 +57,13 @@ const processRedditorData = async (
         response.pending.map((obj) => {
             const expires = new Date()
             expires.setMinutes(expires.getMinutes() + parseInt(process.env.PLASMO_PUBLIC_PENDING_REDDITOR_CACHE_EXP_MINUTES))
-            allCachedPending[obj.username] = { expires: expires.toString(), value: obj } as types.CachedPendingRedditor
+            allCachedPending[obj.username] = { expires: expires.toString(), value: obj } as CachedPendingRedditor
         })
 
         response.processed.map((obj) => {
             const expires = new Date()
             expires.setMinutes(expires.getMinutes() + parseInt(process.env.PLASMO_PUBLIC_PROCESSED_REDDITOR_CACHE_EXP_MINUTES))
-            allCachedProcessed[obj.username] = { expires: expires.toString(), value: obj } as types.CachedProcessedRedditor
+            allCachedProcessed[obj.username] = { expires: expires.toString(), value: obj } as CachedProcessedRedditor
 
             // processed is a finalized state, delete from pending and unprocessable caches
             delete allCachedPending[obj.username]
@@ -64,7 +75,7 @@ const processRedditorData = async (
         response.unprocessable.map((obj) => {
             const expires = new Date()
             expires.setMinutes(expires.getMinutes() + parseInt(process.env.PLASMO_PUBLIC_UNPROCESSABLE_REDDITOR_CACHE_EXP_MINUTES))
-            allCachedUnprocessable[obj.username] = { expires: expires.toString(), value: obj } as types.CachedUnprocessableRedditor
+            allCachedUnprocessable[obj.username] = { expires: expires.toString(), value: obj } as CachedUnprocessableRedditor
 
             // unprocessable is a medium term temporary state, delete from pending cache
             delete allCachedPending[obj.username]
@@ -94,7 +105,7 @@ const processRedditorData = async (
     }
 }
 
-const processThreadData = async (llmProvidersSettings: types.LlmProvidersSettings, urlPaths: string[]): Promise<types.SubmitThreadDataResponse> => {
+const processThreadData = async (llmProvidersSettings: LlmProvidersSettings, urlPaths: string[]): Promise<ThreadDataResponse> => {
     let allCachedPending = await cache.getPendingThreads()
     let cachedPending = urlPaths.map((urlPath) => allCachedPending[urlPath]).filter((obj) => obj !== undefined)
 
@@ -105,27 +116,27 @@ const processThreadData = async (llmProvidersSettings: types.LlmProvidersSetting
     let cachedUnprocessable = urlPaths.map((urlPath) => allCachedUnprocessable[urlPath]).filter((obj) => obj !== undefined)
 
     const cachedUrlPaths = [...cachedPending, ...cachedProcessed, ...cachedUnprocessable].map(
-        (obj: types.CachedPendingThread | types.CachedProcessedThread | types.CachedUnprocessableThread) => obj.value.path
+        (obj: CachedPendingThread | CachedProcessedThread | CachedUnprocessableThread) => obj.value.path
     )
 
     const urlPathsToProcess = new Set(urlPaths).difference(new Set(cachedUrlPaths))
 
     if (urlPathsToProcess.size > 0) {
-        let response: types.SubmitThreadDataResponse = await api.authPost("/api/v1/reddit/thread/data/", {
+        let response: ThreadDataResponse = await api.authPost("/api/v1/reddit/thread/data/", {
             llm_providers_settings: llmProvidersSettings,
             paths: [...urlPathsToProcess]
-        })
+        } as ThreadDataRequest)
 
         response.pending.map((obj) => {
             const expires = new Date()
             expires.setMinutes(expires.getMinutes() + parseInt(process.env.PLASMO_PUBLIC_PENDING_THREAD_CACHE_EXP_MINUTES))
-            allCachedPending[obj.path] = { expires: expires.toString(), value: obj } as types.CachedPendingThread
+            allCachedPending[obj.path] = { expires: expires.toString(), value: obj } as CachedPendingThread
         })
 
         response.processed.map((obj) => {
             const expires = new Date()
             expires.setMinutes(expires.getMinutes() + parseInt(process.env.PLASMO_PUBLIC_PROCESSED_THREAD_CACHE_EXP_MINUTES))
-            allCachedProcessed[obj.path] = { expires: expires.toString(), value: obj } as types.CachedProcessedThread
+            allCachedProcessed[obj.path] = { expires: expires.toString(), value: obj } as CachedProcessedThread
 
             // processed is a finalized state, delete from pending and unprocessable caches
             delete allCachedPending[obj.path]
@@ -137,7 +148,7 @@ const processThreadData = async (llmProvidersSettings: types.LlmProvidersSetting
         response.unprocessable.map((obj) => {
             const expires = new Date()
             expires.setMinutes(expires.getMinutes() + parseInt(process.env.PLASMO_PUBLIC_UNPROCESSABLE_THREAD_CACHE_EXP_MINUTES))
-            allCachedUnprocessable[obj.path] = { expires: expires.toString(), value: obj } as types.CachedUnprocessableThread
+            allCachedUnprocessable[obj.path] = { expires: expires.toString(), value: obj } as CachedUnprocessableThread
 
             // unprocessable is a medium term temporary state, delete from pending cache
             delete allCachedPending[obj.path]
@@ -168,15 +179,15 @@ const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
 
     if (action === "processRedditorData") {
         const kwargs = req.body.kwargs
-        const llmProvidersSettings: types.LlmProvidersSettings = kwargs.llmProvidersSettings
+        const llmProvidersSettings: LlmProvidersSettings = kwargs.llmProvidersSettings
         const usernames: string[] = kwargs.usernames
-        const message: types.SubmitRedditorDataResponse = await processRedditorData(llmProvidersSettings, usernames)
+        const message: RedditorDataResponse = await processRedditorData(llmProvidersSettings, usernames)
         res.send({ message })
     } else if (action === "processThreadData") {
         const kwargs = req.body.kwargs
-        const llmProvidersSettings: types.LlmProvidersSettings = kwargs.llmProvidersSettings
+        const llmProvidersSettings: LlmProvidersSettings = kwargs.llmProvidersSettings
         const urlPaths: string[] = kwargs.urlPaths
-        const message: types.SubmitThreadDataResponse = await processThreadData(llmProvidersSettings, urlPaths)
+        const message: ThreadDataResponse = await processThreadData(llmProvidersSettings, urlPaths)
         res.send({ message })
     } else {
         console.error(`Unhandled message with action: ${action}`)

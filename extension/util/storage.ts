@@ -4,7 +4,9 @@ import * as api from "~util/api"
 import * as backgroundMessage from "~util/backgroundMessages"
 import * as constants from "~util/constants"
 import * as misc from "~util/misc"
-import type * as types from "~util/types"
+import type { ApiStatusMessage } from "~util/types/backend/reecon/modelSerializers"
+import type { AuthTokenRefreshResponse, LlmProvidersSettings } from "~util/types/backend/server/apiSerializers"
+import type { Auth, CommentFilter, ExtensionStatusMessage, ThreadFilter } from "~util/types/extension/types"
 
 // The only time `extLocalStorage` should be accessed outside this file is when `useStorage` hook needs to point to it.
 export const extLocalStorage = new Storage({
@@ -65,8 +67,8 @@ export const init = async (): Promise<void> => {
     })
 }
 
-export const getAuth = async (): Promise<types.Auth | null> => {
-    const auth: types.Auth = await get(constants.AUTH)
+export const getAuth = async (): Promise<Auth | null> => {
+    const auth: Auth = await get(constants.AUTH)
 
     if (!auth || !auth?.access || !auth?.refresh) {
         await setAuth(null)
@@ -78,8 +80,8 @@ export const getAuth = async (): Promise<types.Auth | null> => {
     }
 
     if (misc.jwtIsValid(auth.refresh)) {
-        const response: types.AuthTokenRefreshResponse = await api.post("/api/v1/auth/token/refresh/", { refresh: auth.refresh })
-        const refreshedAuth: types.Auth = { access: response.access, refresh: auth.refresh }
+        const response: AuthTokenRefreshResponse = await api.post("/api/v1/auth/token/refresh/", { refresh: auth.refresh })
+        const refreshedAuth: Auth = { access: response.access, refresh: auth.refresh }
         await setAuth(refreshedAuth)
         return refreshedAuth
     }
@@ -92,8 +94,8 @@ export const getDisableExtension = async (): Promise<boolean> => {
     return get<boolean>(constants.DISABLE_EXTENSION)
 }
 
-export const getLlmProvidersSettings = async (): Promise<types.LlmProvidersSettings> => {
-    return get<types.LlmProvidersSettings>(constants.LLM_PROVIDERS_SETTINGS)
+export const getLlmProvidersSettings = async (): Promise<LlmProvidersSettings> => {
+    return get<LlmProvidersSettings>(constants.LLM_PROVIDERS_SETTINGS)
 }
 
 export const getRedditorDataProcessingEnabled = async (): Promise<boolean> => {
@@ -118,25 +120,25 @@ export const setActiveContentFilters = async (url: string): Promise<void> => {
         newContext = subReddit === "" ? newContext : subReddit
     }
 
-    const allCommentFilters = await get<Record<string, types.CommentFilter>>(constants.ALL_COMMENT_FILTERS)
+    const allCommentFilters = await get<Record<string, CommentFilter>>(constants.ALL_COMMENT_FILTERS)
     const activeCommentFilter = allCommentFilters[newContext] ?? allCommentFilters["Default"]
     await set(constants.ACTIVE_COMMENT_FILTER, activeCommentFilter)
 
-    const allThreadFilters = await get<Record<string, types.ThreadFilter>>(constants.ALL_THREAD_FILTERS)
+    const allThreadFilters = await get<Record<string, ThreadFilter>>(constants.ALL_THREAD_FILTERS)
     const activeThreadFilter = allThreadFilters[newContext] ?? allThreadFilters["Default"]
     await set(constants.ACTIVE_THREAD_FILTER, activeThreadFilter)
 }
 
-export const setApiStatusMessages = async (messages: types.ApiStatusMessage[]): Promise<void> => {
+export const setApiStatusMessages = async (messages: ApiStatusMessage[]): Promise<void> => {
     return set(constants.API_STATUS_MESSAGES, messages)
 }
 
-export const setAuth = async (auth: types.Auth): Promise<void> => {
+export const setAuth = async (auth: Auth): Promise<void> => {
     return set(constants.AUTH, auth)
 }
 
 export const setExtensionStatusMessage = async (messageName: string, active: boolean, messageText: string = ""): Promise<void> => {
-    let extensionStatusMessages: types.ExtensionStatusMessage[] = await get(constants.EXTENSION_STATUS_MESSAGES)
+    let extensionStatusMessages: ExtensionStatusMessage[] = await get(constants.EXTENSION_STATUS_MESSAGES)
 
     for (let message of extensionStatusMessages) {
         if (message.name === messageName) {
@@ -151,7 +153,7 @@ export const setExtensionStatusMessage = async (messageName: string, active: boo
     return set(constants.EXTENSION_STATUS_MESSAGES, extensionStatusMessages)
 }
 
-const setAllStatusMessages = async (messages: (types.ApiStatusMessage | types.ExtensionStatusMessage)[]): Promise<void> => {
+const setAllStatusMessages = async (messages: (ApiStatusMessage | ExtensionStatusMessage)[]): Promise<void> => {
     return set(constants.ALL_STATUS_MESSAGES, messages)
 }
 
@@ -181,7 +183,7 @@ extLocalStorage.watch({
         const defaultFilter = newValue[constants.defaultCommentFilter.context]
         await set(constants.DEFAULT_COMMENT_FILTER, defaultFilter)
 
-        const activeFilter = await get<types.CommentFilter>(constants.ACTIVE_COMMENT_FILTER)
+        const activeFilter = await get<CommentFilter>(constants.ACTIVE_COMMENT_FILTER)
         if (activeFilter.context in newValue) {
             await set(constants.ACTIVE_COMMENT_FILTER, newValue[activeFilter.context])
         } else {
@@ -197,7 +199,7 @@ extLocalStorage.watch({
         const defaultFilter = newValue[constants.defaultThreadFilter.context]
         await set(constants.DEFAULT_THREAD_FILTER, defaultFilter)
 
-        const activeFilter = await get<types.ThreadFilter>(constants.ACTIVE_THREAD_FILTER)
+        const activeFilter = await get<ThreadFilter>(constants.ACTIVE_THREAD_FILTER)
         if (activeFilter.context in newValue) {
             await set(constants.ACTIVE_THREAD_FILTER, newValue[activeFilter.context])
         } else {
@@ -209,7 +211,7 @@ extLocalStorage.watch({
 
         await setAllStatusMessages(newValue.concat(await get(constants.EXTENSION_STATUS_MESSAGES)))
 
-        for (const message of newValue as (types.ApiStatusMessage | types.ExtensionStatusMessage)[]) {
+        for (const message of newValue as (ApiStatusMessage | ExtensionStatusMessage)[]) {
             if (message.name === "redditorContextQueryProcessingDisabled") {
                 await set(constants.REDDITOR_CONTEXT_QUERY_PROCESSING_ENABLED, !message.active)
             } else if (message.name === "redditorDataProcessingDisabled") {

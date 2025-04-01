@@ -17,15 +17,16 @@ import { IconlessBadge, UIThemeControls } from "~util/components/mui"
 import * as constants from "~util/constants"
 import { useRouteMatch } from "~util/routing"
 import * as storage from "~util/storage"
-import type * as types from "~util/types"
+import type { ApiStatusMessage } from "~util/types/backend/reecon/modelSerializers"
+import type { ExtensionStatusMessage } from "~util/types/extension/types"
 
 const NavigationTabs = () => {
     const { error } = useSWR("updateApiStatusMessages", api.updateApiStatusMessages)
-    const [statusMessages] = useStorage<(types.ApiStatusMessage | types.ExtensionStatusMessage)[]>(
+    const [statusMessages] = useStorage<(ApiStatusMessage | ExtensionStatusMessage)[]>(
         { instance: storage.extLocalStorage, key: constants.ALL_STATUS_MESSAGES },
         (v) => (v === undefined ? [] : v)
     )
-    const activeStatusMessages = statusMessages.filter((message: types.ApiStatusMessage | types.ExtensionStatusMessage) => message.active)
+    const activeStatusMessages = statusMessages.filter((message: ApiStatusMessage | ExtensionStatusMessage) => message.active)
 
     const routeMatch = useRouteMatch(["/active-settings", "/status"])
     const currentTab = routeMatch?.pattern?.path

@@ -5,35 +5,43 @@ import { useStorage } from "@plasmohq/storage/dist/hook"
 
 import * as constants from "~util/constants"
 import * as storage from "~util/storage"
-import type * as types from "~util/types"
+import type {
+    CachedIgnoredRedditor,
+    CachedPendingRedditor,
+    CachedPendingThread,
+    CachedProcessedRedditor,
+    CachedProcessedThread,
+    CachedUnprocessableRedditor,
+    CachedUnprocessableThread
+} from "~util/types/extension/cache"
 
 export const CheckStorageSize = () => {
-    const [ignoredRedditors] = useStorage<Record<string, types.CachedIgnoredRedditor>>(
+    const [ignoredRedditors] = useStorage<Record<string, CachedIgnoredRedditor>>(
         { instance: storage.extLocalStorage, key: constants.CACHED_IGNORED_REDDITORS },
         (v) => (v === undefined ? {} : v)
     )
-    const [pendingRedditors] = useStorage<Record<string, types.CachedPendingRedditor>>(
+    const [pendingRedditors] = useStorage<Record<string, CachedPendingRedditor>>(
         { instance: storage.extLocalStorage, key: constants.CACHED_PENDING_REDDITORS },
         (v) => (v === undefined ? {} : v)
     )
-    const [processedRedditors] = useStorage<Record<string, types.CachedProcessedRedditor>>(
+    const [processedRedditors] = useStorage<Record<string, CachedProcessedRedditor>>(
         { instance: storage.extLocalStorage, key: constants.CACHED_PROCESSED_REDDITORS },
         (v) => (v === undefined ? {} : v)
     )
-    const [unprocessableRedditors] = useStorage<Record<string, types.CachedUnprocessableRedditor>>(
+    const [unprocessableRedditors] = useStorage<Record<string, CachedUnprocessableRedditor>>(
         { instance: storage.extLocalStorage, key: constants.CACHED_UNPROCESSABLE_REDDITORS },
         (v) => (v === undefined ? {} : v)
     )
 
-    const [pendingThreads] = useStorage<Record<string, types.CachedPendingThread>>(
+    const [pendingThreads] = useStorage<Record<string, CachedPendingThread>>(
         { instance: storage.extLocalStorage, key: constants.CACHED_PENDING_THREADS },
         (v) => (v === undefined ? {} : v)
     )
-    const [processedThreads] = useStorage<Record<string, types.CachedProcessedThread>>(
+    const [processedThreads] = useStorage<Record<string, CachedProcessedThread>>(
         { instance: storage.extLocalStorage, key: constants.CACHED_PROCESSED_THREADS },
         (v) => (v === undefined ? {} : v)
     )
-    const [unprocessableThreads] = useStorage<Record<string, types.CachedUnprocessableThread>>(
+    const [unprocessableThreads] = useStorage<Record<string, CachedUnprocessableThread>>(
         { instance: storage.extLocalStorage, key: constants.CACHED_UNPROCESSABLE_THREADS },
         (v) => (v === undefined ? {} : v)
     )

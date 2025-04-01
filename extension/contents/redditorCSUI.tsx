@@ -8,7 +8,8 @@ import { useStorage } from "@plasmohq/storage/dist/hook"
 import * as constants from "~util/constants"
 import * as dom from "~util/dom"
 import * as storage from "~util/storage"
-import type * as types from "~util/types"
+import type { CachedIgnoredRedditor, CachedPendingRedditor, CachedProcessedRedditor, CachedUnprocessableRedditor } from "~util/types/extension/cache"
+import type { CommentFilter } from "~util/types/extension/types"
 
 export const config: PlasmoCSConfig = {
     matches: ["https://*.reddit.com/*"],
@@ -39,28 +40,28 @@ const RedditorAnchor = (props: PlasmoCSUIContainerProps) => {
         v === undefined ? false : v
     )
 
-    const [cachedIgnoredRedditors] = useStorage<Record<string, types.CachedIgnoredRedditor>>(
+    const [cachedIgnoredRedditors] = useStorage<Record<string, CachedIgnoredRedditor>>(
         {
             instance: storage.extLocalStorage,
             key: constants.CACHED_IGNORED_REDDITORS
         },
         (v) => (v === undefined ? {} : v)
     )
-    const [cachedPendingRedditors] = useStorage<Record<string, types.CachedPendingRedditor>>(
+    const [cachedPendingRedditors] = useStorage<Record<string, CachedPendingRedditor>>(
         {
             instance: storage.extLocalStorage,
             key: constants.CACHED_PENDING_REDDITORS
         },
         (v) => (v === undefined ? {} : v)
     )
-    const [cachedProcessedRedditors] = useStorage<Record<string, types.CachedProcessedRedditor>>(
+    const [cachedProcessedRedditors] = useStorage<Record<string, CachedProcessedRedditor>>(
         {
             instance: storage.extLocalStorage,
             key: constants.CACHED_PROCESSED_REDDITORS
         },
         (v) => (v === undefined ? {} : v)
     )
-    const [cachedUnprocessableRedditors] = useStorage<Record<string, types.CachedUnprocessableRedditor>>(
+    const [cachedUnprocessableRedditors] = useStorage<Record<string, CachedUnprocessableRedditor>>(
         {
             instance: storage.extLocalStorage,
             key: constants.CACHED_UNPROCESSABLE_REDDITORS
@@ -68,7 +69,7 @@ const RedditorAnchor = (props: PlasmoCSUIContainerProps) => {
         (v) => (v === undefined ? {} : v)
     )
 
-    const [activeFilter] = useStorage<types.CommentFilter>(
+    const [activeFilter] = useStorage<CommentFilter>(
         {
             instance: storage.extLocalStorage,
             key: constants.ACTIVE_COMMENT_FILTER

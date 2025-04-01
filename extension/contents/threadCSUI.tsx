@@ -8,7 +8,8 @@ import { useStorage } from "@plasmohq/storage/dist/hook"
 import * as constants from "~util/constants"
 import * as dom from "~util/dom"
 import * as storage from "~util/storage"
-import type * as types from "~util/types"
+import type { CachedPendingThread, CachedProcessedThread, CachedUnprocessableThread } from "~util/types/extension/cache"
+import type { ThreadFilter } from "~util/types/extension/types"
 
 export const config: PlasmoCSConfig = {
     matches: ["https://*.reddit.com/*"],
@@ -39,21 +40,21 @@ const ThreadAnchor = (props: PlasmoCSUIContainerProps) => {
         v === undefined ? false : v
     )
 
-    const [cachedPendingThreads] = useStorage<Record<string, types.CachedPendingThread>>(
+    const [cachedPendingThreads] = useStorage<Record<string, CachedPendingThread>>(
         {
             instance: storage.extLocalStorage,
             key: constants.CACHED_PENDING_THREADS
         },
         (v) => (v === undefined ? {} : v)
     )
-    const [cachedProcessedThreads] = useStorage<Record<string, types.CachedProcessedThread>>(
+    const [cachedProcessedThreads] = useStorage<Record<string, CachedProcessedThread>>(
         {
             instance: storage.extLocalStorage,
             key: constants.CACHED_PROCESSED_THREADS
         },
         (v) => (v === undefined ? {} : v)
     )
-    const [cachedUnprocessableThreads] = useStorage<Record<string, types.CachedUnprocessableThread>>(
+    const [cachedUnprocessableThreads] = useStorage<Record<string, CachedUnprocessableThread>>(
         {
             instance: storage.extLocalStorage,
             key: constants.CACHED_UNPROCESSABLE_THREADS
@@ -61,7 +62,7 @@ const ThreadAnchor = (props: PlasmoCSUIContainerProps) => {
         (v) => (v === undefined ? {} : v)
     )
 
-    const [activeFilter] = useStorage<types.ThreadFilter>(
+    const [activeFilter] = useStorage<ThreadFilter>(
         {
             instance: storage.extLocalStorage,
             key: constants.ACTIVE_THREAD_FILTER

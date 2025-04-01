@@ -1,5 +1,6 @@
 import * as storage from "~util/storage"
-import type * as types from "~util/types"
+import type { StatusMessageResponse } from "~util/types/backend/server/apiSerializers"
+import type { Auth } from "~util/types/extension/types"
 
 const GET = "GET"
 const POST = "POST"
@@ -15,7 +16,7 @@ const _apiRequest = async (urlPath: string, method: string, body: object = {}, s
     }
 
     if (sendAuthenticated) {
-        const auth: types.Auth = await storage.getAuth()
+        const auth: Auth = await storage.getAuth()
 
         if (auth === null) {
             throw new Error(`User authentication missing. Cannot send authenticated ${method} request to ${urlPath}`)
@@ -63,6 +64,6 @@ export const authPost = async (urlPath: string, body: object): Promise<any> => {
 }
 
 export const updateApiStatusMessages = async (): Promise<void> => {
-    const apiStatusMessages = await authGet("/api/v1/status/messages/")
+    const apiStatusMessages: StatusMessageResponse = await authGet("/api/v1/status/messages/")
     await storage.setApiStatusMessages(apiStatusMessages)
 }

@@ -5,12 +5,12 @@ import { useState } from "react"
 import useSWR from "swr"
 
 import * as api from "~util/api"
-import type * as types from "~util/types"
+import type { Profile } from "~util/types/backend/reecon/modelSerializers"
 
 export const ProfileData = () => {
-    const [profile, setProfile] = useState<types.Profile>()
+    const [profile, setProfile] = useState<Profile>()
     const { error, isLoading } = useSWR("/api/v1/profile/", api.authGet, {
-        onSuccess: (data: types.Profile, key, config) => {
+        onSuccess: (data: Profile, key, config) => {
             console.log(data)
             setProfile(data)
         },

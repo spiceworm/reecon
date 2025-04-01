@@ -1,6 +1,6 @@
 import { sendToBackground } from "@plasmohq/messaging"
 
-import type * as types from "~util/types"
+import type { LlmProvidersSettings, RedditorDataResponse, ThreadDataResponse } from "~util/types/backend/server/apiSerializers"
 
 export const openAiApiKeyIsUsable = async (apiKey: string): Promise<boolean> => {
     const resp = await sendToBackground({
@@ -15,10 +15,7 @@ export const openAiApiKeyIsUsable = async (apiKey: string): Promise<boolean> => 
     return resp.message
 }
 
-export const processRedditorData = async (
-    llmProvidersSettings: types.LlmProvidersSettings,
-    usernames: string[]
-): Promise<types.SubmitRedditorDataResponse> => {
+export const processRedditorData = async (llmProvidersSettings: LlmProvidersSettings, usernames: string[]): Promise<RedditorDataResponse> => {
     const resp = await sendToBackground({
         name: "reddit",
         body: {
@@ -32,10 +29,7 @@ export const processRedditorData = async (
     return resp.message
 }
 
-export const processThreadData = async (
-    llmProvidersSettings: types.LlmProvidersSettings,
-    urlPaths: string[]
-): Promise<types.SubmitThreadDataResponse> => {
+export const processThreadData = async (llmProvidersSettings: LlmProvidersSettings, urlPaths: string[]): Promise<ThreadDataResponse> => {
     const resp = await sendToBackground({
         name: "reddit",
         body: {

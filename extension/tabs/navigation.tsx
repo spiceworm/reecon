@@ -7,10 +7,10 @@ import { useStorage } from "@plasmohq/storage/dist/hook"
 import * as constants from "~util/constants"
 import { useRouteMatch } from "~util/routing"
 import * as storage from "~util/storage"
-import type * as types from "~util/types"
+import type { LlmProvidersSettings } from "~util/types/backend/server/apiSerializers"
 
 export const TabsNavigation = () => {
-    const [llmProvidersSettings] = useStorage<types.LlmProvidersSettings>(
+    const [llmProvidersSettings] = useStorage<LlmProvidersSettings>(
         { instance: storage.extLocalStorage, key: constants.LLM_PROVIDERS_SETTINGS },
         (v) => (v === undefined ? constants.defaultLlmProvidersSettings : v)
     )

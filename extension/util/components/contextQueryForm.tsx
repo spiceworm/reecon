@@ -22,7 +22,17 @@ import * as api from "~util/api"
 import * as backgroundMessage from "~util/backgroundMessages"
 import * as constants from "~util/constants"
 import * as storage from "~util/storage"
-import type * as types from "~util/types"
+import type { LLM } from "~util/types/backend/reecon/modelSerializers"
+import type {
+    LlmDefaultsResponse,
+    LlmProvidersSettings,
+    RedditorContextQueryCreateRequest,
+    RedditorContextQueryCreateResponse,
+    RedditorContextQueryRetrieveResponse,
+    ThreadContextQueryCreateRequest,
+    ThreadContextQueryCreateResponse,
+    ThreadContextQueryRetrieveResponse
+} from "~util/types/backend/server/apiSerializers"
 
 export const ContextQueryForm = () => {
     const [redditorProcessingEnabled] = useStorage<boolean>(
@@ -33,7 +43,7 @@ export const ContextQueryForm = () => {
         { instance: storage.extLocalStorage, key: constants.THREAD_CONTEXT_QUERY_PROCESSING_ENABLED },
         (v) => (v === undefined ? false : v)
     )
-    const [llmProvidersSettings] = useStorage<types.LlmProvidersSettings>(
+    const [llmProvidersSettings] = useStorage<LlmProvidersSettings>(
         {
             instance: storage.extLocalStorage,
             key: constants.LLM_PROVIDERS_SETTINGS
@@ -49,10 +59,10 @@ export const ContextQueryForm = () => {
 
     const [contextQueryingDisabled, setContextQueryingDisabled] = useState(false)
 
-    const [llmDefaults, setLlmDefaults] = useState({} as types.LlmDefaultsResponse)
+    const [llmDefaults, setLlmDefaults] = useState({} as LlmDefaultsResponse)
 
     const [llmSelection, setLlmSelection] = useState("")
-    const [llms, setLlms] = useState<types.LLM[]>([])
+    const [llms, setLlms] = useState<LLM[]>([])
 
     const [contextSelection, setContextSelection] = useState("")
     const [contextInputValue, setContextInputValue] = useState("")
@@ -63,7 +73,7 @@ export const ContextQueryForm = () => {
     const [snackBarVisible, setSnackBarVisible] = useState(false)
 
     const [apiEndpoint, setApiEndpoint] = useState("")
-    const [postBody, setPostBody] = useState(null)
+    const [postBody, setPostBody] = useState<RedditorContextQueryCreateRequest | ThreadContextQueryCreateRequest>(null)
     const [formErrors, setFormErrors] = useState([])
     const [requestErrors, setRequestErrors] = useState([])
 
@@ -71,7 +81,7 @@ export const ContextQueryForm = () => {
         onError: async (error, key, config) => {
             setRequestErrors(requestErrors.concat(JSON.parse(error.message).detail))
         },
-        onSuccess: async (data: types.LlmDefaultsResponse, key, config) => {
+        onSuccess: async (data: LlmDefaultsResponse, key, config) => {
             setLlmDefaults(data)
         }
     })
@@ -80,7 +90,7 @@ export const ContextQueryForm = () => {
         onError: async (error, key, config) => {
             setRequestErrors(requestErrors.concat(JSON.parse(error.message).detail))
         },
-        onSuccess: async (data: types.LLM[], key, config) => {
+        onSuccess: async (data: LLM[], key, config) => {
             setLlms(data)
         }
     })
@@ -90,7 +100,7 @@ export const ContextQueryForm = () => {
             setRequestErrors(requestErrors.concat(JSON.parse(error.message).detail))
             setIsLoading(false)
         },
-        onSuccess: async (data: types.SubmitContextQueryResponse, key, config) => {
+        onSuccess: async (data: RedditorContextQueryCreateResponse | ThreadContextQueryCreateResponse, key, config) => {
             setPostBody(null)
             setJobId(data.job_id)
 
@@ -106,7 +116,7 @@ export const ContextQueryForm = () => {
             setRequestErrors(requestErrors.concat(JSON.parse(error.message).detail))
             setIsLoading(false)
         },
-        refreshInterval: (latestData: types.RedditorContextQueryResponse | types.ThreadContextQueryResponse) => {
+        refreshInterval: (latestData: RedditorContextQueryRetrieveResponse | ThreadContextQueryRetrieveResponse) => {
             if (latestData && "success" in latestData && latestData.success !== null) {
                 setJobId("")
                 setIsLoading(false)
@@ -211,7 +221,7 @@ export const ContextQueryForm = () => {
                                 onChange={onLlmChangeHandler}
                                 required={true}
                                 variant={"outlined"}>
-                                {llms ? llms.map((llm: types.LLM) => <MenuItem value={llm.name}>{llm.name}</MenuItem>) : null}
+                                {llms ? llms.map((llm: LLM) => <MenuItem value={llm.name}>{llm.name}</MenuItem>) : null}
                             </Select>
                         </FormGroup>
                     </Grid>

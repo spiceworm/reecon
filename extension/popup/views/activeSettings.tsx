@@ -11,17 +11,17 @@ import * as bases from "~util/components/bases"
 import { CommentFilterTable, ThreadFilterTable } from "~util/components/filterTable/tables"
 import * as constants from "~util/constants"
 import * as storage from "~util/storage"
-import type * as types from "~util/types"
+import type { CommentFilter, ThreadFilter } from "~util/types/extension/types"
 
 export const ActiveSettingsView = () => {
-    const [activeCommentFilter] = useStorage<types.CommentFilter>(
+    const [activeCommentFilter] = useStorage<CommentFilter>(
         {
             instance: storage.extLocalStorage,
             key: constants.ACTIVE_COMMENT_FILTER
         },
         (v) => (v === undefined ? constants.defaultCommentFilter : v)
     )
-    const [activeThreadFilter] = useStorage<types.ThreadFilter>(
+    const [activeThreadFilter] = useStorage<ThreadFilter>(
         {
             instance: storage.extLocalStorage,
             key: constants.ACTIVE_THREAD_FILTER
