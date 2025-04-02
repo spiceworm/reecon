@@ -1,52 +1,42 @@
-import abc
 import logging
 from typing import List
 
-import openai
+from langchain.chat_models import init_chat_model
+from langchain_core.messages import (
+    HumanMessage,
+    SystemMessage,
+)
+from langchain_core.messages.utils import count_tokens_approximately
+
 import pydantic
 from tenacity import (
     before_sleep_log,
     retry,
     retry_if_result,
-    retry_if_exception_type,
     stop_after_attempt,
     wait_random_exponential,
 )
-import tiktoken
+
+from ..types import LlmProviderRawResponse
 
 
 log = logging.getLogger("reecon.services.llm_provider")
 
 
-__all__ = ("cls_from_name",)
+__all__ = ("LlmProvider",)
 
 
-def cls_from_name(llm_provider_name: str):
-    match llm_provider_name:
-        case "openai":
-            return OpenAiProvider
-        case _:
-            raise NotImplementedError(f"LLM provider {llm_provider_name} is not implemented.")
+def is_missing_expected_generated_data(raw_response: LlmProviderRawResponse):
+    return not all(raw_response["parsed"].model_dump().values())
 
 
-def is_missing_expected_generated_data(generated_data: pydantic.BaseModel):
-    return not all(generated_data.model_dump().values())
-
-
-class LlmProviderBase(abc.ABC):
-    def __init__(self, *, api_key: str):
+class LlmProvider:
+    def __init__(self, *, api_key: str, llm_name: str, llm_provider_name: str):
         self.api_key = api_key
-        self._client = None
+        self.llm_name = llm_name
+        self.llm_provider_name = llm_provider_name
+        self._llm_client = None
 
-    @property
-    @abc.abstractmethod
-    def client(self):
-        """
-        The client for the LLM provider. This should be implemented in subclasses.
-        """
-        pass
-
-    @abc.abstractmethod
     def count_tokens(self, s: str, llm_name: str) -> int:
         """
         Count the number of tokens in the given string using the encoding for the specified LLM.
@@ -58,59 +48,61 @@ class LlmProviderBase(abc.ABC):
         Returns:
             int: The number of tokens in the string.
         """
-        pass
+        raise NotImplementedError("Exact token counting is not implemented yet.")
 
-    @abc.abstractmethod
-    def generate_data(self, *, inputs: List[str], llm_name: str, prompt: str, response_format: type[pydantic.BaseModel]) -> pydantic.BaseModel:
+    @staticmethod
+    def estimate_tokens(s: str) -> int:
+        """
+        Estimate the number of tokens in a string using a simple heuristic. Use this when an exact count is not necessary.
+        This is a very rough estimate and should not be used for precise token counting.
+
+        Args:
+            s (str): The string to estimate tokens for.
+
+        Returns:
+            int: The estimated number of tokens.
+        """
+        return count_tokens_approximately([s])
+
+    @retry(
+        before_sleep=before_sleep_log(log, logging.DEBUG),
+        reraise=True,
+        retry=retry_if_result(is_missing_expected_generated_data),
+        stop=stop_after_attempt(10),
+        wait=wait_random_exponential(min=1, max=60),
+    )
+    def generate_data(self, *, inputs: List[str], prompt: str, response_format: type[pydantic.BaseModel]) -> LlmProviderRawResponse:
         """
         Generate data using the LLM provider.
 
         Args:
             inputs (List[str]): The inputs to be processed by the LLM.
-            llm_name (str): The name of the LLM to use.
             prompt (str): The prompt to be used for generation.
             response_format (type[pydantic.BaseModel]): The expected response format.
 
         Returns:
             pydantic.BaseModel: The generated data.
         """
-        pass
-
-
-class OpenAiProvider(LlmProviderBase):
-    def __init__(self, *, api_key: str):
-        super().__init__(api_key=api_key)
+        structured_chat_model = self.llm_client.with_structured_output(response_format, include_raw=True)
+        return structured_chat_model.invoke(
+            [
+                SystemMessage(prompt),
+                HumanMessage("|".join(inputs)),
+            ]
+        )
 
     @property
-    def client(self):
-        if self._client is None:
-            self._client = openai.OpenAI(api_key=self.api_key)
-        return self._client
+    def llm_client(self):
+        """
+        Lazy load the LLM client.
 
-    def count_tokens(self, s: str, llm_name: str) -> int:
-        encoding = tiktoken.encoding_for_model(llm_name)
-        return len(encoding.encode(s, disallowed_special=()))
-
-    @retry(
-        before_sleep=before_sleep_log(log, logging.DEBUG),
-        reraise=True,
-        retry=(retry_if_result(is_missing_expected_generated_data) | retry_if_exception_type(openai.OpenAIError)),
-        stop=stop_after_attempt(10),
-        wait=wait_random_exponential(min=1, max=60),
-    )
-    def generate_data(self, *, inputs: List[str], llm_name: str, prompt: str, response_format: type[pydantic.BaseModel]) -> pydantic.BaseModel:
-        chat_completion = self.client.beta.chat.completions.parse(
-            messages=[
-                {
-                    "role": "system",
-                    "content": prompt,
-                },
-                {
-                    "role": "user",
-                    "content": "|".join(inputs),
-                },
-            ],
-            model=llm_name,
-            response_format=response_format,
-        )
-        return chat_completion.choices[0].message.parsed
+        Returns:
+            The LLM client.
+        """
+        if self._llm_client is None:
+            self._llm_client = init_chat_model(
+                self.llm_name,
+                api_key=self.api_key,
+                model_provider=self.llm_provider_name,
+            )
+        return self._llm_client

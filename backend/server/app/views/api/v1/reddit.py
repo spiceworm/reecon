@@ -91,7 +91,7 @@ class RedditorContextQueryViewSet(GenericViewSet):
         responses=serializers.RedditorContextQueryListResponseSerializer,
     )
     def list(self, request, *args, **kwargs):
-        queryset = request.user.submitted_redditor_context_queries.all()
+        queryset = models.RedditorContextQuery.objects.filter(request_meta__submitter=request.user)
         response_serializer = serializers.RedditorContextQueryListResponseSerializer(instance=queryset, many=True)
         return Response(response_serializer.data, status=status.HTTP_200_OK)
 
@@ -250,7 +250,7 @@ class ThreadContextQueryViewSet(GenericViewSet):
         responses=serializers.ThreadContextQueryListResponseSerializer,
     )
     def list(self, request, *args, **kwargs):
-        queryset = request.user.submitted_thread_context_queries.all()
+        queryset = models.ThreadContextQuery.objects.filter(request_meta__submitter=request.user)
         response_serializer = serializers.ThreadContextQueryListResponseSerializer(instance=queryset, many=True)
         return Response(response_serializer.data, status=status.HTTP_200_OK)
 

@@ -1,18 +1,14 @@
 from django.conf import settings
-from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 from .abstracts import Created, Description
+from .. import util
 
 
 __all__ = (
     "LlmProvider",
     "LLM",
-    "ProducedBinary",
-    "ProducedFloat",
-    "ProducedInteger",
-    "ProducedText",
-    "ProducedTextList",
+    "RequestMetadata",
 )
 
 
@@ -27,7 +23,12 @@ class LlmProvider(Created, Description):
     )
 
     def __str__(self):
-        return f"{self.__class__.__name__}(name={self.name}, display_name={self.display_name})"
+        return util.format.class__str__(
+            self.__class__.__name__,
+            description=self.description,
+            display_name=self.display_name,
+            name=self.name,
+        )
 
 
 class LLM(Created, Description):
@@ -46,119 +47,63 @@ class LLM(Created, Description):
     )
 
     def __str__(self):
-        return f"{self.__class__.__name__}(name={self.name}, provider={self.provider.name})"
+        return util.format.class__str__(
+            self.__class__.__name__,
+            context_window=self.context_window,
+            description=self.description,
+            name=self.name,
+            provider=self.provider.name,
+        )
 
 
-class ProducedBinary(Created):
+class RequestMetadata(models.Model):
     contributor = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=False,
         on_delete=models.CASCADE,
-        related_name="contributed_binary",
-        help_text="The user who contributed the resources that produced the data value.",
+        related_name="contributions",
+        help_text="The user who contributed resources to pay for LLM processing.",
+    )
+    input_tokens = models.IntegerField(
+        null=False,
+        help_text="Number of input tokens.",
     )
     llm = models.ForeignKey(
         LLM,
         null=False,
         on_delete=models.CASCADE,
-        related_name="produced_binary",
+        related_name="requests_metadata",
+        help_text="The LLM used to process the query.",
     )
-    value = models.BinaryField(
+    output_tokens = models.IntegerField(
         null=False,
+        help_text="Number of output tokens.",
     )
-
-    def __str__(self):
-        return f"{self.__class__.__name__}(contributor={self.contributor.username}, llm={self.llm.name}, " f"value={self.value})"
-
-
-class ProducedFloat(Created):
-    contributor = models.ForeignKey(
+    submitter = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=False,
         on_delete=models.CASCADE,
-        related_name="contributed_floats",
-        help_text="The user who contributed the resources that produced the data value.",
+        related_name="submissions",
+        help_text="The user who submit request to initiate the LLM query.",
     )
-    llm = models.ForeignKey(
-        LLM,
+    total_inputs = models.IntegerField(
+        default=0,
         null=False,
-        on_delete=models.CASCADE,
-        related_name="produced_floats",
+        help_text="The total number of unique submissions used as inputs when processing the LLM query.",
     )
-    value = models.FloatField(
+    total_tokens = models.IntegerField(
         null=False,
+        help_text="Total number of tokens.",
     )
 
     def __str__(self):
-        return f"{self.__class__.__name__}(contributor={self.contributor.username}, llm={self.llm.name}, " f"value={self.value})"
-
-
-class ProducedInteger(Created):
-    contributor = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        null=False,
-        on_delete=models.CASCADE,
-        related_name="contributed_integers",
-        help_text="The user who contributed the resources that produced the data value.",
-    )
-    llm = models.ForeignKey(
-        LLM,
-        null=False,
-        on_delete=models.CASCADE,
-        related_name="produced_integers",
-    )
-    value = models.IntegerField(
-        null=False,
-    )
-
-    def __str__(self):
-        return f"{self.__class__.__name__}(contributor={self.contributor.username}, llm={self.llm.name}, " f"value={self.value})"
-
-
-class ProducedText(Created):
-    contributor = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        null=False,
-        on_delete=models.CASCADE,
-        related_name="contributed_text",
-        help_text="The user who contributed the resources that produced the data value.",
-    )
-    llm = models.ForeignKey(
-        LLM,
-        null=False,
-        on_delete=models.CASCADE,
-        related_name="produced_text",
-    )
-    value = models.TextField(
-        null=False,
-    )
-
-    def __str__(self):
-        return f"{self.__class__.__name__}(contributor={self.contributor.username}, llm={self.llm.name}, " f"value={self.value})"
-
-
-class ProducedTextList(Created):
-    contributor = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        null=False,
-        on_delete=models.CASCADE,
-        related_name="contributed_text_lists",
-        help_text="The user who contributed the resources that produced the data value.",
-    )
-    llm = models.ForeignKey(
-        LLM,
-        null=False,
-        on_delete=models.CASCADE,
-        related_name="produced_text_lists",
-    )
-    value = ArrayField(
-        models.CharField(
-            null=False,
-        ),
-        default=list,
-        null=False,
-        help_text="The value of the produced list of text.",
-    )
-
-    def __str__(self):
-        return f"{self.__class__.__name__}(contributor={self.contributor.username}, llm={self.llm.name}, " f"value={self.value})"
+        return util.format.class__str__(
+            self.__class__.__name__,
+            contributor=self.contributor.username,
+            input_tokens=self.input_tokens,
+            llm=self.llm.name,
+            output_tokens=self.output_tokens,
+            submitter=self.submitter.username,
+            total_inputs=self.total_inputs,
+            total_tokens=self.total_tokens,
+        )

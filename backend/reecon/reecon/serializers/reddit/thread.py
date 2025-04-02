@@ -1,11 +1,6 @@
 from rest_framework import serializers
 
-from ..data import (
-    ProducedFloatSerializer,
-    ProducedTextSerializer,
-    ProducedTextListSerializer,
-)
-from ..user import UserSerializer
+from ..data import RequestMetadataSerializer
 from ...models import (
     Thread,
     ThreadContextQuery,
@@ -38,10 +33,6 @@ class ProcessedThreadSerializer(serializers.ModelSerializer):
     source = serializers.CharField(
         read_only=True,
     )
-    submitter = UserSerializer(
-        fields=("username",),
-        read_only=True,
-    )
 
     class Meta:
         model = Thread
@@ -67,10 +58,6 @@ class UnprocessableThreadSerializer(serializers.ModelSerializer):
     source = serializers.CharField(
         read_only=True,
     )
-    submitter = UserSerializer(
-        fields=("username",),
-        read_only=True,
-    )
 
     class Meta:
         model = UnprocessableThread
@@ -81,11 +68,7 @@ class ThreadContextQuerySerializer(serializers.ModelSerializer):
     context = ProcessedThreadSerializer(
         read_only=True,
     )
-    response = ProducedTextSerializer(
-        read_only=True,
-    )
-    submitter = UserSerializer(
-        fields=("username",),
+    request_meta = RequestMetadataSerializer(
         read_only=True,
     )
 
@@ -95,27 +78,13 @@ class ThreadContextQuerySerializer(serializers.ModelSerializer):
 
 
 class UnprocessableThreadContextQuerySerializer(serializers.ModelSerializer):
-    submitter = UserSerializer(
-        fields=("username",),
-        read_only=True,
-    )
-
     class Meta:
         model = UnprocessableThreadContextQuery
         exclude = ("id",)
 
 
 class ThreadDataSerializer(serializers.ModelSerializer):
-    keywords = ProducedTextListSerializer(
-        read_only=True,
-    )
-    sentiment_polarity = ProducedFloatSerializer(
-        read_only=True,
-    )
-    sentiment_subjectivity = ProducedFloatSerializer(
-        read_only=True,
-    )
-    summary = ProducedTextSerializer(
+    request_meta = RequestMetadataSerializer(
         read_only=True,
     )
 

@@ -138,20 +138,20 @@ const RedditorAnchor = (props: PlasmoCSUIContainerProps) => {
         inlineEl.style.filter = "none"
         inlineEl.title = [
             `processed: ${processedRedditor.data.created}`,
-            `age: ${processedRedditor.data.age.value}`,
-            `iq: ${processedRedditor.data.iq.value}`,
-            `interests: ${processedRedditor.data.interests.value}`,
-            `sentiment_polarity: ${processedRedditor.data.sentiment_polarity.value}`,
-            `sentiment_subjectivity: ${processedRedditor.data.sentiment_subjectivity.value}`,
-            `total_inputs: ${processedRedditor.data.total_inputs}`,
-            `summary: ${processedRedditor.data.summary.value}`
+            `age: ${processedRedditor.data.age}`,
+            `iq: ${processedRedditor.data.iq}`,
+            `interests: ${processedRedditor.data.interests}`,
+            `sentiment_polarity: ${processedRedditor.data.sentiment_polarity}`,
+            `sentiment_subjectivity: ${processedRedditor.data.sentiment_subjectivity}`,
+            `summary: ${processedRedditor.data.summary}`,
+            `request_meta: ${JSON.stringify(processedRedditor.data.request_meta)}`
         ].join("\u000d")
 
         shouldHideComment = [
-            ageFilterEnabled && processedRedditor.data.age.value < activeFilter.age,
-            iqFilterEnabled && processedRedditor.data.iq.value < activeFilter.iq,
-            sentimentPolarityFilterEnabled && processedRedditor.data.sentiment_polarity.value < activeFilter.sentimentPolarity,
-            sentimentSubjectivityFilterEnabled && processedRedditor.data.sentiment_subjectivity.value < activeFilter.sentimentSubjectivity
+            ageFilterEnabled && processedRedditor.data.age < activeFilter.age,
+            iqFilterEnabled && processedRedditor.data.iq < activeFilter.iq,
+            sentimentPolarityFilterEnabled && processedRedditor.data.sentiment_polarity < activeFilter.sentimentPolarity,
+            sentimentSubjectivityFilterEnabled && processedRedditor.data.sentiment_subjectivity < activeFilter.sentimentSubjectivity
         ].some((shouldHide) => shouldHide)
     } else if (cachedUnprocessable) {
         const unprocessableRedditor = cachedUnprocessable.value

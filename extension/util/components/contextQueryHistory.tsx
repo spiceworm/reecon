@@ -50,11 +50,13 @@ export const ContextQueryHistory = () => {
 
     const getQueryMetadata = (contextQuery: RedditorContextQuery | ThreadContextQuery) => {
         return {
+            contributor: contextQuery?.request_meta.contributor.username,
             created: contextQuery?.created,
             identifier: contextQuery?.context.identifier,
-            inputs: contextQuery?.total_inputs,
-            llm: contextQuery?.response.llm.name,
-            submitter: contextQuery?.submitter.username
+            inputs: contextQuery?.request_meta.total_inputs,
+            llm: contextQuery?.request_meta.llm.name,
+            submitter: contextQuery?.request_meta.submitter.username,
+            tokens: contextQuery?.request_meta.total_tokens
         }
     }
 
@@ -123,7 +125,7 @@ export const ContextQueryHistory = () => {
 
                             <Stack direction={"row"} spacing={2}>
                                 <Typography variant={"h6"}>Response</Typography>
-                                <CopyToClipboardButton text={modalContent?.response.value} />
+                                <CopyToClipboardButton text={modalContent?.response} />
                                 <TooltipIcon
                                     icon={<DataObjectIcon fontSize={"small"} />}
                                     title={
@@ -137,7 +139,7 @@ export const ContextQueryHistory = () => {
                             </Stack>
 
                             <Typography>
-                                <MuiMarkdown>{modalContent?.response.value}</MuiMarkdown>
+                                <MuiMarkdown>{modalContent?.response}</MuiMarkdown>
                             </Typography>
                         </Stack>
                     </DialogContentText>

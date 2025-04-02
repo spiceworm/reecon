@@ -3,9 +3,8 @@ export type ApiStatusMessage = StatusMessage
 interface ContextQuery {
     created: Date
     prompt: string
-    response: ProducedText
-    submitter: UserUsername
-    total_inputs: number
+    response: string
+    request_meta: RequestMetadata
 }
 
 export interface IgnoredRedditor {
@@ -27,27 +26,6 @@ interface LlmProvider {
     name: string
 }
 
-interface ProducedData {
-    contributor: UserUsername
-    llm: LLM
-}
-
-interface ProducedFloat extends ProducedData {
-    value: number
-}
-
-interface ProducedInteger extends ProducedData {
-    value: number
-}
-
-interface ProducedText extends ProducedData {
-    value: string
-}
-
-interface ProducedTextList extends ProducedData {
-    value: string[]
-}
-
 export interface Profile {
     reddit_username: string | null
     signed_username: string
@@ -66,21 +44,21 @@ export interface ProcessedThread extends RedditEntity {
 }
 
 interface ProcessedThreadData extends ProcessedRedditEntityData {
-    keywords: ProducedTextList
+    keywords: string[]
 }
 
 interface ProcessedRedditEntityData {
     created: Date
-    sentiment_polarity: ProducedFloat
-    sentiment_subjectivity: ProducedFloat
-    summary: ProducedText
-    total_inputs: number
+    request_meta: RequestMetadata
+    sentiment_polarity: number
+    sentiment_subjectivity: number
+    summary: string
 }
 
 interface ProcessedRedditorData extends ProcessedRedditEntityData {
-    age: ProducedInteger
-    iq: ProducedInteger
-    interests: ProducedTextList
+    age: number
+    iq: number
+    interests: string[]
 }
 
 interface RedditEntity {
@@ -88,11 +66,20 @@ interface RedditEntity {
     identifier: string
     last_processed: Date
     source: string
-    submitter: UserUsername
 }
 
 export interface RedditorContextQuery extends ContextQuery {
     context: ProcessedRedditor
+}
+
+interface RequestMetadata {
+    contributor: UserUsername
+    input_tokens: number
+    llm: LLM
+    output_tokens: number
+    submitter: UserUsername
+    total_inputs: number
+    total_tokens: number
 }
 
 export interface StatusMessage {
@@ -110,7 +97,6 @@ export interface ThreadContextQuery extends ContextQuery {
 interface UnprocessableRedditContextQuery {
     created: Date
     reason: string
-    submitter: UserUsername
 }
 
 interface UnprocessableRedditEntity {
@@ -118,7 +104,6 @@ interface UnprocessableRedditEntity {
     identifier: string
     reason: string
     source: string
-    submitter: UserUsername
 }
 
 export interface UnprocessableRedditor extends UnprocessableRedditEntity {

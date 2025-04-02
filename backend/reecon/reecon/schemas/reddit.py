@@ -2,27 +2,39 @@ from typing import List
 
 from pydantic import (
     BaseModel,
-    Field,
+    ConfigDict,
     field_validator,
 )
 
 
-__all__ = ("GeneratedRedditorData", "GeneratedThreadData")
+__all__ = ("GeneratedRedditorContextQuery", "GeneratedThreadContextQuery", "GeneratedRedditorData", "GeneratedThreadData")
 
 
-class GeneratedDataBase(BaseModel):
+class LlmUsageMetadata(BaseModel):
+    input_tokens: int
+    output_tokens: int
+    total_tokens: int
+
+
+class LlmResponse(BaseModel):
+    # If extra fields are included when creating the model, they will be ignored. This occurs when calling `model_validate.(**kwargs)`
+    # if kwargs contains extra fields that are not defined in the model.
+    model_config = ConfigDict(extra="forbid")
+
+    usage_metadata: LlmUsageMetadata
+
+
+class GeneratedContextQuery(LlmResponse):
+    inputs: List[str]
+    prompt: str
+    response: str
+
+
+class GeneratedData(LlmResponse):
     inputs: List[str]
     prompt: str
     sentiment_polarity: float
-    #     Field(
-    #     ge=-1.0,
-    #     le=1.0,
-    # )
     sentiment_subjectivity: float
-    #     Field(
-    #     ge=0.0,
-    #     le=1.0,
-    # )
     summary: str
 
     # Using field validators is temporary until OpenAI adds support for type-specific keywords that are not yet supported
@@ -40,7 +52,15 @@ class GeneratedDataBase(BaseModel):
         return value
 
 
-class GeneratedRedditorData(GeneratedDataBase):
+class GeneratedRedditorContextQuery(GeneratedContextQuery):
+    pass
+
+
+class GeneratedThreadContextQuery(GeneratedContextQuery):
+    pass
+
+
+class GeneratedRedditorData(GeneratedData):
     age: int
     interests: List[str]
     iq: int
@@ -49,7 +69,7 @@ class GeneratedRedditorData(GeneratedDataBase):
         return list(set([s.lower() for s in self.interests]))
 
 
-class GeneratedThreadData(GeneratedDataBase):
+class GeneratedThreadData(GeneratedData):
     keywords: List[str]
 
     def normalized_keywords(self) -> List[str]:

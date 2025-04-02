@@ -7,7 +7,6 @@ from constance import config
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core import management
-import tiktoken
 
 from ... import (
     models,
@@ -85,7 +84,6 @@ class Command(management.base.BaseCommand):
         admin = get_user_model().objects.get(username="admin")
         env = schemas.get_worker_env()
 
-        encoding = tiktoken.encoding_for_model(llm.name)
         prompt = ""
 
         if options["entity"] == "redditor":
@@ -121,9 +119,8 @@ class Command(management.base.BaseCommand):
         inputs: List[str] = service.get_inputs()
 
         log.debug(
-            "Retrieved %s inputs (%s tokens) for %s",
+            "Retrieved %s inputs for %s",
             len(inputs),
-            len(encoding.encode("|".join(inputs))),
             service.identifier,
         )
 

@@ -120,7 +120,7 @@ export const ContextQueryForm = () => {
             if (latestData && "success" in latestData && latestData.success !== null) {
                 setJobId("")
                 setIsLoading(false)
-                setQueryResponse(latestData.success.response.value)
+                setQueryResponse(latestData.success.response)
                 setResponseModalVisible(true)
                 return 0
             }

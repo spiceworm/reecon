@@ -1,12 +1,6 @@
 from rest_framework import serializers
 
-from ..data import (
-    ProducedFloatSerializer,
-    ProducedIntegerSerializer,
-    ProducedTextSerializer,
-    ProducedTextListSerializer,
-)
-from ..user import UserSerializer
+from ..data import RequestMetadataSerializer
 from ...models import (
     IgnoredRedditor,
     Redditor,
@@ -50,10 +44,6 @@ class ProcessedRedditorSerializer(serializers.ModelSerializer):
     source = serializers.CharField(
         read_only=True,
     )
-    submitter = UserSerializer(
-        fields=("username",),
-        read_only=True,
-    )
 
     class Meta:
         model = Redditor
@@ -76,10 +66,6 @@ class UnprocessableRedditorSerializer(serializers.ModelSerializer):
     source = serializers.CharField(
         read_only=True,
     )
-    submitter = UserSerializer(
-        fields=("username",),
-        read_only=True,
-    )
 
     class Meta:
         model = UnprocessableRedditor
@@ -90,11 +76,7 @@ class RedditorContextQuerySerializer(serializers.ModelSerializer):
     context = ProcessedRedditorSerializer(
         read_only=True,
     )
-    response = ProducedTextSerializer(
-        read_only=True,
-    )
-    submitter = UserSerializer(
-        fields=("username",),
+    request_meta = RequestMetadataSerializer(
         read_only=True,
     )
 
@@ -110,22 +92,7 @@ class UnprocessableRedditorContextQuerySerializer(serializers.ModelSerializer):
 
 
 class RedditorDataSerializer(serializers.ModelSerializer):
-    age = ProducedIntegerSerializer(
-        read_only=True,
-    )
-    interests = ProducedTextListSerializer(
-        read_only=True,
-    )
-    iq = ProducedIntegerSerializer(
-        read_only=True,
-    )
-    sentiment_polarity = ProducedFloatSerializer(
-        read_only=True,
-    )
-    sentiment_subjectivity = ProducedFloatSerializer(
-        read_only=True,
-    )
-    summary = ProducedTextSerializer(
+    request_meta = RequestMetadataSerializer(
         read_only=True,
     )
 

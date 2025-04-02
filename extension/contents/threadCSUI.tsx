@@ -98,16 +98,16 @@ const ThreadAnchor = (props: PlasmoCSUIContainerProps) => {
         inlineEl.style.filter = "none"
         inlineEl.title = [
             `processed: ${processedThread.data.created}`,
-            `keywords: ${processedThread.data.keywords.value}`,
-            `sentiment_polarity: ${processedThread.data.sentiment_polarity.value}`,
-            `sentiment_subjectivity: ${processedThread.data.sentiment_subjectivity.value}`,
-            `total_inputs: ${processedThread.data.total_inputs}`,
-            `summary: ${processedThread.data.summary.value}`
+            `keywords: ${processedThread.data.keywords}`,
+            `sentiment_polarity: ${processedThread.data.sentiment_polarity}`,
+            `sentiment_subjectivity: ${processedThread.data.sentiment_subjectivity}`,
+            `summary: ${processedThread.data.summary}`,
+            `request_meta: ${JSON.stringify(processedThread.data.request_meta)}`
         ].join("\u000d")
 
         shouldHideThreadRow = [
-            sentimentPolarityFilterEnabled && processedThread.data.sentiment_polarity.value < activeFilter.sentimentPolarity,
-            sentimentSubjectivityFilterEnabled && processedThread.data.sentiment_subjectivity.value < activeFilter.sentimentSubjectivity
+            sentimentPolarityFilterEnabled && processedThread.data.sentiment_polarity < activeFilter.sentimentPolarity,
+            sentimentSubjectivityFilterEnabled && processedThread.data.sentiment_subjectivity < activeFilter.sentimentSubjectivity
         ].some((shouldHide) => shouldHide)
     } else if (cachedUnprocessable) {
         const unprocessableThread = cachedUnprocessable.value

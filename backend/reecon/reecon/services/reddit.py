@@ -59,8 +59,11 @@ class RedditBase(abc.ABC):
         self.identifier = identifier
         self.contributor = contributor
         self.llm = llm
-        llm_provider_cls = llm_provider.cls_from_name(llm.provider.name)
-        self.llm_provider = llm_provider_cls(api_key=llm_providers_settings[llm.provider.name]["api_key"])
+        self.llm_provider = llm_provider.LlmProvider(
+            api_key=llm_providers_settings[llm.provider.name]["api_key"],
+            llm_name=llm.name,
+            llm_provider_name=llm.provider.name,
+        )
         self.submitter = submitter
         self.env = env
 
@@ -116,7 +119,8 @@ class RedditorBase(RedditBase):
                 if text := self.sanitize_submission(thread.selftext):
                     if text not in submissions:
                         pending_inputs = "|".join(submissions + [text])
-                        pending_tokens = self.llm_provider.count_tokens(pending_inputs, self.llm.name)
+                        # pending_tokens = self.llm_provider.count_tokens(pending_inputs, self.llm.name)
+                        pending_tokens = self.llm_provider.estimate_tokens(pending_inputs)
                         if pending_tokens < max_input_tokens:
                             submissions.append(text)
                         else:
@@ -130,7 +134,8 @@ class RedditorBase(RedditBase):
                 if text := self.sanitize_submission(comment.body):
                     if text not in submissions:
                         pending_inputs = "|".join(submissions + [text])
-                        pending_tokens = self.llm_provider.count_tokens(pending_inputs, self.llm.name)
+                        # pending_tokens = self.llm_provider.count_tokens(pending_inputs, self.llm.name)
+                        pending_tokens = self.llm_provider.estimate_tokens(pending_inputs)
                         if pending_tokens < max_input_tokens:
                             submissions.append(text)
                         else:
@@ -148,11 +153,9 @@ class RedditorBase(RedditBase):
             username=self.identifier,
             defaults={
                 "reason": reason,
-                "submitter": self.submitter,
             },
             create_defaults={
                 "reason": reason,
-                "submitter": self.submitter,
                 "username": self.identifier,
             },
         )
@@ -183,7 +186,8 @@ class ThreadBase(RedditBase):
             if text := self.sanitize_submission(praw_submission.selftext):
                 if text not in submissions:
                     pending_inputs = "|".join(submissions + [text])
-                    pending_tokens = self.llm_provider.count_tokens(pending_inputs, self.llm.name)
+                    # pending_tokens = self.llm_provider.count_tokens(pending_inputs, self.llm.name)
+                    pending_tokens = self.llm_provider.estimate_tokens(pending_inputs)
                     if pending_tokens < max_input_tokens:
                         submissions.append(text)
 
@@ -196,7 +200,8 @@ class ThreadBase(RedditBase):
                     if text := self.sanitize_submission(comment.body):
                         if text not in submissions:
                             pending_inputs = "|".join(submissions + [text])
-                            pending_tokens = self.llm_provider.count_tokens(pending_inputs, self.llm.name)
+                            # pending_tokens = self.llm_provider.count_tokens(pending_inputs, self.llm.name)
+                            pending_tokens = self.llm_provider.estimate_tokens(pending_inputs)
                             if pending_tokens < max_input_tokens:
                                 submissions.append(text)
                             else:
@@ -214,11 +219,9 @@ class ThreadBase(RedditBase):
             url=self.identifier,
             defaults={
                 "reason": reason,
-                "submitter": self.submitter,
             },
             create_defaults={
                 "reason": reason,
-                "submitter": self.submitter,
                 "url": self.identifier,
             },
         )
@@ -241,19 +244,24 @@ class RedditorContextQueryService(LlmActionBase, RedditorBase):
         return models.RedditorContextQuery.objects.create(
             context=redditor,
             prompt=generated.prompt,
-            response=models.ProducedText.objects.create(
+            request_meta=models.RequestMetadata.objects.create(
                 contributor=self.contributor,
+                input_tokens=generated.usage_metadata.input_tokens,
                 llm=self.llm,
-                value=generated.response,
+                output_tokens=generated.usage_metadata.output_tokens,
+                submitter=self.submitter,
+                total_inputs=len(generated.inputs),
+                total_tokens=generated.usage_metadata.total_tokens,
             ),
-            submitter=self.submitter,
-            total_inputs=len(generated.inputs),
+            response=generated.response,
         )
 
     def generate(self, *, inputs: List[str], prompt: str) -> schemas.GeneratedRedditorContextQuery:
-        generated_data = self.llm_provider.generate_data(inputs=inputs, llm_name=self.llm.name, prompt=prompt, response_format=schemas.GeneratedRedditorContextQuery)
+        raw_response = self.llm_provider.generate_data(inputs=inputs, prompt=prompt, response_format=schemas.GeneratedRedditorContextQuery)
         log.debug("Retry stats: %s", self.llm_provider.generate_data.retry.statistics)
-        return schemas.GeneratedRedditorContextQuery.model_validate({"inputs": inputs, "prompt": prompt, **generated_data.model_dump()})
+        return schemas.GeneratedRedditorContextQuery.model_validate(
+            {"inputs": inputs, "prompt": prompt, "usage_metadata": raw_response["raw"].usage_metadata, **raw_response["parsed"].model_dump()}
+        )
 
 
 class ThreadContextQueryService(LlmActionBase, ThreadBase):
@@ -262,24 +270,28 @@ class ThreadContextQueryService(LlmActionBase, ThreadBase):
         return models.ThreadContextQuery.objects.create(
             context=thread,
             prompt=generated.prompt,
-            response=models.ProducedText.objects.create(
+            request_meta=models.RequestMetadata.objects.create(
                 contributor=self.contributor,
+                input_tokens=generated.usage_metadata.input_tokens,
                 llm=self.llm,
-                value=generated.response,
+                output_tokens=generated.usage_metadata.output_tokens,
+                submitter=self.submitter,
+                total_inputs=len(generated.inputs),
+                total_tokens=generated.usage_metadata.total_tokens,
             ),
-            submitter=self.submitter,
-            total_inputs=len(generated.inputs),
+            response=generated.response,
         )
 
     def generate(self, *, inputs: List[str], prompt: str) -> schemas.GeneratedThreadContextQuery:
-        generated_data = self.llm_provider.generate_data(
+        raw_response = self.llm_provider.generate_data(
             inputs=inputs,
-            llm_name=self.llm.name,
             prompt=prompt,
             response_format=schemas.GeneratedThreadContextQuery,
         )
         log.debug("Retry stats: %s", self.llm_provider.generate_data.retry.statistics)
-        return schemas.GeneratedThreadContextQuery.model_validate({"inputs": inputs, "prompt": prompt, **generated_data.model_dump()})
+        return schemas.GeneratedThreadContextQuery.model_validate(
+            {"inputs": inputs, "prompt": prompt, "usage_metadata": raw_response["raw"].usage_metadata, **raw_response["parsed"].model_dump()}
+        )
 
 
 class RedditorDataService(LlmActionBase, RedditorBase):
@@ -288,53 +300,34 @@ class RedditorDataService(LlmActionBase, RedditorBase):
             username=self.identifier,
             defaults={
                 "last_processed": timezone.now(),
-                "submitter": self.submitter,
             },
             create_defaults={
                 "last_processed": timezone.now(),
-                "submitter": self.submitter,
                 "username": self.identifier,
             },
         )
         return models.RedditorData.objects.create(
-            age=models.ProducedInteger.objects.create(
-                contributor=self.contributor,
-                llm=self.llm,
-                value=generated.age,
-            ),
-            interests=models.ProducedTextList.objects.create(
-                contributor=self.contributor,
-                llm=self.llm,
-                value=generated.normalized_interests(),
-            ),
-            iq=models.ProducedInteger.objects.create(
-                contributor=self.contributor,
-                llm=self.llm,
-                value=generated.iq,
-            ),
+            age=generated.age,
+            interests=generated.normalized_interests(),
+            iq=generated.iq,
             redditor=redditor,
-            sentiment_polarity=models.ProducedFloat.objects.create(
+            request_meta=models.RequestMetadata.objects.create(
                 contributor=self.contributor,
+                input_tokens=generated.usage_metadata.input_tokens,
                 llm=self.llm,
-                value=generated.sentiment_polarity,
+                output_tokens=generated.usage_metadata.output_tokens,
+                submitter=self.submitter,
+                total_inputs=len(generated.inputs),
+                total_tokens=generated.usage_metadata.total_tokens,
             ),
-            sentiment_subjectivity=models.ProducedFloat.objects.create(
-                contributor=self.contributor,
-                llm=self.llm,
-                value=generated.sentiment_subjectivity,
-            ),
-            summary=models.ProducedText.objects.create(
-                contributor=self.contributor,
-                llm=self.llm,
-                value=generated.summary,
-            ),
-            total_inputs=len(generated.inputs),
+            sentiment_polarity=generated.sentiment_polarity,
+            sentiment_subjectivity=generated.sentiment_subjectivity,
+            summary=generated.summary,
         )
 
     def generate(self, *, inputs: List[str], prompt: str) -> schemas.GeneratedRedditorData:
-        generated_data = self.llm_provider.generate_data(
+        raw_response = self.llm_provider.generate_data(
             inputs=inputs,
-            llm_name=self.llm.name,
             prompt=prompt,
             response_format=schemas.GeneratedRedditorData,
         )
@@ -343,7 +336,8 @@ class RedditorDataService(LlmActionBase, RedditorBase):
             {
                 "inputs": inputs,
                 "prompt": prompt,
-                **generated_data.model_dump(),
+                "usage_metadata": raw_response["raw"].usage_metadata,
+                **raw_response["parsed"].model_dump(),
             }
         )
 
@@ -354,43 +348,32 @@ class ThreadDataService(LlmActionBase, ThreadBase):
             url=self.identifier,
             defaults={
                 "last_processed": timezone.now(),
-                "submitter": self.submitter,
             },
             create_defaults={
                 "last_processed": timezone.now(),
-                "submitter": self.submitter,
                 "url": self.identifier,
             },
         )
         return models.ThreadData.objects.create(
-            keywords=models.ProducedTextList.objects.create(
+            keywords=generated.normalized_keywords(),
+            request_meta=models.RequestMetadata.objects.create(
                 contributor=self.contributor,
+                input_tokens=generated.usage_metadata.input_tokens,
                 llm=self.llm,
-                value=generated.normalized_keywords(),
+                output_tokens=generated.usage_metadata.output_tokens,
+                submitter=self.submitter,
+                total_inputs=len(generated.inputs),
+                total_tokens=generated.usage_metadata.total_tokens,
             ),
-            sentiment_polarity=models.ProducedFloat.objects.create(
-                contributor=self.contributor,
-                llm=self.llm,
-                value=generated.sentiment_polarity,
-            ),
-            sentiment_subjectivity=models.ProducedFloat.objects.create(
-                contributor=self.contributor,
-                llm=self.llm,
-                value=generated.sentiment_subjectivity,
-            ),
-            summary=models.ProducedText.objects.create(
-                contributor=self.contributor,
-                llm=self.llm,
-                value=generated.summary,
-            ),
+            sentiment_polarity=generated.sentiment_polarity,
+            sentiment_subjectivity=generated.sentiment_subjectivity,
+            summary=generated.summary,
             thread=thread,
-            total_inputs=len(generated.inputs),
         )
 
     def generate(self, *, inputs: List[str], prompt: str) -> schemas.GeneratedThreadData:
-        generated_data = self.llm_provider.generate_data(
+        raw_response = self.llm_provider.generate_data(
             inputs=inputs,
-            llm_name=self.llm.name,
             prompt=prompt,
             response_format=schemas.GeneratedThreadData,
         )
@@ -399,6 +382,7 @@ class ThreadDataService(LlmActionBase, ThreadBase):
             {
                 "inputs": inputs,
                 "prompt": prompt,
-                **generated_data.model_dump(),
+                "usage_metadata": raw_response["raw"].usage_metadata,
+                **raw_response["parsed"].model_dump(),
             }
         )

@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-from ..models import LLM
+from .. import models
 
 
 def get_llm_choices() -> List[Tuple[str, str]]:
@@ -8,4 +8,4 @@ def get_llm_choices() -> List[Tuple[str, str]]:
 
 
 def _get_llm_names() -> List[str]:
-    return list(LLM.objects.values_list("name", flat=True))
+    return list(models.LLM.objects.values_list("name", flat=True))
