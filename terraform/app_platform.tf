@@ -123,7 +123,7 @@ resource "digitalocean_app" "reecon-app" {
         }
         env {
             key   = "REDDIT_API_USER_AGENT"
-            value = "reecon ${var.server_version} by /u/reecon-admin github.com/spiceworm/reecon"
+            value = "reecon by /u/reecon-admin github.com/spiceworm/reecon"
             scope = "RUN_AND_BUILD_TIME"
         }
         env {
@@ -154,11 +154,6 @@ resource "digitalocean_app" "reecon-app" {
         env {
             key   = "SECRET_KEY"
             value = var.secret_key
-            scope = "RUN_AND_BUILD_TIME"
-        }
-        env {
-            key   = "VERSION"
-            value = var.server_version
             scope = "RUN_AND_BUILD_TIME"
         }
 

@@ -21,15 +21,10 @@ services:
 
   tests:
     build:
-      args:
-        VERSION: "0.0.0"
       context: "."
     environment:
       <<: *db_env
       DEBUG: "False"  # simulate production
       REDIS_HOST: "redis"
       SECRET_KEY: "123abc"
-      VERSION: "0.0.0"
-    entrypoint: "tox ${TOX_ARGS:-}"
-    volumes:
-      - .:/reecon
+    entrypoint: "uvx --with tox-uv tox ${TOX_ARGS:-}"

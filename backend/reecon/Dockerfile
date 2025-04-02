@@ -1,6 +1,5 @@
 FROM python:3.13.2-bookworm
-
-ARG VERSION
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 WORKDIR /reecon
 
@@ -14,22 +13,21 @@ RUN apt-get update \
         postgresql-client-common \
         redis \
         supervisor \
-        tox \
         vim \
     && apt-get clean \
     && rm -Rf /var/lib/apt/lists/*
 
-RUN pip install --upgrade pip \
-    && pip install  \
-        build \
-        IPython
-
-COPY ./requirements.txt /tmp/
-RUN pip install -r /tmp/requirements.txt \
-    && rm /tmp/requirements.txt
-
 COPY . /reecon
 
-RUN mv ./reecon-redis.sh /usr/local/bin/ \
-    && python -m build \
-    && pip install /reecon/dist/reecon-${VERSION}.tar.gz
+RUN mv ./reecon-redis.sh /usr/local/bin/
+
+# Enable bytecode compilation
+ENV UV_COMPILE_BYTECODE=1
+
+# Copy from the cache instead of linking since it's a mounted volume
+ENV UV_LINK_MODE=copy
+
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+     uv sync --frozen --no-dev

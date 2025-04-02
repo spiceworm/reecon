@@ -1,0 +1,19 @@
+[project]
+name = "server"
+version = "0.3.9"
+description = "Reecon API server."
+requires-python = "==3.13.2"
+dependencies = [
+    "coreapi>=2.3.3",
+    "django-cors-headers>=4.7.0",
+    "djangorestframework-simplejwt[crypto]>=5.5.0",
+    "docutils>=0.21.2",
+    "drf-spectacular>=0.28.0",
+    "drf-spectacular-sidecar>=2025.4.1",
+    "gunicorn>=23.0.0",
+    "pygments>=2.19.1",
+    "reecon",
+]
+
+[tool.uv.sources]
+reecon = { path = "../reecon" }

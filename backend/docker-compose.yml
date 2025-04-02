@@ -7,18 +7,12 @@ services:
   reecon:
     image: "reecon:${VERSION}"
     build:
-      args:
-        VERSION: "${VERSION}"
       context: "./reecon"
-    environment:
-      VERSION: "${VERSION}"
     restart: "no"
 
   service:
     image: "${REGISTRY_URL}/${CONTAINER_REPO}/${APP_NAME}/service:${VERSION}"
     build:
-      args:
-        VERSION: "${VERSION}"
       context: "./service"
     depends_on:
       reecon:
@@ -39,15 +33,10 @@ services:
       REDDIT_BOT_USER_AGENT: "${REDDIT_BOT_USER_AGENT}"
       REDDIT_BOT_USERNAME: "${REDDIT_BOT_USERNAME}"
       SECRET_KEY: "${SECRET_KEY}"
-      VERSION: "${VERSION}"
-    volumes:
-      - "./service:/service"
 
   server:
     image: "${REGISTRY_URL}/${CONTAINER_REPO}/${APP_NAME}/server:${VERSION}"
     build:
-      args:
-        VERSION: "${VERSION}"
       context: "./server"
     depends_on:
       reecon:
@@ -62,14 +51,10 @@ services:
       REDDIT_API_USER_AGENT: "${REDDIT_API_USER_AGENT}"
     ports:
       - "8888:80"
-    volumes:
-      - "./server:/server"
 
   worker:
     image: "${REGISTRY_URL}/${CONTAINER_REPO}/${APP_NAME}/worker:${VERSION}"
     build:
-      args:
-        VERSION: "${VERSION}"
       context: "./worker"
     depends_on:
       reecon:
@@ -79,8 +64,6 @@ services:
       replicas: 1
     environment:
       <<: *shared_env
-    volumes:
-      - "./worker:/worker"
 
   db:
     # match digitalocean "postgresql" db version

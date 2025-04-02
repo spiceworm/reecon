@@ -24,7 +24,7 @@ do
 done;
 
 echo "Performing startup actions" | tee "${LOG}"
-python /server/manage.py prepare_app --all
+uv run python /server/manage.py prepare_app --all
 
 echo "Starting supervisord" | tee "${LOG}"
 exec supervisord --user root --nodaemon --configuration /etc/supervisor/conf.d/supervisord.conf

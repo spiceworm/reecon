@@ -1,0 +1,13 @@
+[project]
+name = "service"
+version = "0.3.9"
+description = "Reecon service for running background jobs. There should only be one instance of this running at a time."
+readme = "README.md"
+requires-python = "==3.13.2"
+dependencies = [
+    "reecon",
+    "rq-scheduler>=0.14.0",
+]
+
+[tool.uv.sources]
+reecon = { path = "../reecon" }

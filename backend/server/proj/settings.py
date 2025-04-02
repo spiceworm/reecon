@@ -1,5 +1,6 @@
 import collections
 from datetime import timedelta
+import importlib.metadata
 from pathlib import Path
 
 import decouple
@@ -111,7 +112,7 @@ SIMPLE_JWT = {
 SPECTACULAR_SETTINGS = {
     "TITLE": decouple.config("APP_NAME"),
     "DESCRIPTION": decouple.config("DESCRIPTION", default=decouple.config("APP_NAME")),
-    "VERSION": decouple.config("VERSION"),
+    "VERSION": importlib.metadata.version("reecon"),
     "SERVE_INCLUDE_SCHEMA": False,
     "SWAGGER_UI_DIST": "SIDECAR",
     "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
