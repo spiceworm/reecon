@@ -44,11 +44,6 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/reecon"]
 
-[tool.uv]
-# Build the reecon package and install it into the virtual environment.
-# Because hatchling is defined as the build backend, it will be used to build the package.
-package = true
-
 [dependency-groups]
 dev = [
     "coverage>=7.8.0",

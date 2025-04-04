@@ -17,3 +17,11 @@ dependencies = [
 
 [tool.uv.sources]
 reecon = { path = "../reecon" }
+
+[dependency-groups]
+dev = [
+    "coverage>=7.8.0",
+    "pytest>=8.3.5",
+    "pytest-cov>=6.1.1",
+    "pytest-django>=4.11.1",
+]

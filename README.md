@@ -44,6 +44,18 @@ $ reecon-debug.sh
 $ reecon-redis.sh
 ```
 
+# Testing
+```
+$ cd backend
+$ ./run_tests.sh
+```
+
+## Test Debugging
+### This will drop you into the pdb debugger if an error occurs when running the tests
+```
+$ docker attach <container>
+```
+
 # Environment Variables
 ### Required for dev and prod
 ```
