@@ -6,6 +6,7 @@ from reecon.serializers import (
     ProcessedRedditorSerializer,
     RedditorContextQuerySerializer,
     UnprocessableRedditorSerializer,
+    UnprocessableRedditorContextQuerySerializer,
 )
 
 from ..llm import LlmProvidersSettingsSerializer
@@ -47,7 +48,7 @@ RedditorContextQueryListResponseSerializer = RedditorContextQuerySerializer
 
 
 class RedditorContextQueryRetrieveResponseSerializer(serializers.Serializer):
-    error = UnprocessableRedditorSerializer(
+    error = UnprocessableRedditorContextQuerySerializer(
         default=None,
         read_only=True,
     )

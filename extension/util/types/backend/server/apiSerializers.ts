@@ -53,7 +53,6 @@ export interface PendingRedditor {
 
 export interface PendingThread {
     path: string
-    url: string
 }
 
 export type StatusMessageResponse = ApiStatusMessage[]

@@ -1,10 +1,9 @@
-from urllib.parse import urlparse
-
 from django.core.validators import (
     MaxValueValidator,
     MinValueValidator,
 )
 from django.db import models
+from django.utils import timezone
 
 
 __all__ = (
@@ -18,7 +17,7 @@ __all__ = (
     "SentimentPolarity",
     "SentimentSubjectivity",
     "Summary",
-    "ThreadUrl",
+    "ThreadPath",
     "UnprocessableReason",
 )
 
@@ -38,7 +37,7 @@ class Created(models.Model):
         abstract = True
 
     created = models.DateTimeField(
-        auto_now=True,
+        auto_now_add=True,
         null=False,
         help_text="Date and time of creation.",
     )
@@ -68,7 +67,7 @@ class LastProcessed(models.Model):
         abstract = True
 
     last_processed = models.DateTimeField(
-        auto_now=True,
+        default=timezone.now,
         null=False,
         help_text="Date and time when the entity was last processed.",
     )
@@ -159,14 +158,14 @@ class Summary(models.Model):
     )
 
 
-class ThreadUrl(models.Model):
+class ThreadPath(models.Model):
     class Meta:
         abstract = True
 
-    url = models.URLField(
+    path = models.CharField(
         null=False,
         unique=True,
-        help_text="URL.",
+        help_text="Thread URL path",
     )
 
     @property
@@ -174,12 +173,8 @@ class ThreadUrl(models.Model):
         return self.path
 
     @property
-    def path(self):
-        return urlparse(self.url).path
-
-    @property
     def source(self):
-        return f"https://old.reddit.com/{self.path}"
+        return f"https://old.reddit.com{self.path}"
 
 
 class UnprocessableReason(models.Model):

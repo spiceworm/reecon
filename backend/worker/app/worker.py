@@ -33,6 +33,7 @@ def _ensure_redditor_context_query_processable(
     Returns an `UnprocessableRedditorContextQuery` object if the redditor_username cannot be processed in a
     context-query and None otherwise.
     """
+    retval = None
     unprocessable_reason = ""
 
     try:
@@ -64,7 +65,8 @@ def _ensure_redditor_context_query_processable(
                 "username": redditor_username,
             },
         )
-        return unprocessable_obj
+        retval = unprocessable_obj
+    return retval
 
 
 def _ensure_redditor_data(
@@ -98,7 +100,7 @@ def _ensure_redditor_data(
 
 def _ensure_thread_context_query_processable(
     *,
-    thread_url: str,
+    thread_path: str,
     contributor: models.AppUser,
     llm: models.LLM,
     llm_providers_settings: types.LlmProvidersSettings,
@@ -106,11 +108,12 @@ def _ensure_thread_context_query_processable(
     env: schemas.WorkerEnv,
 ) -> models.UnprocessableThreadContextQuery | None:
     """
-    Returns an `UnprocessableThreadContextQuery` object if the thread_url cannot be processed in a
+    Returns an `UnprocessableThreadContextQuery` object if the thread_path cannot be processed in a
     context-query and None otherwise.
     """
+    retval = None
     obj: models.ThreadData | models.UnprocessableThread = _ensure_thread_data(
-        thread_url=thread_url,
+        thread_path=thread_path,
         contributor=contributor,
         llm=llm,
         llm_providers_settings=llm_providers_settings,
@@ -118,25 +121,26 @@ def _ensure_thread_context_query_processable(
         env=env,
     )
     if isinstance(obj, models.UnprocessableThread):
-        reason = f"Cannot perform context query for {thread_url} because the thread is unprocessable. {obj.reason}"
+        reason = f"Cannot perform context query for {thread_path} because the thread is unprocessable. {obj.reason}"
         unprocessable_obj, _ = models.UnprocessableThreadContextQuery.objects.update_or_create(
-            url=thread_url,
+            path=thread_path,
             defaults={
                 "reason": reason,
                 "submitter": submitter,
             },
             create_defaults={
+                "path": thread_path,
                 "reason": reason,
                 "submitter": submitter,
-                "url": thread_url,
             },
         )
-        return unprocessable_obj
+        retval = unprocessable_obj
+    return retval
 
 
 def _ensure_thread_data(
     *,
-    thread_url: str,
+    thread_path: str,
     contributor: models.AppUser,
     llm: models.LLM,
     llm_providers_settings: types.LlmProvidersSettings,
@@ -144,14 +148,14 @@ def _ensure_thread_data(
     env: schemas.WorkerEnv,
 ) -> models.ThreadData | models.UnprocessableThread:
     """
-    Verify that a `Thread` objects exists for `thread_url`. If no `Thread` matching `thread_url` exists, execute
+    Verify that a `Thread` objects exists for `thread_path`. If no `Thread` matching `thread_path` exists, execute
     `process_thread_data`. `Thread` objects are created when `process_thread_data` executes without errors.
     """
     try:
-        thread = models.Thread.objects.get(url=thread_url)
+        thread = models.Thread.objects.get(path=thread_path)
     except models.Thread.DoesNotExist:
         return process_thread_data(
-            thread_url=thread_url,
+            thread_path=thread_path,
             contributor=contributor,
             llm=llm,
             llm_providers_settings=llm_providers_settings,
@@ -230,7 +234,7 @@ def process_redditor_data(
 
 def process_thread_context_query(
     *,
-    thread_url: str,
+    thread_path: str,
     contributor: models.AppUser,
     context_query_llm: models.LLM,
     data_llm: models.LLM,
@@ -239,7 +243,7 @@ def process_thread_context_query(
     env: schemas.WorkerEnv,
 ) -> models.ThreadContextQuery | models.UnprocessableThreadContextQuery:
     obj = _ensure_thread_context_query_processable(
-        thread_url=thread_url,
+        thread_path=thread_path,
         contributor=contributor,
         llm=data_llm,
         llm_providers_settings=llm_providers_settings,
@@ -251,7 +255,7 @@ def process_thread_context_query(
         return obj
 
     service = services.ThreadContextQueryService(
-        identifier=thread_url,
+        identifier=thread_path,
         contributor=contributor,
         llm=context_query_llm,
         llm_providers_settings=llm_providers_settings,
@@ -268,7 +272,7 @@ def process_thread_context_query(
 
 def process_thread_data(
     *,
-    thread_url: str,
+    thread_path: str,
     contributor: models.AppUser,
     llm: models.LLM,
     llm_providers_settings: types.LlmProvidersSettings,
@@ -276,7 +280,7 @@ def process_thread_data(
     env: schemas.WorkerEnv,
 ) -> models.ThreadData | models.UnprocessableThread:
     service = services.ThreadDataService(
-        identifier=thread_url,
+        identifier=thread_path,
         contributor=contributor,
         llm=llm,
         llm_providers_settings=llm_providers_settings,

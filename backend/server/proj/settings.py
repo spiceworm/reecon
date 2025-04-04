@@ -91,10 +91,12 @@ RQ_QUEUES = reecon_settings.RQ_QUEUES
 RQ_SHOW_ADMIN_LINK = True
 
 REST_FRAMEWORK = {
-    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "EXCEPTION_HANDLER": "rest_framework.views.exception_handler",
     "NON_FIELD_ERRORS_KEY": "errors",
+    "TEST_REQUEST_DEFAULT_FORMAT": "json",
 }
 
 ACCESS_TOKEN_LIFETIME_UNIT = decouple.config("ACCESS_TOKEN_LIFETIME_UNIT", default="minutes")

@@ -5,6 +5,7 @@ from reecon.serializers import (
     ProcessedThreadSerializer,
     ThreadContextQuerySerializer,
     UnprocessableThreadSerializer,
+    UnprocessableThreadContextQuerySerializer,
 )
 
 from ..llm import LlmProvidersSettingsSerializer
@@ -23,9 +24,6 @@ __all__ = (
 
 class PendingThreadSerializer(serializers.Serializer):
     path = serializers.CharField(
-        read_only=True,
-    )
-    url = serializers.URLField(
         read_only=True,
     )
 
@@ -49,7 +47,7 @@ ThreadContextQueryListResponseSerializer = ThreadContextQuerySerializer
 
 
 class ThreadContextQueryRetrieveResponseSerializer(serializers.Serializer):
-    error = UnprocessableThreadSerializer(
+    error = UnprocessableThreadContextQuerySerializer(
         default=None,
         read_only=True,
     )

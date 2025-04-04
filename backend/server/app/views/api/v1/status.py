@@ -18,6 +18,7 @@ __all__ = (
 
 class StatusView(RetrieveAPIView):
     authentication_classes = ()
+    permission_classes = ()
     serializer_class = StatusResponseSerializer
 
     def get(self, request, *args, **kwargs):

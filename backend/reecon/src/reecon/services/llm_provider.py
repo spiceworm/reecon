@@ -71,7 +71,7 @@ class LlmProvider:
         stop=stop_after_attempt(10),
         wait=wait_random_exponential(min=1, max=60),
     )
-    def generate_data(self, *, inputs: List[str], prompt: str, response_format: type[pydantic.BaseModel]) -> LlmProviderRawResponse:
+    def generate_data(self, *, inputs: List[str], prompt: str, response_format: type[pydantic.BaseModel]) -> LlmProviderRawResponse:  # pragma: no cover
         """
         Generate data using the LLM provider.
 
@@ -92,7 +92,7 @@ class LlmProvider:
         )
 
     @property
-    def llm_client(self):
+    def llm_client(self):  # pragma: no cover
         """
         Lazy load the LLM client.
 

@@ -40,7 +40,6 @@ export interface ProcessedRedditor extends RedditEntity {
 export interface ProcessedThread extends RedditEntity {
     data: ProcessedThreadData
     path: string
-    url: string
 }
 
 interface ProcessedThreadData extends ProcessedRedditEntityData {
@@ -116,12 +115,10 @@ export interface UnprocessableRedditorContextQuery extends UnprocessableRedditCo
 
 export interface UnprocessableThread extends UnprocessableRedditEntity {
     path: string
-    url: string
 }
 
 export interface UnprocessableThreadContextQuery extends UnprocessableRedditContextQuery {
     path: string
-    url: string
 }
 
 export interface User {
@@ -129,7 +126,6 @@ export interface User {
     is_active: boolean
     is_staff: boolean
     is_superuser: boolean
-    last_login: Date | null
     username: string
 }
 

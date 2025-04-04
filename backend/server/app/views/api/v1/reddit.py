@@ -1,5 +1,4 @@
 import logging
-from urllib.parse import urlparse
 
 import rq.exceptions
 from constance import config
@@ -105,7 +104,7 @@ class RedditorContextQueryViewSet(GenericViewSet):
         try:
             job = Job.fetch(job_id, connection=django_rq.get_connection())
         except rq.exceptions.NoSuchJobError:
-            return Response({}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({}, status=status.HTTP_404_NOT_FOUND)
 
         if job.is_finished:
             obj: models.RedditorContextQuery | models.UnprocessableRedditorContextQuery = job.return_value()
@@ -140,7 +139,7 @@ class RedditorDataViewSet(GenericViewSet):
 
         # Usernames of redditors in the database that were inserted recently and not considered stale yet.
         fresh_usernames = set(
-            known_redditors.exclude(last_processed__lte=timezone.now() - config.REDDITOR_FRESHNESS_TD).values_list(
+            known_redditors.exclude(last_processed__lt=timezone.now() - config.REDDITOR_FRESHNESS_TD).values_list(
                 "username",
                 flat=True,
             )
@@ -152,7 +151,8 @@ class RedditorDataViewSet(GenericViewSet):
         ignored_redditors = models.IgnoredRedditor.objects.filter(username__in=usernames)
         ignored_usernames = set(ignored_redditors.values_list("username", flat=True))
 
-        pending_usernames = set(usernames) - known_usernames - fresh_usernames - unprocessable_usernames - ignored_usernames
+        # This should only contain unprocessed usernames and 'stale' entries that need to be reprocessed.
+        pending_usernames = usernames - fresh_usernames - unprocessable_usernames - ignored_usernames
         pending_redditors = []
 
         if config.REDDITOR_DATA_PROCESSING_ENABLED:
@@ -163,7 +163,13 @@ class RedditorDataViewSet(GenericViewSet):
             existing_job_ids = set(job_queue.get_job_ids())
 
             for redditor_username in pending_usernames:
-                pending_redditors.append({"username": redditor_username})
+                # If this is a stale entry that is being reprocessed, we do not want it to be included in the pending list.
+                # The old entry will still be returned in the response under the 'processed' key, but the username will be
+                # enqueued so that it can be reprocessed. I think it is better UX that the user who triggered this request
+                # receives the stale entry in the response compared to having the stale redditor marked as pending in the DOM
+                # and waiting for the job that reprocesses the stale username to finish processing.
+                if redditor_username not in known_usernames:
+                    pending_redditors.append({"username": redditor_username})
 
                 job_id = f"redditor-{redditor_username}"
                 if job_id not in existing_job_ids:
@@ -209,9 +215,9 @@ class ThreadContextQueryViewSet(GenericViewSet):
         llm_name = submit_serializer.validated_data["llm_name"]
         llm_providers_settings: types.LlmProvidersSettings = submit_serializer.validated_data["llm_providers_settings"]
         prompt = submit_serializer.validated_data["prompt"]
-        url_path = submit_serializer.validated_data["path"]
+        thread_path = submit_serializer.validated_data["path"]
 
-        log.debug("Received %s: %s", url_path, prompt)
+        log.debug("Received %s: %s", thread_path, prompt)
 
         if config.THREAD_CONTEXT_QUERY_PROCESSING_ENABLED:
             env = schemas.get_worker_env()
@@ -224,7 +230,7 @@ class ThreadContextQueryViewSet(GenericViewSet):
             job = job_queue.enqueue(
                 "app.worker.process_thread_context_query",  # this function is defined in the worker app
                 kwargs={
-                    "thread_url": f"https://reddit.com{url_path}",
+                    "thread_path": thread_path,
                     "contributor": request.user,
                     "context_query_llm": models.LLM.objects.get(name=llm_name),
                     "data_llm": models.LLM.objects.get(name=config.LLM_NAME),
@@ -290,26 +296,26 @@ class ThreadDataViewSet(GenericViewSet):
         submit_serializer = self.get_serializer(data=request.data)
         submit_serializer.is_valid(raise_exception=True)
         llm_providers_settings: types.LlmProvidersSettings = submit_serializer.validated_data["llm_providers_settings"]
-        url_paths = set(submit_serializer.validated_data["paths"])
-        log.debug("Received %s", url_paths)
-        thread_urls = [f"https://reddit.com{path}" for path in url_paths]
+        thread_paths = set(submit_serializer.validated_data["paths"])
+        log.debug("Received %s", thread_paths)
 
         # Threads that are already in the database.
-        known_threads = self.get_queryset().filter(url__in=thread_urls)
-        known_urls = set(known_threads.values_list("url", flat=True))
+        known_threads = self.get_queryset().filter(path__in=thread_paths)
+        known_paths = set(known_threads.values_list("path", flat=True))
 
-        # URLs of threads in the database that were inserted recently and not considered stale yet.
-        fresh_urls = set(
-            known_threads.exclude(last_processed__lte=timezone.now() - config.THREAD_FRESHNESS_TD).values_list(
-                "url",
+        # URL paths of threads in the database that were inserted recently and not considered stale yet.
+        fresh_paths = set(
+            known_threads.exclude(last_processed__lt=timezone.now() - config.THREAD_FRESHNESS_TD).values_list(
+                "path",
                 flat=True,
             )
         )
 
-        unprocessable_threads = models.UnprocessableThread.objects.filter(url__in=thread_urls)
-        unprocessable_urls = set(unprocessable_threads.values_list("url", flat=True))
+        unprocessable_threads = models.UnprocessableThread.objects.filter(path__in=thread_paths)
+        unprocessable_paths = set(unprocessable_threads.values_list("path", flat=True))
 
-        pending_urls = set(thread_urls) - known_urls - fresh_urls - unprocessable_urls
+        # This should only contain unprocessed paths and 'stale' entries that need to be reprocessed.
+        pending_paths = thread_paths - fresh_paths - unprocessable_paths
         pending_threads = []
 
         if config.THREAD_DATA_PROCESSING_ENABLED:
@@ -319,9 +325,14 @@ class ThreadDataViewSet(GenericViewSet):
             job_queue = django_rq.get_queue("default")
             existing_job_ids = set(job_queue.get_job_ids())
 
-            for thread_url in pending_urls:
-                thread_path = urlparse(thread_url).path
-                pending_threads.append({"path": thread_path, "url": thread_url})
+            for thread_path in pending_paths:
+                # If this is a stale entry that is being reprocessed, we do not want it to be included in the pending list.
+                # The old entry will still be returned in the response under the 'processed' key, but the path will be
+                # enqueued so that it can be reprocessed. I think it is better UX that the user who triggered this request
+                # receives the stale entry in the response compared to having the stale thread marked as pending in the DOM
+                # and waiting for the job that reprocesses the stale path to finish processing.
+                if thread_path not in known_paths:
+                    pending_threads.append({"path": thread_path})
 
                 path_parts = thread_path.split("/")
                 subreddit, thread_id = path_parts[2], path_parts[4]
@@ -334,7 +345,7 @@ class ThreadDataViewSet(GenericViewSet):
                     job_queue.enqueue(
                         "app.worker.process_thread_data",  # this function is defined in the worker app
                         kwargs={
-                            "thread_url": thread_url,
+                            "thread_path": thread_path,
                             "contributor": request.user,
                             "llm": llm,
                             "llm_providers_settings": llm_providers_settings,
@@ -344,7 +355,7 @@ class ThreadDataViewSet(GenericViewSet):
                         job_id=job_id,
                     )
                 else:
-                    log.debug("Not enqueuing duplicate job for %s", thread_url)
+                    log.debug("Not enqueuing duplicate job for %s", thread_path)
         else:
             log.debug("Thread data processing is disabled")
 

@@ -69,7 +69,7 @@ class RedditorContextQuery(Created, ContextQueryPrompt, RequestMeta):
     def __str__(self):
         return util.format.class__str__(
             self.__class__.__name__,
-            context=self.context,
+            context=self.context.username,
             prompt=Truncator(self.prompt).chars(100),
             response=Truncator(self.response).chars(100),
         )

@@ -20,4 +20,4 @@ and this continues the quote
     > this is indented 4 times (code block) so it does not match
 and neither should this
 """
-match_block_quotes = re.compile(r"(^\s*>.*\n.*)", re.MULTILINE)
+match_block_quotes = re.compile(r"(^\s{0,3}>\s?.*(\n(?!\n|\s{4}).*)*)", re.MULTILINE)

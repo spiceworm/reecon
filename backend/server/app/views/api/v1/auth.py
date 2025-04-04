@@ -18,6 +18,7 @@ __all__ = ("SignupView",)
 @extend_schema(responses=SignupResponseSerializer)
 class SignupView(CreateAPIView):
     authentication_classes = ()
+    permission_classes = ()
     queryset = get_user_model().objects.all()
     serializer_class = SignupRequestSerializer
 

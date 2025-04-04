@@ -27,8 +27,8 @@ class UnprocessableRedditorError(UnprocessableEntityError):
 
 
 class UnprocessableThreadError(UnprocessableEntityError):
-    def __init__(self, url: str, reason: str, obj: models.UnprocessableThread):
+    def __init__(self, path: str, reason: str, obj: models.UnprocessableThread):
         super().__init__(reason)
-        self.url = url
+        self.path = path
         self.reason = reason
         self.obj = obj

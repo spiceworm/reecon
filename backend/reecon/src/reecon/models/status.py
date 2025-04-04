@@ -1,5 +1,7 @@
 from django.db import models
 
+from .. import util
+
 
 __all__ = ("StatusMessage",)
 
@@ -37,3 +39,13 @@ class StatusMessage(models.Model):
         null=False,
         help_text="Describes where the `StatusMessage` originated from ('api' / 'extension').",
     )
+
+    def __str__(self):
+        return util.format.class__str__(
+            self.__class__.__name__,
+            active=self.active,
+            category=self.category,
+            message=self.message,
+            name=self.name,
+            source=self.source,
+        )

@@ -66,11 +66,13 @@ class GeneratedRedditorData(GeneratedData):
     iq: int
 
     def normalized_interests(self) -> List[str]:
-        return list(set([s.lower() for s in self.interests]))
+        # Use dict.fromkeys instead of set to preserve order
+        return list(dict.fromkeys(s.lower() for s in self.interests))
 
 
 class GeneratedThreadData(GeneratedData):
     keywords: List[str]
 
     def normalized_keywords(self) -> List[str]:
-        return list(set([s.lower() for s in self.keywords]))
+        # Use dict.fromkeys instead of set to preserve order
+        return list(dict.fromkeys(s.lower() for s in self.keywords))

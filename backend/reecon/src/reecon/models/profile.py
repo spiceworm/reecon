@@ -2,6 +2,8 @@ from django.conf import settings
 from django.core import signing
 from django.db import models
 
+from .. import util
+
 
 __all__ = ("Profile",)
 
@@ -11,7 +13,11 @@ class Profile(models.Model):
     reddit_username = models.CharField(blank=True, null=True, unique=True)
 
     def __str__(self):
-        return f"{self.__class__.__name__}(user={self.user.username}, reddit_username={self.reddit_username}"
+        return util.format.class__str__(
+            self.__class__.__name__,
+            reddit_username=self.reddit_username,
+            user=self.user.username,
+        )
 
     @property
     def signed_username(self) -> str:

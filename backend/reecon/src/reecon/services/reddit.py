@@ -4,7 +4,7 @@ import logging
 from typing import List
 
 from django.utils import timezone
-import praw
+from praw.reddit import Reddit
 from praw.models import (
     Comment,
     MoreComments,
@@ -67,7 +67,7 @@ class RedditBase(abc.ABC):
         self.submitter = submitter
         self.env = env
 
-        self.reddit_client = praw.Reddit(
+        self.reddit_client = Reddit(
             client_id=self.env.reddit.api.client_id,
             client_secret=self.env.reddit.api.client_secret,
             ratelimit_seconds=self.env.reddit.api.ratelimit_seconds,
@@ -79,7 +79,7 @@ class RedditBase(abc.ABC):
         pass
 
     def sanitize_submission(self, s: str) -> str:
-        return util.inputs.sanitize(s, min_length=self.env.reddit.submission.min_length, max_length=self.env.reddit.submission.max_length, disallowed_strings=("[deleted]",))
+        return util.inputs.sanitize(s, min_length=self.env.reddit.submission.min_length, max_length=self.env.reddit.submission.max_length)
 
     @abc.abstractmethod
     def unprocessable_entity(self, reason: str) -> exceptions.UnprocessableEntityError:
@@ -175,7 +175,7 @@ class ThreadBase(RedditBase):
         ignored_usernames = set(models.IgnoredRedditor.objects.values_list("username", flat=True))
 
         try:
-            praw_submission: Submission = self.reddit_client.submission(url=self.identifier)
+            praw_submission: Submission = self.reddit_client.submission(url=f"https://old.reddit.com{self.identifier}")
         except InvalidURL as e:
             raise self.unprocessable_entity(str(e))
 
@@ -184,12 +184,11 @@ class ThreadBase(RedditBase):
         try:
             # Get the thread selftext
             if text := self.sanitize_submission(praw_submission.selftext):
-                if text not in submissions:
-                    pending_inputs = "|".join(submissions + [text])
-                    # pending_tokens = self.llm_provider.count_tokens(pending_inputs, self.llm.name)
-                    pending_tokens = self.llm_provider.estimate_tokens(pending_inputs)
-                    if pending_tokens < max_input_tokens:
-                        submissions.append(text)
+                pending_inputs = "|".join(submissions + [text])
+                # pending_tokens = self.llm_provider.count_tokens(pending_inputs, self.llm.name)
+                pending_tokens = self.llm_provider.estimate_tokens(pending_inputs)
+                if pending_tokens < max_input_tokens:
+                    submissions.append(text)
 
             # Get thread comments
             comment: Comment
@@ -216,13 +215,13 @@ class ThreadBase(RedditBase):
 
     def unprocessable_entity(self, reason):
         obj, _ = models.UnprocessableThread.objects.update_or_create(
-            url=self.identifier,
+            path=self.identifier,
             defaults={
                 "reason": reason,
             },
             create_defaults={
+                "path": self.identifier,
                 "reason": reason,
-                "url": self.identifier,
             },
         )
         return exceptions.UnprocessableThreadError(self.identifier, reason, obj)
@@ -266,7 +265,7 @@ class RedditorContextQueryService(LlmActionBase, RedditorBase):
 
 class ThreadContextQueryService(LlmActionBase, ThreadBase):
     def create_object(self, *, generated: schemas.GeneratedThreadContextQuery) -> models.ThreadContextQuery:
-        thread = models.Thread.objects.get(url=self.identifier)
+        thread = models.Thread.objects.get(path=self.identifier)
         return models.ThreadContextQuery.objects.create(
             context=thread,
             prompt=generated.prompt,
@@ -345,13 +344,13 @@ class RedditorDataService(LlmActionBase, RedditorBase):
 class ThreadDataService(LlmActionBase, ThreadBase):
     def create_object(self, *, generated: schemas.GeneratedThreadData) -> models.ThreadData:
         thread, _ = models.Thread.objects.update_or_create(
-            url=self.identifier,
+            path=self.identifier,
             defaults={
                 "last_processed": timezone.now(),
             },
             create_defaults={
                 "last_processed": timezone.now(),
-                "url": self.identifier,
+                "path": self.identifier,
             },
         )
         return models.ThreadData.objects.create(
