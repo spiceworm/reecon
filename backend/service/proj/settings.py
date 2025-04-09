@@ -70,6 +70,10 @@ LOGGING = {
     },
 }
 
+for handler_config in LOGGING["handlers"].values():
+    if "filename" in handler_config:
+        Path(handler_config["filename"]).parent.mkdir(parents=True, exist_ok=True)
+
 LANGUAGE_CODE = reecon_settings.LANGUAGE_CODE
 TIME_ZONE = reecon_settings.TIME_ZONE
 USE_I18N = reecon_settings.USE_I18N
