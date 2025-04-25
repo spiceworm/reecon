@@ -1,4 +1,4 @@
-FROM reecon:0.3.9
+FROM reecon:0.3.10
 
 EXPOSE 80
 

@@ -105,6 +105,8 @@ REDIS_SSL=True / False
 
 # Bump version
 ### Change version variables in:
+- backend/reecon/pyproject.toml
+- backend/{server,service,worker}/Dockerfile
 - terraform/prod.tfvars
 - backend/.env
 - backend/.env.production
