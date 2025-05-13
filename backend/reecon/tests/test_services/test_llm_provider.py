@@ -4,7 +4,7 @@ import pytest
 
 from reecon.services import LlmProvider
 from reecon.services.llm_provider import is_missing_expected_generated_data
-from reecon.types import LlmProviderRawResponse
+from reecon.schemas import LlmProviderRawResponse
 
 
 class MockParsedModel(BaseModel):

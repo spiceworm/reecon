@@ -1,5 +1,6 @@
 import abc
 import datetime as dt
+import json
 import logging
 from typing import List
 
@@ -8,7 +9,7 @@ from praw.reddit import Reddit
 from praw.models import (
     Comment,
     MoreComments,
-    Redditor as PrawRedditor,  # Avoid name conflict with `reecon.models.Redditor`
+    Redditor,
     Submission,
 )
 from praw.exceptions import InvalidURL
@@ -17,6 +18,7 @@ from prawcore.exceptions import (
     NotFound,
     TooManyRequests,
 )
+from pydantic.json import pydantic_encoder
 from tenacity import (
     before_sleep_log,
     retry,
@@ -30,7 +32,6 @@ from .. import (
     exceptions,
     models,
     schemas,
-    types,
     util,
 )
 
@@ -52,7 +53,7 @@ class RedditBase(abc.ABC):
         identifier: str,
         contributor: models.AppUser,
         llm: models.LLM,
-        llm_providers_settings: types.LlmProvidersSettings,
+        llm_providers_settings: schemas.LlmProvidersSettings,
         submitter: models.AppUser,
         env: schemas.WorkerEnv,
     ):
@@ -75,7 +76,7 @@ class RedditBase(abc.ABC):
         )
 
     @abc.abstractmethod
-    def get_inputs(self) -> List[str]:
+    def get_inputs(self) -> List[schemas.LlmInput]:
         pass
 
     def sanitize_submission(self, s: str) -> str:
@@ -94,50 +95,67 @@ class RedditorBase(RedditBase):
         stop=stop_after_attempt(10),
         wait=wait_random_exponential(min=1, max=60),
     )
-    def get_inputs(self) -> List[str]:
-        submissions: List[str] = []
-        praw_redditor: PrawRedditor = self.reddit_client.redditor(name=self.identifier)
+    def get_inputs(self) -> List[schemas.LlmInput]:
+        submissions: List[schemas.LlmInput] = []
+        redditor: Redditor = self.reddit_client.redditor(name=self.identifier)
 
         max_input_tokens = int(self.llm.context_window * self.env.redditor.llm.max_context_window_for_inputs)
 
         try:
-            # Check if the redditor account is old enough to be processed
             try:
-                created_utc = praw_redditor.created_utc
+                created_utc = redditor.created_utc
             except AttributeError:
                 raise self.unprocessable_entity("Inaccessible account")
             else:
-                created_ts = dt.datetime.fromtimestamp(created_utc).replace(tzinfo=dt.UTC)
-                current_ts = dt.datetime.now(dt.UTC)
-
-                if current_ts - created_ts < self.env.redditor.account.min_age:
+                redditor_created_ts = timezone.make_aware(dt.datetime.fromtimestamp(created_utc))
+                if timezone.now() - redditor_created_ts < self.env.redditor.account.min_age:
                     raise self.unprocessable_entity(f"Account age is less than {self.env.redditor.account.min_age} old")
 
-            # Get the body of threads submitted by the user.
             thread: Submission
-            for thread in praw_redditor.submissions.new():
+            for thread in redditor.submissions.new():
                 if text := self.sanitize_submission(thread.selftext):
-                    if text not in submissions:
-                        pending_inputs = "|".join(submissions + [text])
-                        # pending_tokens = self.llm_provider.count_tokens(pending_inputs, self.llm.name)
+                    existing_submissions_text = [submission.text for submission in submissions]
+                    if text not in existing_submissions_text:
+                        thread_submission = schemas.ThreadSubmission(
+                            author=thread.author.name,
+                            downvotes=thread.downs,
+                            subreddit=thread.subreddit.display_name,
+                            text=text,
+                            timestamp=timezone.make_aware(dt.datetime.fromtimestamp(thread.created_utc)).isoformat(),
+                            upvotes=thread.ups,
+                        )
+                        pending_inputs = json.dumps(existing_submissions_text + [thread_submission.text], default=pydantic_encoder)
                         pending_tokens = self.llm_provider.estimate_tokens(pending_inputs)
                         if pending_tokens < max_input_tokens:
-                            submissions.append(text)
+                            submissions.append(thread_submission)
                         else:
                             break
 
-            # Get the body of comments submitted by the user.
             comment: Comment
-            for comment in praw_redditor.comments.new():
+            for comment in redditor.comments.new():
                 if isinstance(comment, MoreComments):
                     continue
                 if text := self.sanitize_submission(comment.body):
-                    if text not in submissions:
-                        pending_inputs = "|".join(submissions + [text])
-                        # pending_tokens = self.llm_provider.count_tokens(pending_inputs, self.llm.name)
+                    existing_submissions_text = [submission.text for submission in submissions]
+                    if text not in existing_submissions_text:
+                        # If `comment` is a top-level comment, `parent` will be a `Submission` instance for the thread.
+                        # Otherwise, `parent` will be the parent comment that `comment` is a response to. The intention
+                        # here is to capture the context in which the comment was made.
+                        parent = comment.parent()
+                        is_top_level_comment = isinstance(parent, Submission)
+                        comment_submission = schemas.CommentSubmission(
+                            author=comment.author.name,
+                            downvotes=comment.downs,
+                            context=f"{parent.title} | {parent.selftext}" if is_top_level_comment else parent.body,
+                            subreddit=comment.subreddit.display_name,
+                            text=text,
+                            timestamp=timezone.make_aware(dt.datetime.fromtimestamp(comment.created_utc)).isoformat(),
+                            upvotes=comment.ups,
+                        )
+                        pending_inputs = json.dumps(existing_submissions_text + [comment_submission.text], default=pydantic_encoder)
                         pending_tokens = self.llm_provider.estimate_tokens(pending_inputs)
                         if pending_tokens < max_input_tokens:
-                            submissions.append(text)
+                            submissions.append(comment_submission)
                         else:
                             break
         except (Forbidden, NotFound) as e:
@@ -170,39 +188,58 @@ class ThreadBase(RedditBase):
         stop=stop_after_attempt(10),
         wait=wait_random_exponential(min=1, max=60),
     )
-    def get_inputs(self) -> List[str]:
-        submissions: List[str] = []
+    def get_inputs(self) -> List[schemas.LlmInput]:
+        submissions: List[schemas.LlmInput] = []
         ignored_usernames = set(models.IgnoredRedditor.objects.values_list("username", flat=True))
 
         try:
-            praw_submission: Submission = self.reddit_client.submission(url=f"https://old.reddit.com{self.identifier}")
+            thread: Submission = self.reddit_client.submission(url=f"https://old.reddit.com{self.identifier}")
         except InvalidURL as e:
             raise self.unprocessable_entity(str(e))
 
         max_input_tokens = int(self.llm.context_window * self.env.thread.llm.max_context_window_for_inputs)
 
         try:
-            # Get the thread selftext
-            if text := self.sanitize_submission(praw_submission.selftext):
-                pending_inputs = "|".join(submissions + [text])
-                # pending_tokens = self.llm_provider.count_tokens(pending_inputs, self.llm.name)
+            if text := self.sanitize_submission(thread.selftext):
+                thread_submission = schemas.ThreadSubmission(
+                    author=thread.author.name,
+                    downvotes=thread.downs,
+                    subreddit=thread.subreddit.display_name,
+                    text=text,
+                    timestamp=timezone.make_aware(dt.datetime.fromtimestamp(thread.created_utc)).isoformat(),
+                    upvotes=thread.ups,
+                )
+                pending_inputs = json.dumps(submissions + [thread_submission], default=pydantic_encoder)
                 pending_tokens = self.llm_provider.estimate_tokens(pending_inputs)
                 if pending_tokens < max_input_tokens:
-                    submissions.append(text)
+                    submissions.append(thread_submission)
 
-            # Get thread comments
             comment: Comment
-            for comment in praw_submission.comments.list():
+            for comment in thread.comments.list():
                 if isinstance(comment, MoreComments):
                     continue
                 if comment.author and comment.author.name not in ignored_usernames:
                     if text := self.sanitize_submission(comment.body):
-                        if text not in submissions:
-                            pending_inputs = "|".join(submissions + [text])
-                            # pending_tokens = self.llm_provider.count_tokens(pending_inputs, self.llm.name)
+                        existing_submissions_text = [submission.text for submission in submissions]
+                        if text not in existing_submissions_text:
+                            # If `comment` is a top-level comment, `parent` will be a `Submission` instance for the thread.
+                            # Otherwise, `parent` will be the parent comment that `comment` is a response to. The intention
+                            # here is to capture the context in which the comment was made.
+                            parent = comment.parent()
+                            is_top_level_comment = isinstance(parent, Submission)
+                            comment_submission = schemas.CommentSubmission(
+                                author=comment.author.name,
+                                downvotes=comment.downs,
+                                context=f"{parent.title} | {parent.selftext}" if is_top_level_comment else parent.body,
+                                subreddit=comment.subreddit.display_name,
+                                text=text,
+                                timestamp=timezone.make_aware(dt.datetime.fromtimestamp(comment.created_utc)).isoformat(),
+                                upvotes=comment.ups,
+                            )
+                            pending_inputs = json.dumps(existing_submissions_text + [comment_submission.text], default=pydantic_encoder)
                             pending_tokens = self.llm_provider.estimate_tokens(pending_inputs)
                             if pending_tokens < max_input_tokens:
-                                submissions.append(text)
+                                submissions.append(comment_submission)
                             else:
                                 break
         except NotFound as e:
@@ -255,7 +292,7 @@ class RedditorContextQueryService(LlmActionBase, RedditorBase):
             response=generated.response,
         )
 
-    def generate(self, *, inputs: List[str], prompt: str) -> schemas.GeneratedRedditorContextQuery:
+    def generate(self, *, inputs: List[schemas.LlmInput], prompt: str) -> schemas.GeneratedRedditorContextQuery:
         raw_response = self.llm_provider.generate_data(inputs=inputs, prompt=prompt, response_format=schemas.GeneratedRedditorContextQuery)
         log.debug("Retry stats: %s", self.llm_provider.generate_data.retry.statistics)
         return schemas.GeneratedRedditorContextQuery.model_validate(
@@ -281,7 +318,7 @@ class ThreadContextQueryService(LlmActionBase, ThreadBase):
             response=generated.response,
         )
 
-    def generate(self, *, inputs: List[str], prompt: str) -> schemas.GeneratedThreadContextQuery:
+    def generate(self, *, inputs: List[schemas.LlmInput], prompt: str) -> schemas.GeneratedThreadContextQuery:
         raw_response = self.llm_provider.generate_data(
             inputs=inputs,
             prompt=prompt,
@@ -324,7 +361,7 @@ class RedditorDataService(LlmActionBase, RedditorBase):
             summary=generated.summary,
         )
 
-    def generate(self, *, inputs: List[str], prompt: str) -> schemas.GeneratedRedditorData:
+    def generate(self, *, inputs: List[schemas.LlmInput], prompt: str) -> schemas.GeneratedRedditorData:
         raw_response = self.llm_provider.generate_data(
             inputs=inputs,
             prompt=prompt,
@@ -370,7 +407,7 @@ class ThreadDataService(LlmActionBase, ThreadBase):
             thread=thread,
         )
 
-    def generate(self, *, inputs: List[str], prompt: str) -> schemas.GeneratedThreadData:
+    def generate(self, *, inputs: List[schemas.LlmInput], prompt: str) -> schemas.GeneratedThreadData:
         raw_response = self.llm_provider.generate_data(
             inputs=inputs,
             prompt=prompt,

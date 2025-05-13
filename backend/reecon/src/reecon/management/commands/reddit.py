@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import readline
@@ -7,6 +8,7 @@ from constance import config
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core import management
+import pydantic.json
 
 from ... import (
     models,
@@ -70,7 +72,8 @@ class Command(management.base.BaseCommand):
     def echos(self, lst):
         terminal_size = os.get_terminal_size()
         terminal_width = terminal_size.columns
-        for s in lst:
+        for obj in lst:
+            s = json.dumps(obj, default=pydantic.json.pydantic_encoder)
             self.echo("-" * terminal_width)
             self.echo(s)
 
@@ -116,7 +119,7 @@ class Command(management.base.BaseCommand):
             env=env,
         )
 
-        inputs: List[str] = service.get_inputs()
+        inputs: List[schemas.LlmInput] = service.get_inputs()
 
         log.debug(
             "Retrieved %s inputs for %s",

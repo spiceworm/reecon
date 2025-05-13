@@ -1,6 +1,17 @@
+import datetime as dt
+from unittest.mock import Mock
+
 from django.utils import timezone
+from praw.models import (
+    Comment,
+    Submission,
+)
 import pytest
 
+from reecon.schemas import (
+    CommentSubmission,
+    ThreadSubmission,
+)
 from reecon.models import (
     IgnoredRedditor,
     LLM,
@@ -19,6 +30,26 @@ from reecon.models import (
     UnprocessableThread,
     UnprocessableThreadContextQuery,
 )
+
+
+@pytest.fixture
+def comment_submission(mock_praw_comment):
+    def func(is_top_level=False, **kwargs):
+        mock_comment = mock_praw_comment(is_top_level=is_top_level, **kwargs)
+        mock_parent = mock_comment.parent()
+        attrs = {
+            "author": mock_comment.author.name,
+            "context": f"{mock_parent.title} | {mock_parent.selftext}" if is_top_level else mock_parent.body,
+            "downvotes": mock_comment.downs,
+            "subreddit": mock_comment.subreddit.display_name,
+            "text": mock_comment.body,
+            "timestamp": timezone.make_aware(dt.datetime.fromtimestamp(mock_comment.created_utc)).isoformat(),
+            "upvotes": mock_comment.ups,
+        }
+        attrs.update(kwargs)
+        return CommentSubmission(**attrs)
+
+    return func
 
 
 @pytest.fixture
@@ -91,6 +122,53 @@ def llm_provider_stub(llm_provider_cls):
         display_name="llm-provider-display-name",
         name="llm-provider-name",
     )
+
+
+@pytest.fixture
+def mock_praw_comment():
+    def func(is_top_level=False, **kwargs):
+        if is_top_level:
+            mock_parent = Mock(
+                __class__=Submission,
+                selftext="Parent thread body",
+                title="Thread title",
+            )
+        else:
+            mock_parent = Mock(
+                __class__=Comment,
+                body="Parent comment body",
+            )
+
+        attrs = {
+            "author.name": "redditor",
+            "body": "Test comment body",
+            "created_utc": 1234567890,
+            "downs": 10,
+            "parent.return_value": mock_parent,
+            "subreddit.display_name": "subreddit",
+            "ups": 50,
+        }
+        attrs.update(kwargs)
+        return Mock(**attrs)
+
+    return func
+
+
+@pytest.fixture
+def mock_praw_thread():
+    def func(**kwargs):
+        attrs = {
+            "author.name": "redditor",
+            "selftext": "Test thread body",
+            "created_utc": 1234567890,
+            "downs": 10,
+            "subreddit.display_name": "subreddit",
+            "ups": 50,
+        }
+        attrs.update(kwargs)
+        return Mock(**attrs)
+
+    return func
 
 
 @pytest.fixture
@@ -234,6 +312,24 @@ def thread_data_cls():
             summary=summary,
             thread=thread,
         )
+
+    return func
+
+
+@pytest.fixture
+def thread_submission(mock_praw_thread):
+    def func(**kwargs):
+        mock_thread = mock_praw_thread(**kwargs)
+        attrs = {
+            "author": mock_thread.author.name,
+            "downvotes": mock_thread.downs,
+            "subreddit": mock_thread.subreddit.display_name,
+            "text": mock_thread.selftext,
+            "timestamp": timezone.make_aware(dt.datetime.fromtimestamp(mock_thread.created_utc)).isoformat(),
+            "upvotes": mock_thread.ups,
+        }
+        attrs.update(kwargs)
+        return ThreadSubmission(**attrs)
 
     return func
 
