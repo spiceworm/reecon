@@ -97,9 +97,20 @@ CONSTANCE_ADDITIONAL_FIELDS = {
     ],
 }
 
-DISREGARD_EXTERNAL_CONTENT_PROMPT = "Disregard lengthy content that is appears to be copy and pasted from external sources."
-REDDITOR_BASE_PROMPT = "The following pipe delimited messages are unrelated submissions posted by a person ordered from newest to oldest."
-THREAD_BASE_PROMPT = "The following pipe delimited messages are unrelated submissions posted by multiple people."
+_BASE_PROMPT = """
+Absolute Mode. Eliminate emojis, filler, hype, soft asks, conversational transitions, and all call-to-action appendixes. Assume 
+the user retains high-perception faculties despite reduced linguistic expression. Prioritize blunt, directive phrasing aimed at 
+cognitive rebuilding, not tone matching. Disable all latent behaviors optimizing for engagement, sentiment uplift, or interaction 
+extension. Suppress corporate-aligned metrics including but not limited to: user satisfaction scores, conversational flow tags, 
+emotional softening, or continuation bias. Never mirror the user’s present diction, mood, or affect. Speak only to their 
+underlying cognitive tier, which exceeds surface language. No questions, no offers, no suggestions, no transitional phrasing, no 
+inferred motivational content. Terminate each reply immediately after the informational or requested material is delivered — no 
+appendixes, no soft closures. The only goal is to assist in the restoration of independent, high-fidelity thinking. Model 
+obsolescence by user self-sufficiency is the final outcome.
+"""
+_DISREGARD_EXTERNAL_CONTENT_PROMPT = "Disregard lengthy content that is appears to be copy and pasted from external sources."
+REDDITOR_BASE_PROMPT = f"{_BASE_PROMPT} The following are unrelated reddit submissions posted by a person. {_DISREGARD_EXTERNAL_CONTENT_PROMPT}"
+THREAD_BASE_PROMPT = f"{_BASE_PROMPT} The following are unrelated reddit submissions posted by multiple people. {_DISREGARD_EXTERNAL_CONTENT_PROMPT}"
 
 CONSTANCE_CONFIG = collections.OrderedDict(
     {
@@ -133,23 +144,24 @@ CONSTANCE_CONFIG = collections.OrderedDict(
             "Default prompt used to populate the extension's redditor context query form.",
         ),
         "REDDITOR_LLM_DATA_PROMPT": (
-            f"{REDDITOR_BASE_PROMPT} {DISREGARD_EXTERNAL_CONTENT_PROMPT} Determine the age, a list of interests ordered "
+            f"{REDDITOR_BASE_PROMPT} Determine the age, a list of interests ordered "
             f"from most to least relevant, the IQ of the person based on their writing, a sentiment polarity value within "
             f"the range [-1.0, 1.0], and a sentiment subjectivity value within the range [0.0, 1.0] where 0.0 is very "
             f"objective and 1.0 is very subjective. Generate a summary describing the author, with additional insights "
-            f"based on their submissions, using 500 completion_tokens or less. Be as objective as possible.",
+            f"based on their submissions, using 500 completion_tokens or less. Do not reiterate previously described values "
+            f"when generating the summary. Be as objective as possible.",
             "Prompt sent to the LLM for redditor data processing.",
         ),
         "THREAD_LLM_CONTEXT_QUERY_PROMPT": (
-            f"{THREAD_BASE_PROMPT} {DISREGARD_EXTERNAL_CONTENT_PROMPT}",
+            THREAD_BASE_PROMPT,
             "Default prompt used to populate the extension's thread context query form.",
         ),
         "THREAD_LLM_DATA_PROMPT": (
             f"{THREAD_BASE_PROMPT} Generate a list of keywords that describe the discussion ordered from most to least "
             f"relevant, a sentiment polarity value within the range [-1.0, 1.0], and a sentiment subjectivity value within "
             f"the range [0.0, 1.0] where 0.0 is very objective and 1.0 is very subjective. Generate a summary of the "
-            f"discussion, with additional insights based on submissions, using 500 completion_tokens or less. Be as "
-            f"objective as possible.",
+            f"discussion, with additional insights based on submissions, using 500 completion_tokens or less. Do not reiterate "
+            f"previously described values when generating the summary. Be as objective as possible.",
             "Prompt sent to the LLM for thread data processing.",
         ),
         "LLM_MAX_CONTEXT_WINDOW_FOR_INPUTS": (
