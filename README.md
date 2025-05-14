@@ -111,9 +111,6 @@ REDIS_SSL=True / False
 - backend/.env
 - backend/.env.production
 - extension/package.json
-- reinstall reecon python package for local virtualenv
-  - `cd reecon/backend/reecon`
-  - `export VERSION=<new-version>; python -m build && pip install dist/reecon-${VERSION}.tar.gz`
 - Tag latest commit with version
 
 # Deploy to Production

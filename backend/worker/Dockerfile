@@ -1,4 +1,4 @@
-FROM reecon:0.3.10
+FROM reecon:0.3.11
 
 WORKDIR /worker
 
