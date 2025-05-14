@@ -1,73 +1,33 @@
-from datetime import datetime
 from typing import List
 
-from langchain_core.messages import AIMessage
 from pydantic import (
-    BaseModel,
-    ConfigDict,
     Field,
     field_validator,
 )
 
-
-__all__ = (
-    "CommentSubmission",
-    "ThreadSubmission",
-    "LlmInput",
-    "GeneratedRedditorContextQuery",
-    "GeneratedThreadContextQuery",
-    "GeneratedRedditorData",
-    "GeneratedThreadData",
-    "LlmProviderRawResponse",
-    "LlmProvidersSettings",
+from .llm import (
+    LlmInput,
+    LlmResponse,
 )
 
 
-class CommentSubmission(BaseModel):
-    author: str
-    context: str
-    downvotes: int
-    subreddit: str
-    text: str
-    timestamp: datetime
-    upvotes: int
-
-
-class ThreadSubmission(BaseModel):
-    author: str
-    downvotes: int
-    subreddit: str
-    text: str
-    timestamp: datetime
-    upvotes: int
-
-
-LlmInput = CommentSubmission | ThreadSubmission
-
-
-class LlmUsageMetadata(BaseModel):
-    input_tokens: int
-    output_tokens: int
-    total_tokens: int
-
-
-class LlmResponse(BaseModel):
-    # If extra fields are included when creating the model, they will be ignored. This occurs when calling `model_validate.(**kwargs)`
-    # if kwargs contains extra fields that are not defined in the model.
-    model_config = ConfigDict(extra="forbid")
-
-    usage_metadata: LlmUsageMetadata
+__all__ = (
+    "GeneratedRedditorContextQuery",
+    "GeneratedRedditorContextQueryWithContext",
+    "GeneratedThreadContextQuery",
+    "GeneratedThreadContextQueryWithContext",
+    "GeneratedRedditorData",
+    "GeneratedRedditorDataWithContext",
+    "GeneratedThreadData",
+    "GeneratedThreadDataWithContext",
+)
 
 
 class GeneratedContextQuery(LlmResponse):
-    inputs: List[LlmInput]
-    prompt: str
     response: str
 
 
 class GeneratedData(LlmResponse):
-    inputs: List[LlmInput]
-    prompt: str
     sentiment_polarity: float = Field(
         description="Sentiment polarity value within the range [-1.0, 1.0] where -1.0 is very negative and 1.0 is very positive.",
     )
@@ -97,8 +57,18 @@ class GeneratedRedditorContextQuery(GeneratedContextQuery):
     pass
 
 
+class GeneratedRedditorContextQueryWithContext(GeneratedRedditorContextQuery):
+    inputs: List[LlmInput]
+    prompt: str
+
+
 class GeneratedThreadContextQuery(GeneratedContextQuery):
     pass
+
+
+class GeneratedThreadContextQueryWithContext(GeneratedThreadContextQuery):
+    inputs: List[LlmInput]
+    prompt: str
 
 
 class GeneratedRedditorData(GeneratedData):
@@ -113,6 +83,11 @@ class GeneratedRedditorData(GeneratedData):
         return list(dict.fromkeys(s.lower() for s in self.interests))
 
 
+class GeneratedRedditorDataWithContext(GeneratedRedditorData):
+    inputs: List[LlmInput]
+    prompt: str
+
+
 class GeneratedThreadData(GeneratedData):
     keywords: List[str] = Field(
         description="List of keywords related to the thread ordered from most to least relevant. These should be individual or hyphenated words.",
@@ -123,15 +98,6 @@ class GeneratedThreadData(GeneratedData):
         return list(dict.fromkeys(s.lower() for s in self.keywords))
 
 
-class LlmProviderRawResponse(BaseModel):
-    parsed: BaseModel
-    parsing_error: str | None
-    raw: AIMessage
-
-
-class LlmProviderSettings(BaseModel):
-    api_key: str
-
-
-class LlmProvidersSettings(BaseModel):
-    openai: LlmProviderSettings
+class GeneratedThreadDataWithContext(GeneratedThreadData):
+    inputs: List[LlmInput]
+    prompt: str

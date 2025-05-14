@@ -275,63 +275,71 @@ class LlmActionBase(abc.ABC):
 
 
 class RedditorContextQueryService(LlmActionBase, RedditorBase):
-    def create_object(self, generated: schemas.GeneratedRedditorContextQuery) -> models.RedditorContextQuery:
+    def create_object(self, generated: schemas.GeneratedRedditorContextQueryWithContext) -> models.RedditorContextQuery:
         redditor = models.Redditor.objects.get(username=self.identifier)
         return models.RedditorContextQuery.objects.create(
             context=redditor,
             prompt=generated.prompt,
             request_meta=models.RequestMetadata.objects.create(
                 contributor=self.contributor,
-                input_tokens=generated.usage_metadata.input_tokens,
+                input_tokens=generated.usage_metadata["input_tokens"],
                 llm=self.llm,
-                output_tokens=generated.usage_metadata.output_tokens,
+                output_tokens=generated.usage_metadata["output_tokens"],
                 submitter=self.submitter,
                 total_inputs=len(generated.inputs),
-                total_tokens=generated.usage_metadata.total_tokens,
+                total_tokens=generated.usage_metadata["total_tokens"],
             ),
             response=generated.response,
         )
 
-    def generate(self, *, inputs: List[schemas.LlmInput], prompt: str) -> schemas.GeneratedRedditorContextQuery:
+    def generate(self, *, inputs: List[schemas.LlmInput], prompt: str) -> schemas.GeneratedRedditorContextQueryWithContext:
         raw_response = self.llm_provider.generate_data(inputs=inputs, prompt=prompt, response_format=schemas.GeneratedRedditorContextQuery)
         log.debug("Retry stats: %s", self.llm_provider.generate_data.retry.statistics)
-        return schemas.GeneratedRedditorContextQuery.model_validate(
-            {"inputs": inputs, "prompt": prompt, "usage_metadata": raw_response["raw"].usage_metadata, **raw_response["parsed"].model_dump()}
+        parsed = raw_response.parsed.model_dump()
+        return schemas.GeneratedRedditorContextQueryWithContext(
+            inputs=inputs,
+            prompt=prompt,
+            response=parsed["response"],
+            usage_metadata=raw_response.raw.usage_metadata,
         )
 
 
 class ThreadContextQueryService(LlmActionBase, ThreadBase):
-    def create_object(self, *, generated: schemas.GeneratedThreadContextQuery) -> models.ThreadContextQuery:
+    def create_object(self, *, generated: schemas.GeneratedThreadContextQueryWithContext) -> models.ThreadContextQuery:
         thread = models.Thread.objects.get(path=self.identifier)
         return models.ThreadContextQuery.objects.create(
             context=thread,
             prompt=generated.prompt,
             request_meta=models.RequestMetadata.objects.create(
                 contributor=self.contributor,
-                input_tokens=generated.usage_metadata.input_tokens,
+                input_tokens=generated.usage_metadata["input_tokens"],
                 llm=self.llm,
-                output_tokens=generated.usage_metadata.output_tokens,
+                output_tokens=generated.usage_metadata["output_tokens"],
                 submitter=self.submitter,
                 total_inputs=len(generated.inputs),
-                total_tokens=generated.usage_metadata.total_tokens,
+                total_tokens=generated.usage_metadata["total_tokens"],
             ),
             response=generated.response,
         )
 
-    def generate(self, *, inputs: List[schemas.LlmInput], prompt: str) -> schemas.GeneratedThreadContextQuery:
+    def generate(self, *, inputs: List[schemas.LlmInput], prompt: str) -> schemas.GeneratedThreadContextQueryWithContext:
         raw_response = self.llm_provider.generate_data(
             inputs=inputs,
             prompt=prompt,
             response_format=schemas.GeneratedThreadContextQuery,
         )
         log.debug("Retry stats: %s", self.llm_provider.generate_data.retry.statistics)
-        return schemas.GeneratedThreadContextQuery.model_validate(
-            {"inputs": inputs, "prompt": prompt, "usage_metadata": raw_response["raw"].usage_metadata, **raw_response["parsed"].model_dump()}
+        parsed = raw_response.parsed.model_dump()
+        return schemas.GeneratedThreadContextQueryWithContext(
+            inputs=inputs,
+            prompt=prompt,
+            response=parsed["response"],
+            usage_metadata=raw_response.raw.usage_metadata,
         )
 
 
 class RedditorDataService(LlmActionBase, RedditorBase):
-    def create_object(self, *, generated: schemas.GeneratedRedditorData) -> models.RedditorData:
+    def create_object(self, *, generated: schemas.GeneratedRedditorDataWithContext) -> models.RedditorData:
         redditor, _ = models.Redditor.objects.update_or_create(
             username=self.identifier,
             defaults={
@@ -349,37 +357,41 @@ class RedditorDataService(LlmActionBase, RedditorBase):
             redditor=redditor,
             request_meta=models.RequestMetadata.objects.create(
                 contributor=self.contributor,
-                input_tokens=generated.usage_metadata.input_tokens,
+                input_tokens=generated.usage_metadata["input_tokens"],
                 llm=self.llm,
-                output_tokens=generated.usage_metadata.output_tokens,
+                output_tokens=generated.usage_metadata["output_tokens"],
                 submitter=self.submitter,
                 total_inputs=len(generated.inputs),
-                total_tokens=generated.usage_metadata.total_tokens,
+                total_tokens=generated.usage_metadata["total_tokens"],
             ),
             sentiment_polarity=generated.sentiment_polarity,
             sentiment_subjectivity=generated.sentiment_subjectivity,
             summary=generated.summary,
         )
 
-    def generate(self, *, inputs: List[schemas.LlmInput], prompt: str) -> schemas.GeneratedRedditorData:
+    def generate(self, *, inputs: List[schemas.LlmInput], prompt: str) -> schemas.GeneratedRedditorDataWithContext:
         raw_response = self.llm_provider.generate_data(
             inputs=inputs,
             prompt=prompt,
             response_format=schemas.GeneratedRedditorData,
         )
         log.debug("Retry stats: %s", self.llm_provider.generate_data.retry.statistics)
-        return schemas.GeneratedRedditorData.model_validate(
-            {
-                "inputs": inputs,
-                "prompt": prompt,
-                "usage_metadata": raw_response["raw"].usage_metadata,
-                **raw_response["parsed"].model_dump(),
-            }
+        parsed = raw_response.parsed.model_dump()
+        return schemas.GeneratedRedditorDataWithContext(
+            age=parsed["age"],
+            inputs=inputs,
+            interests=parsed["interests"],
+            iq=parsed["iq"],
+            prompt=prompt,
+            sentiment_polarity=parsed["sentiment_polarity"],
+            sentiment_subjectivity=parsed["sentiment_subjectivity"],
+            summary=parsed["summary"],
+            usage_metadata=raw_response.raw.usage_metadata,
         )
 
 
 class ThreadDataService(LlmActionBase, ThreadBase):
-    def create_object(self, *, generated: schemas.GeneratedThreadData) -> models.ThreadData:
+    def create_object(self, *, generated: schemas.GeneratedThreadDataWithContext) -> models.ThreadData:
         thread, _ = models.Thread.objects.update_or_create(
             path=self.identifier,
             defaults={
@@ -394,12 +406,12 @@ class ThreadDataService(LlmActionBase, ThreadBase):
             keywords=generated.normalized_keywords(),
             request_meta=models.RequestMetadata.objects.create(
                 contributor=self.contributor,
-                input_tokens=generated.usage_metadata.input_tokens,
+                input_tokens=generated.usage_metadata["input_tokens"],
                 llm=self.llm,
-                output_tokens=generated.usage_metadata.output_tokens,
+                output_tokens=generated.usage_metadata["output_tokens"],
                 submitter=self.submitter,
                 total_inputs=len(generated.inputs),
-                total_tokens=generated.usage_metadata.total_tokens,
+                total_tokens=generated.usage_metadata["total_tokens"],
             ),
             sentiment_polarity=generated.sentiment_polarity,
             sentiment_subjectivity=generated.sentiment_subjectivity,
@@ -407,18 +419,20 @@ class ThreadDataService(LlmActionBase, ThreadBase):
             thread=thread,
         )
 
-    def generate(self, *, inputs: List[schemas.LlmInput], prompt: str) -> schemas.GeneratedThreadData:
+    def generate(self, *, inputs: List[schemas.LlmInput], prompt: str) -> schemas.GeneratedThreadDataWithContext:
         raw_response = self.llm_provider.generate_data(
             inputs=inputs,
             prompt=prompt,
             response_format=schemas.GeneratedThreadData,
         )
         log.debug("Retry stats: %s", self.llm_provider.generate_data.retry.statistics)
-        return schemas.GeneratedThreadData.model_validate(
-            {
-                "inputs": inputs,
-                "prompt": prompt,
-                "usage_metadata": raw_response["raw"].usage_metadata,
-                **raw_response["parsed"].model_dump(),
-            }
+        parsed = raw_response.parsed.model_dump()
+        return schemas.GeneratedThreadDataWithContext(
+            inputs=inputs,
+            keywords=parsed["keywords"],
+            prompt=prompt,
+            sentiment_polarity=parsed["sentiment_polarity"],
+            sentiment_subjectivity=parsed["sentiment_subjectivity"],
+            summary=parsed["summary"],
+            usage_metadata=raw_response.raw.usage_metadata,
         )

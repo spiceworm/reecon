@@ -46,7 +46,7 @@ class RedditorContextQueryViewSet(GenericViewSet):
         submit_serializer.is_valid(raise_exception=True)
 
         llm_name = submit_serializer.validated_data["llm_name"]
-        llm_providers_settings: schemas.LlmProvidersSettings = submit_serializer.validated_data["llm_providers_settings"]
+        llm_providers_settings = submit_serializer.validated_data["llm_providers_settings"]
         prompt = submit_serializer.validated_data["prompt"]
         username = submit_serializer.validated_data["username"]
 

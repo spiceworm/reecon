@@ -6,6 +6,7 @@ from pathlib import Path
 import decouple
 
 from reecon import settings as reecon_settings
+from reecon import schemas
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -198,12 +199,9 @@ CONSTANCE_CONFIG = reecon_settings.CONSTANCE_CONFIG
 
 # The DEFAULT_LLM_PROVIDER_SETTINGS should only be used when running management commands.
 # Users provide their own API key in the extension which is then sent to the backend API when processing occurs.
-DEFAULT_LLM_PROVIDERS_SETTINGS = {
-    "openai": {
-        "name": "openai",
-        "api_key": decouple.config("DEFAULT_OPENAI_API_KEY"),
-    }
-}
+DEFAULT_LLM_PROVIDERS_SETTINGS = schemas.LlmProvidersSettings.model_validate(
+    {"openai": {"api_key": decouple.config("DEFAULT_OPENAI_API_KEY")}},
+)
 
 REDDIT_API_CLIENT_ID = decouple.config("REDDIT_API_CLIENT_ID")
 REDDIT_API_CLIENT_SECRET = decouple.config("REDDIT_API_CLIENT_SECRET")

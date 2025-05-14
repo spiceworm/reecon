@@ -37,10 +37,15 @@ from reecon.services.reddit import (
 )
 from reecon.schemas import (
     GeneratedRedditorContextQuery,
+    GeneratedRedditorContextQueryWithContext,
     GeneratedRedditorData,
+    GeneratedRedditorDataWithContext,
     GeneratedThreadContextQuery,
+    GeneratedThreadContextQueryWithContext,
     GeneratedThreadData,
+    GeneratedThreadDataWithContext,
     get_worker_env,
+    LlmProviderRawResponse,
 )
 
 
@@ -67,12 +72,12 @@ def mock_reddit_client(django_settings):
 @pytest.mark.django_db
 class TestRedditorBase:
     @pytest.fixture
-    def redditor_base_stub(self, llm_stub, mock_reddit_client, redditor_stub, user_stub):
+    def redditor_base_stub(self, llm_providers_settings, llm_stub, mock_reddit_client, redditor_stub, user_stub):
         return RedditorBase(
             identifier=redditor_stub.username,
             contributor=user_stub,
             llm=llm_stub,
-            llm_providers_settings={llm_stub.provider.name: {"api_key": "test_key"}},
+            llm_providers_settings=llm_providers_settings.model_dump(),
             submitter=user_stub,
             env=get_worker_env(),
         )
@@ -268,124 +273,147 @@ class TestRedditorBase:
 @pytest.mark.django_db
 class TestRedditorContextQueryService:
     @pytest.fixture
-    def redditor_context_query_service_stub(self, llm_stub, mock_reddit_client, redditor_stub, user_stub):
+    def llm_provider_raw_response(self, ai_message):
+        def func(**kwargs):
+            raw_ai_message = ai_message()
+            attrs = {
+                "response": "Test response",
+            }
+            attrs.update(kwargs)
+            return LlmProviderRawResponse(
+                raw=raw_ai_message,
+                parsed=GeneratedRedditorContextQuery(usage_metadata=raw_ai_message.usage_metadata, **attrs),
+            )
+
+        return func
+
+    @pytest.fixture
+    def redditor_context_query_service_stub(self, llm_providers_settings, llm_stub, mock_reddit_client, redditor_stub, user_stub):
         return RedditorContextQueryService(
             identifier=redditor_stub.username,
             contributor=user_stub,
             llm=llm_stub,
-            llm_providers_settings={llm_stub.provider.name: {"api_key": "test_key"}},
+            llm_providers_settings=llm_providers_settings.model_dump(),
             submitter=user_stub,
             env=get_worker_env(),
         )
 
-    def test_create_object(self, comment_submission, redditor_context_query_service_stub):
+    def test_create_object(self, comment_submission, llm_provider_raw_response, redditor_context_query_service_stub):
         """
         Test that the `create_object` method creates a RedditorContextQuery object with the correct attributes.
         """
-        generated = GeneratedRedditorContextQuery(
-            inputs=[comment_submission(text="Test input")],
-            prompt="Test context query prompt",
-            usage_metadata={"input_tokens": 10, "output_tokens": 20, "total_tokens": 30},
-            response="Test response",
+        raw_response = llm_provider_raw_response()
+        obj = redditor_context_query_service_stub.create_object(
+            generated=GeneratedRedditorContextQueryWithContext(
+                inputs=[comment_submission()],
+                prompt="Test context query prompt",
+                response=raw_response.parsed.response,
+                usage_metadata=raw_response.raw.usage_metadata,
+            ),
         )
-
-        obj = redditor_context_query_service_stub.create_object(generated=generated)
         assert isinstance(obj, RedditorContextQuery)
-        assert obj.response == "Test response"
+        assert obj.response == raw_response.parsed.response
         assert obj.context.identifier == redditor_context_query_service_stub.identifier
 
-    def test_generate(self, comment_submission, mock_llm_provider, redditor_context_query_service_stub):
+    def test_generate(self, comment_submission, llm_provider_raw_response, mock_llm_provider, redditor_context_query_service_stub):
         """
         Test that the `generate` method returns a GeneratedRedditorContextQuery object with the correct attributes.
         """
-        mock_llm_provider.return_value.generate_data.return_value = {
-            "raw": Mock(usage_metadata={"input_tokens": 10, "output_tokens": 20, "total_tokens": 30}),
-            "parsed": Mock(model_dump=lambda: {"response": "Test response"}),
-        }
-
-        result = redditor_context_query_service_stub.generate(inputs=[comment_submission(text="Test input")], prompt="Test context query prompt")
-
+        raw_response = llm_provider_raw_response()
+        mock_llm_provider.return_value.generate_data.return_value = raw_response
+        result = redditor_context_query_service_stub.generate(inputs=[comment_submission()], prompt="Test context query prompt")
         assert isinstance(result, GeneratedRedditorContextQuery)
-        assert result.response == "Test response"
+        assert result.response == raw_response.parsed.response
 
 
 @pytest.mark.django_db
 class TestRedditorDataService:
     @pytest.fixture
-    def redditor_data_service_stub(self, llm_stub, mock_reddit_client, redditor_stub, user_stub):
+    def llm_provider_raw_response(self, ai_message):
+        def func(**kwargs):
+            raw_ai_message = ai_message()
+            attrs = {
+                "age": 30,
+                "iq": 100,
+                "interests": ["something"],
+                "sentiment_polarity": 0.5,
+                "sentiment_subjectivity": 0.5,
+                "summary": "Test summary",
+            }
+            attrs.update(kwargs)
+            return LlmProviderRawResponse(
+                raw=raw_ai_message,
+                parsed=GeneratedRedditorData(
+                    usage_metadata=raw_ai_message.usage_metadata,
+                    **attrs,
+                ),
+            )
+
+        return func
+
+    @pytest.fixture
+    def redditor_data_service_stub(self, llm_providers_settings, llm_stub, mock_reddit_client, redditor_stub, user_stub):
         return RedditorDataService(
             identifier=redditor_stub.identifier,
             contributor=user_stub,
             llm=llm_stub,
-            llm_providers_settings={llm_stub.provider.name: {"api_key": "test_key"}},
+            llm_providers_settings=llm_providers_settings.model_dump(),
             submitter=user_stub,
             env=get_worker_env(),
         )
 
-    def test_create_object(self, comment_submission, redditor_data_service_stub):
+    def test_create_object(self, ai_message, comment_submission, llm_provider_raw_response, redditor_data_service_stub):
         """
         Test that the `create_object` method creates a RedditorData object with the correct attributes.
         """
-        generated = GeneratedRedditorData(
-            age=30,
-            inputs=[comment_submission(text="Test input")],
-            interests=["something"],
-            iq=100,
-            prompt="Test data prompt",
-            sentiment_polarity=0.5,
-            sentiment_subjectivity=0.5,
-            summary="Test summary",
-            usage_metadata={"input_tokens": 10, "output_tokens": 20, "total_tokens": 30},
+        raw_response = llm_provider_raw_response()
+        obj = redditor_data_service_stub.create_object(
+            generated=GeneratedRedditorDataWithContext(
+                age=raw_response.parsed.age,
+                inputs=[comment_submission()],
+                interests=raw_response.parsed.interests,
+                iq=raw_response.parsed.iq,
+                prompt="Test data prompt",
+                sentiment_polarity=raw_response.parsed.sentiment_polarity,
+                sentiment_subjectivity=raw_response.parsed.sentiment_subjectivity,
+                summary=raw_response.parsed.summary,
+                usage_metadata=raw_response.raw.usage_metadata,
+            ),
         )
-
-        obj = redditor_data_service_stub.create_object(generated=generated)
         assert isinstance(obj, RedditorData)
-        assert obj.age == 30
-        assert obj.iq == 100
-        assert obj.interests == ["something"]
-        assert obj.sentiment_polarity == 0.5
-        assert obj.sentiment_subjectivity == 0.5
-        assert obj.summary == "Test summary"
+        assert obj.age == raw_response.parsed.age
+        assert obj.iq == raw_response.parsed.iq
+        assert obj.interests == raw_response.parsed.interests
+        assert obj.sentiment_polarity == raw_response.parsed.sentiment_polarity
+        assert obj.sentiment_subjectivity == raw_response.parsed.sentiment_subjectivity
+        assert obj.summary == raw_response.parsed.summary
         assert obj.redditor.identifier == redditor_data_service_stub.identifier
 
-    def test_generate(self, comment_submission, mock_llm_provider, redditor_data_service_stub):
+    def test_generate(self, ai_message, comment_submission, llm_provider_raw_response, mock_llm_provider, redditor_data_service_stub):
         """
         Test that the `generate` method returns a GeneratedRedditorData object with the correct attributes.
         """
-        mock_llm_provider.return_value.generate_data.return_value = {
-            "raw": Mock(usage_metadata={"input_tokens": 10, "output_tokens": 20, "total_tokens": 30}),
-            "parsed": Mock(
-                model_dump=lambda: {
-                    "age": 30,
-                    "iq": 100,
-                    "interests": ["something"],
-                    "sentiment_polarity": 0.5,
-                    "sentiment_subjectivity": 0.5,
-                    "summary": "Test summary",
-                }
-            ),
-        }
-
-        result = redditor_data_service_stub.generate(inputs=[comment_submission(text="Test input")], prompt="Test data prompt")
-
+        raw_response = llm_provider_raw_response()
+        mock_llm_provider.return_value.generate_data.return_value = raw_response
+        result = redditor_data_service_stub.generate(inputs=[comment_submission()], prompt="Test data prompt")
         assert isinstance(result, GeneratedRedditorData)
-        assert result.age == 30
-        assert result.iq == 100
-        assert result.interests == ["something"]
-        assert result.sentiment_polarity == 0.5
-        assert result.sentiment_subjectivity == 0.5
-        assert result.summary == "Test summary"
+        assert result.age == raw_response.parsed.age
+        assert result.iq == raw_response.parsed.iq
+        assert result.interests == raw_response.parsed.interests
+        assert result.sentiment_polarity == raw_response.parsed.sentiment_polarity
+        assert result.sentiment_subjectivity == raw_response.parsed.sentiment_subjectivity
+        assert result.summary == raw_response.parsed.summary
 
 
 @pytest.mark.django_db
 class TestThreadBase:
     @pytest.fixture
-    def thread_base_stub(self, llm_stub, mock_reddit_client, thread_stub, user_stub):
+    def thread_base_stub(self, llm_providers_settings, llm_stub, mock_reddit_client, thread_stub, user_stub):
         return ThreadBase(
             identifier=thread_stub.identifier,
             contributor=user_stub,
             llm=llm_stub,
-            llm_providers_settings={llm_stub.provider.name: {"api_key": "test_key"}},
+            llm_providers_settings=llm_providers_settings.model_dump(),
             submitter=user_stub,
             env=get_worker_env(),
         )
@@ -583,102 +611,125 @@ class TestThreadBase:
 @pytest.mark.django_db
 class TestThreadContextQueryService:
     @pytest.fixture
-    def thread_context_query_service_stub(self, llm_stub, mock_reddit_client, thread_stub, user_stub):
+    def llm_provider_raw_response(self, ai_message):
+        def func(**kwargs):
+            raw_ai_message = ai_message()
+            attrs = {
+                "response": "Test response",
+            }
+            attrs.update(kwargs)
+            return LlmProviderRawResponse(
+                raw=raw_ai_message,
+                parsed=GeneratedThreadContextQuery(usage_metadata=raw_ai_message.usage_metadata, **attrs),
+            )
+
+        return func
+
+    @pytest.fixture
+    def thread_context_query_service_stub(self, llm_providers_settings, llm_stub, mock_reddit_client, thread_stub, user_stub):
         return ThreadContextQueryService(
             identifier=thread_stub.identifier,
             contributor=user_stub,
             llm=llm_stub,
-            llm_providers_settings={llm_stub.provider.name: {"api_key": "test_key"}},
+            llm_providers_settings=llm_providers_settings.model_dump(),
             submitter=user_stub,
             env=get_worker_env(),
         )
 
-    def test_create_object(self, comment_submission, thread_context_query_service_stub):
+    def test_create_object(self, ai_message, comment_submission, llm_provider_raw_response, thread_context_query_service_stub):
         """
         Test that the `create_object` method creates a RedditorContextQuery object with the correct attributes.
         """
-        generated = GeneratedThreadContextQuery(
-            inputs=[comment_submission(text="Test input")],
-            prompt="Test context query prompt",
-            usage_metadata={"input_tokens": 10, "output_tokens": 20, "total_tokens": 30},
-            response="Test response",
+        raw_response = llm_provider_raw_response()
+        obj = thread_context_query_service_stub.create_object(
+            generated=GeneratedThreadContextQueryWithContext(
+                inputs=[comment_submission()],
+                prompt="Test context query prompt",
+                response=raw_response.parsed.response,
+                usage_metadata=raw_response.raw.usage_metadata,
+            )
         )
-
-        obj = thread_context_query_service_stub.create_object(generated=generated)
         assert isinstance(obj, ThreadContextQuery)
         assert obj.response == "Test response"
         assert obj.context.identifier == thread_context_query_service_stub.identifier
 
-    def test_generate(self, comment_submission, mock_llm_provider, thread_context_query_service_stub):
+    def test_generate(self, ai_message, comment_submission, llm_provider_raw_response, mock_llm_provider, thread_context_query_service_stub):
         """
         Test that the `generate` method returns a GeneratedRedditorContextQuery object with the correct attributes.
         """
-        mock_llm_provider.return_value.generate_data.return_value = {
-            "raw": Mock(usage_metadata={"input_tokens": 10, "output_tokens": 20, "total_tokens": 30}),
-            "parsed": Mock(model_dump=lambda: {"response": "Test response"}),
-        }
-
-        result = thread_context_query_service_stub.generate(inputs=[comment_submission(text="Test input")], prompt="Test context query prompt")
-
+        raw_response = llm_provider_raw_response()
+        mock_llm_provider.return_value.generate_data.return_value = llm_provider_raw_response()
+        result = thread_context_query_service_stub.generate(inputs=[comment_submission()], prompt="Test context query prompt")
         assert isinstance(result, GeneratedThreadContextQuery)
-        assert result.response == "Test response"
+        assert result.response == raw_response.parsed.response
 
 
 @pytest.mark.django_db
 class TestThreadDataService:
     @pytest.fixture
-    def thread_data_service_stub(self, llm_stub, mock_reddit_client, thread_stub, user_stub):
+    def llm_provider_raw_response(self, ai_message):
+        def func(**kwargs):
+            raw_ai_message = ai_message()
+            attrs = {
+                "keywords": ["something"],
+                "sentiment_polarity": 0.5,
+                "sentiment_subjectivity": 0.5,
+                "summary": "Test summary",
+            }
+            attrs.update(kwargs)
+            return LlmProviderRawResponse(
+                raw=raw_ai_message,
+                parsed=GeneratedThreadData(
+                    usage_metadata=raw_ai_message.usage_metadata,
+                    **attrs,
+                ),
+            )
+
+        return func
+
+    @pytest.fixture
+    def thread_data_service_stub(self, llm_providers_settings, llm_stub, mock_reddit_client, thread_stub, user_stub):
         return ThreadDataService(
             identifier=thread_stub.identifier,
             contributor=user_stub,
             llm=llm_stub,
-            llm_providers_settings={llm_stub.provider.name: {"api_key": "test_key"}},
+            llm_providers_settings=llm_providers_settings.model_dump(),
             submitter=user_stub,
             env=get_worker_env(),
         )
 
-    def test_create_object(self, thread_data_service_stub, thread_submission):
+    def test_create_object(self, llm_provider_raw_response, thread_data_service_stub, thread_submission):
         """
         Test that the `create_object` method creates a ThreadData object with the correct attributes.
         """
-        generated = GeneratedThreadData(
-            inputs=[thread_submission(text="Test input")],
-            keywords=["test-keyword"],
-            prompt="Test data prompt",
-            sentiment_polarity=0.5,
-            sentiment_subjectivity=0.5,
-            summary="Test summary",
-            usage_metadata={"input_tokens": 10, "output_tokens": 20, "total_tokens": 30},
+        raw_response = llm_provider_raw_response()
+        obj = thread_data_service_stub.create_object(
+            generated=GeneratedThreadDataWithContext(
+                inputs=[thread_submission()],
+                keywords=raw_response.parsed.keywords,
+                prompt="Test data prompt",
+                sentiment_polarity=raw_response.parsed.sentiment_polarity,
+                sentiment_subjectivity=raw_response.parsed.sentiment_subjectivity,
+                summary=raw_response.parsed.summary,
+                usage_metadata=raw_response.raw.usage_metadata,
+            )
         )
-
-        obj = thread_data_service_stub.create_object(generated=generated)
         assert isinstance(obj, ThreadData)
-        assert obj.keywords == ["test-keyword"]
-        assert obj.sentiment_polarity == 0.5
-        assert obj.sentiment_subjectivity == 0.5
-        assert obj.summary == "Test summary"
+        assert obj.keywords == raw_response.parsed.keywords
+        assert obj.sentiment_polarity == raw_response.parsed.sentiment_polarity
+        assert obj.sentiment_subjectivity == raw_response.parsed.sentiment_subjectivity
+        assert obj.summary == raw_response.parsed.summary
         assert obj.thread.identifier == thread_data_service_stub.identifier
 
-    def test_generate(self, mock_llm_provider, thread_data_service_stub, thread_submission):
+    def test_generate(self, llm_provider_raw_response, mock_llm_provider, thread_data_service_stub, thread_submission):
         """
         Test that the `generate` method returns a GeneratedThreadData object with the correct attributes.
         """
-        mock_llm_provider.return_value.generate_data.return_value = {
-            "raw": Mock(usage_metadata={"input_tokens": 10, "output_tokens": 20, "total_tokens": 30}),
-            "parsed": Mock(
-                model_dump=lambda: {
-                    "keywords": ["test-keyword"],
-                    "sentiment_polarity": 0.5,
-                    "sentiment_subjectivity": 0.5,
-                    "summary": "Test summary",
-                }
-            ),
-        }
-
-        result = thread_data_service_stub.generate(inputs=[thread_submission(text="Test input")], prompt="Test data prompt")
-
+        raw_response = llm_provider_raw_response()
+        mock_llm_provider.return_value.generate_data.return_value = raw_response
+        result = thread_data_service_stub.generate(inputs=[thread_submission()], prompt="Test data prompt")
         assert isinstance(result, GeneratedThreadData)
-        assert result.keywords == ["test-keyword"]
-        assert result.sentiment_polarity == 0.5
-        assert result.sentiment_subjectivity == 0.5
-        assert result.summary == "Test summary"
+        assert result.keywords == raw_response.parsed.keywords
+        assert result.sentiment_polarity == raw_response.parsed.sentiment_polarity
+        assert result.sentiment_subjectivity == raw_response.parsed.sentiment_subjectivity
+        assert result.summary == raw_response.parsed.summary

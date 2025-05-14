@@ -14,11 +14,6 @@ def llm_env_stub(llm_prompt_env_stub):
 
 
 @pytest.fixture
-def llm_usage_metadata_stub():
-    return reddit.LlmUsageMetadata(input_tokens=100, output_tokens=50, total_tokens=150)
-
-
-@pytest.fixture
 def llm_prompt_env_stub():
     return env.LlmPromptEnv(process_context_query="context query", process_data="data process")
 

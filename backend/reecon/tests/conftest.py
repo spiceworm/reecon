@@ -2,6 +2,8 @@ import datetime as dt
 from unittest.mock import Mock
 
 from django.utils import timezone
+from langchain_core.messages import AIMessage
+from langchain_core.messages.ai import UsageMetadata
 from praw.models import (
     Comment,
     Submission,
@@ -10,6 +12,7 @@ import pytest
 
 from reecon.schemas import (
     CommentSubmission,
+    LlmProvidersSettings,
     ThreadSubmission,
 )
 from reecon.models import (
@@ -30,6 +33,19 @@ from reecon.models import (
     UnprocessableThread,
     UnprocessableThreadContextQuery,
 )
+
+
+@pytest.fixture
+def ai_message(usage_metadata):
+    def func(**kwargs):
+        attrs = {
+            "content": "",
+            "usage_metadata": usage_metadata,
+        }
+        attrs.update(kwargs)
+        return AIMessage(**attrs)
+
+    return func
 
 
 @pytest.fixture
@@ -116,11 +132,20 @@ def llm_provider_cls():
 
 
 @pytest.fixture
+def llm_providers_settings(llm_stub):
+    return LlmProvidersSettings.model_validate(
+        {
+            llm_stub.provider.name: {"api_key": "test_key"},
+        }
+    )
+
+
+@pytest.fixture
 def llm_provider_stub(llm_provider_cls):
     return llm_provider_cls(
-        description="llm-provider-description",
-        display_name="llm-provider-display-name",
-        name="llm-provider-name",
+        description="openai stub",
+        display_name="OpenAI",
+        name="openai",
     )
 
 
@@ -376,6 +401,11 @@ def unprocessable_thread_context_query_cls():
         )
 
     return func
+
+
+@pytest.fixture
+def usage_metadata():
+    return UsageMetadata(input_tokens=100, output_tokens=50, total_tokens=150)
 
 
 @pytest.fixture
