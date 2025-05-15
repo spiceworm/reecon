@@ -7,7 +7,7 @@ requires-python = "== 3.13.2"
 classifiers = [
     "Environment :: Web Environment",
     "Framework :: Django",
-    "Framework :: Django :: 5.1",
+    "Framework :: Django :: 5.2",
     "Intended Audience :: Developers",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
@@ -18,20 +18,20 @@ classifiers = [
     "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
 ]
 dependencies = [
-    "django==5.2.1",
-    "django-constance[redis]==4.3.2",
-    "django-redis==5.4.0",
-    "django-rq==3.0.1",
-    "djangorestframework==3.16.0",
-    "hiredis==3.1.1",
-    "ipython>=9.0.2",
-    "langchain[openai]==0.3.25",
-    "markdown==3.8",
-    "praw==7.8.1",
-    "psycopg[c]==3.2.9",
-    "pydantic==2.11.4",
-    "python-decouple==3.8",
-    "tenacity==9.1.2",
+    "django>=5.2.1",
+    "django-constance[redis]>=4.3.2",
+    "django-redis>=5.4.0",
+    "django-rq>=3.0.1",
+    "djangorestframework>=3.16.0",
+    "hiredis>=3.1.1",
+    "ipython>=9.2.0",
+    "langchain[openai]>=0.3.25",
+    "markdown>=3.8",
+    "praw>=7.8.1",
+    "psycopg[c]>=3.2.9",
+    "pydantic>=2.11.4",
+    "python-decouple>=3.8",
+    "tenacity>=9.1.2",
 ]
 
 [project.urls]
