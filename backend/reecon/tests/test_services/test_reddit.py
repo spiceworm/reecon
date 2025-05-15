@@ -77,7 +77,7 @@ class TestRedditorBase:
             identifier=redditor_stub.username,
             contributor=user_stub,
             llm=llm_stub,
-            llm_providers_settings=llm_providers_settings.model_dump(),
+            llm_providers_settings=llm_providers_settings,
             submitter=user_stub,
             env=get_worker_env(),
         )
@@ -293,7 +293,7 @@ class TestRedditorContextQueryService:
             identifier=redditor_stub.username,
             contributor=user_stub,
             llm=llm_stub,
-            llm_providers_settings=llm_providers_settings.model_dump(),
+            llm_providers_settings=llm_providers_settings,
             submitter=user_stub,
             env=get_worker_env(),
         )
@@ -357,7 +357,7 @@ class TestRedditorDataService:
             identifier=redditor_stub.identifier,
             contributor=user_stub,
             llm=llm_stub,
-            llm_providers_settings=llm_providers_settings.model_dump(),
+            llm_providers_settings=llm_providers_settings,
             submitter=user_stub,
             env=get_worker_env(),
         )
@@ -413,7 +413,7 @@ class TestThreadBase:
             identifier=thread_stub.identifier,
             contributor=user_stub,
             llm=llm_stub,
-            llm_providers_settings=llm_providers_settings.model_dump(),
+            llm_providers_settings=llm_providers_settings,
             submitter=user_stub,
             env=get_worker_env(),
         )
@@ -631,7 +631,7 @@ class TestThreadContextQueryService:
             identifier=thread_stub.identifier,
             contributor=user_stub,
             llm=llm_stub,
-            llm_providers_settings=llm_providers_settings.model_dump(),
+            llm_providers_settings=llm_providers_settings,
             submitter=user_stub,
             env=get_worker_env(),
         )
@@ -693,7 +693,7 @@ class TestThreadDataService:
             identifier=thread_stub.identifier,
             contributor=user_stub,
             llm=llm_stub,
-            llm_providers_settings=llm_providers_settings.model_dump(),
+            llm_providers_settings=llm_providers_settings,
             submitter=user_stub,
             env=get_worker_env(),
         )

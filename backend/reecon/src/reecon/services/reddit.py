@@ -60,8 +60,9 @@ class RedditBase(abc.ABC):
         self.identifier = identifier
         self.contributor = contributor
         self.llm = llm
+        llm_provider_settings = getattr(llm_providers_settings, llm.provider.name)
         self.llm_provider = llm_provider.LlmProvider(
-            api_key=llm_providers_settings[llm.provider.name]["api_key"],
+            api_key=llm_provider_settings.api_key,
             llm_name=llm.name,
             llm_provider_name=llm.provider.name,
         )
