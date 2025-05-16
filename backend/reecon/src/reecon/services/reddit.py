@@ -1,6 +1,5 @@
 import abc
 import datetime as dt
-import json
 import logging
 from typing import List
 
@@ -18,7 +17,6 @@ from prawcore.exceptions import (
     NotFound,
     TooManyRequests,
 )
-from pydantic.json import pydantic_encoder
 from tenacity import (
     before_sleep_log,
     retry,
@@ -125,8 +123,7 @@ class RedditorBase(RedditBase):
                             timestamp=timezone.make_aware(dt.datetime.fromtimestamp(thread.created_utc)).isoformat(),
                             upvotes=thread.ups,
                         )
-                        pending_inputs = json.dumps(existing_submissions_text + [thread_submission.text], default=pydantic_encoder)
-                        pending_tokens = self.llm_provider.estimate_tokens(pending_inputs)
+                        pending_tokens = self.llm_provider.estimate_tokens(existing_submissions_text + [thread_submission.text])
                         if pending_tokens < max_input_tokens:
                             submissions.append(thread_submission)
                         else:
@@ -153,8 +150,7 @@ class RedditorBase(RedditBase):
                             timestamp=timezone.make_aware(dt.datetime.fromtimestamp(comment.created_utc)).isoformat(),
                             upvotes=comment.ups,
                         )
-                        pending_inputs = json.dumps(existing_submissions_text + [comment_submission.text], default=pydantic_encoder)
-                        pending_tokens = self.llm_provider.estimate_tokens(pending_inputs)
+                        pending_tokens = self.llm_provider.estimate_tokens(existing_submissions_text + [comment_submission.text])
                         if pending_tokens < max_input_tokens:
                             submissions.append(comment_submission)
                         else:
@@ -210,8 +206,7 @@ class ThreadBase(RedditBase):
                     timestamp=timezone.make_aware(dt.datetime.fromtimestamp(thread.created_utc)).isoformat(),
                     upvotes=thread.ups,
                 )
-                pending_inputs = json.dumps(submissions + [thread_submission], default=pydantic_encoder)
-                pending_tokens = self.llm_provider.estimate_tokens(pending_inputs)
+                pending_tokens = self.llm_provider.estimate_tokens(submissions + [thread_submission])
                 if pending_tokens < max_input_tokens:
                     submissions.append(thread_submission)
 
@@ -237,8 +232,7 @@ class ThreadBase(RedditBase):
                                 timestamp=timezone.make_aware(dt.datetime.fromtimestamp(comment.created_utc)).isoformat(),
                                 upvotes=comment.ups,
                             )
-                            pending_inputs = json.dumps(existing_submissions_text + [comment_submission.text], default=pydantic_encoder)
-                            pending_tokens = self.llm_provider.estimate_tokens(pending_inputs)
+                            pending_tokens = self.llm_provider.estimate_tokens(existing_submissions_text + [comment_submission.text])
                             if pending_tokens < max_input_tokens:
                                 submissions.append(comment_submission)
                             else:

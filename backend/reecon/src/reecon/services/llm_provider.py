@@ -38,32 +38,20 @@ class LlmProvider:
         self.llm_name = llm_name
         self.llm_provider_name = llm_provider_name
 
-    def count_tokens(self, s: str, llm_name: str) -> int:
-        """
-        Count the number of tokens in the given string using the encoding for the specified LLM.
-
-        Args:
-            s (str): The string to count tokens in.
-            llm_name (str): The name of the LLM to use.
-
-        Returns:
-            int: The number of tokens in the string.
-        """
-        raise NotImplementedError("Exact token counting is not implemented yet.")
-
     @staticmethod
-    def estimate_tokens(s: str) -> int:
+    def estimate_tokens(inputs: List[schemas.LlmInput]) -> int:
         """
         Estimate the number of tokens in a string using a simple heuristic. Use this when an exact count is not necessary.
         This is a very rough estimate and should not be used for precise token counting.
 
         Args:
-            s (str): The string to estimate tokens for.
+            inputs (List[schemas.LlmInput]): The inputs to count the number of tokens for.
 
         Returns:
             int: The estimated number of tokens.
         """
-        return count_tokens_approximately([s])
+        input_str = json.dumps(inputs, default=pydantic.json.pydantic_encoder)
+        return count_tokens_approximately([input_str])
 
     @retry(
         before_sleep=before_sleep_log(log, logging.DEBUG),
