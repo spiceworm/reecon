@@ -73,6 +73,7 @@ class RedditBase(abc.ABC):
             ratelimit_seconds=self.env.reddit.api.ratelimit_seconds,
             user_agent=self.env.reddit.api.user_agent,
         )
+        self.reddit_client.read_only = True
 
     @abc.abstractmethod
     def get_inputs(self) -> List[schemas.LlmInput]:
@@ -91,7 +92,7 @@ class RedditorBase(RedditBase):
         before_sleep=before_sleep_log(log, logging.DEBUG),
         reraise=True,
         retry=retry_if_exception_type(TooManyRequests),
-        stop=stop_after_attempt(10),
+        stop=stop_after_attempt(3),
         wait=wait_random_exponential(min=1, max=60),
     )
     def get_inputs(self) -> List[schemas.LlmInput]:

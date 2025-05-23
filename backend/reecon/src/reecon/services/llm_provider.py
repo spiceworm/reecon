@@ -57,7 +57,7 @@ class LlmProvider:
         before_sleep=before_sleep_log(log, logging.DEBUG),
         reraise=True,
         retry=retry_if_result(is_missing_expected_generated_data),
-        stop=stop_after_attempt(10),
+        stop=stop_after_attempt(3),
         wait=wait_random_exponential(min=1, max=60),
     )
     def generate_data(self, *, inputs: List[schemas.LlmInput], prompt: str, response_format: type[pydantic.BaseModel]) -> schemas.LlmProviderRawResponse:  # pragma: no cover
